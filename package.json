@@ -9,6 +9,9 @@
     "test": "ng test",
     "serve:ssr:playground": "node dist/playground/server/server.mjs"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "^19.1.0",
