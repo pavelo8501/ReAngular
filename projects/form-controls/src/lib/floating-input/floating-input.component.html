@@ -1,0 +1,26 @@
+
+<div  [class.floating-input]="true" [class.active]="isFocused()">
+    <input
+        [id]="computedId()"
+        type="input"
+        title="Floating Input"
+        class="input font-mono"
+
+        [formControl]="control()"
+        (focus)="handleOnFocus()"
+        (blur)="handleLostFocus()"
+        (input)="onInputChange($event)">
+      <div 
+        name="label-holder"
+        class="placeholder pl-1 pr-1"
+        [class.active]="state() !== ActivationState.INACTIVE">
+          <label [for]="computedId()" [className] = "placeholderLabelClass()">
+            {{ placeholder() }}
+          </label>
+      </div>
+</div>
+<div>
+  @if(hasErrors() === true){
+    <p class="text-red-500">{{errorMessage()}}</p>
+  }
+</div>

@@ -1,0 +1,55 @@
+.floating-dropdown {
+    position: relative;
+    margin: 20px 0;
+    width: 100%;
+    border: 1px solid #ccc; /* Default border color */
+    border-radius: 4px;
+    transition: border-color 0.3s ease-in-out;
+  }
+
+  .floating-dropdown.active {
+    border-color: rgb(99 102 241 / var(--tw-bg-opacity, 1)); /* Example: Blue border when focused */
+  }
+
+  .dropdown-input {
+    width: 100%;
+    height: auto;
+    padding: 8px 12px; 
+    line-height: 1.5;
+    border: none;
+    outline: none;
+    overflow: visible;
+    cursor: pointer;
+    background: transparent;
+    appearance: none;
+}
+
+.dropdown.with_value {
+    color:gray;
+}
+
+.placeholder {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    transition: 0.3s ease-in-out;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .placeholder.active {
+    top: -16px;
+    left: 4px;
+    visibility: visible;
+    font-size: 20px;
+    border-top: 2px dotted rgb(99 102 241 / var(--tw-bg-opacity, 1));
+    border-left: 2px dotted rgb(99 102 241 / var(--tw-bg-opacity, 1));
+    border-right: 2px dotted rgb(99 102 241 / var(--tw-bg-opacity, 1));
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+  }
+
+  .option{
+    color: black;
+  }

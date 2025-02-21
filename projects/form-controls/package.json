@@ -1,0 +1,24 @@
+{
+  "name": "@pavelo8501/form-controls",
+  "version": "0.0.2",
+  "description": "Form controls library for Angular",
+  "main": "bundles/form-controls.umd.js",
+  "module": "fesm2022/form-controls.mjs",
+  "es2022": "fesm2022/form-controls.mjs",
+  "types": "form-controls.d.ts",
+  "sideEffects": false,
+  "peerDependencies": {
+    "@angular/core": "^19.0.0",
+    "@angular/common": "^19.0.0",
+    "@angular/forms": "^19.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pavelo8501/reangular.git"
+  },
+  "author": "Pavel",
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}

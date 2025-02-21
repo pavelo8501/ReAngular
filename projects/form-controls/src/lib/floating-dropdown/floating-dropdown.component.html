@@ -1,0 +1,26 @@
+
+<div class="floating-dropdown" [class.active]="isFocused()">
+    <select 
+      [id]="computedId()" 
+      type="input" 
+      title="Floating Input" 
+      class="dropdown-input"
+
+      ngIf="control()" [formControl]="control()!!"
+
+
+      (focus)="handleOnFocus()"
+      (blur)="handleLostFocus()"
+
+      
+      (change)="onChange($event)" >
+        @for (option of options(); track $index) {
+            <option [value]="option.value" [disabled]="option.value === ''" class="option"  >{{option.label}} </option>  
+        }
+      </select>
+      <div name="label-holder" class="placeholder"  [class.active]="state() !== ActivationState.INACTIVE"  >
+        <label [for]="computedId()" [className] = "placeholderLabelClass()" >{{ placeholder() }}</label>
+      </div>
+
+  </div>
+

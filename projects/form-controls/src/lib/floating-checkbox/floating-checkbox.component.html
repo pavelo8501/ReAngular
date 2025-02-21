@@ -1,0 +1,24 @@
+
+<div class="floating-checkbox"  [class.active]="state() === ActivationState.ACTIVE">
+    
+    <input
+        [id]="id()"
+        type="checkbox"
+        title="Floating CheckBox"
+        class="checkbox-input font-mono"
+
+        (focus)="handleOnFocus()"
+        (blur)="handleLostFocus()"
+
+        (change)="onCheckedChange($event)">
+
+      <div class="placeholder" [class.active]="active() === true" [ngClass]="placeholderClass()">
+          <label [for]="computedId()"> {{ placeholder() }} </label>
+      </div>
+
+</div>
+<div>
+  @if(hasErrors()){
+    <p class="text-red-500">{{errorMessage()}}</p>
+  }
+</div>

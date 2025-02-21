@@ -1,0 +1,49 @@
+.floating-checkbox {
+    position: relative;
+    display: flex;
+    margin: 20px 0;
+    width: 100%;
+    border: 1px solid #ccc; /* Default border color */
+    border-radius: 4px;
+    transition: border-color 0.3s ease-in-out;
+  }
+  
+  /* Border color when focused */
+  .floating-checkbox.active {
+    border-color: rgb(99 102 241 / var(--tw-bg-opacity, 1)); /* Example: Blue border when focused */
+  }
+  
+  .checkbox-input {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    z-index: 2; 
+    cursor: pointer;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    background: transparent;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    margin-left: 10px;
+  }
+  
+  .placeholder {
+    position: relative;
+    pointer-events: none;
+    min-height: 40px;
+  }
+
+  .placeholder label {
+    position: relative;
+    margin-left: 25px;
+  }
+  
+  .placeholder.active{
+    transform: translateX(10%);
+    transition: 0.3s ease-in-out;
+  }
+
+  /* Placeholder when active */
+  .placeholder.active label {
+    font-size: 25px;
+  }

@@ -1,0 +1,51 @@
+.floating-input {
+    position: relative;
+    margin: 20px 0;
+    width: 100%;
+    border: 1px solid #ccc; /* Default border color */
+    border-radius: 4px;
+    transition: border-color 0.3s ease-in-out;
+  }
+  
+  /* Border color when focused */
+  .floating-input.active {
+    border-color: rgb(99 102 241 / var(--tw-bg-opacity, 1)); /* Example: Blue border when focused */
+  }
+  
+  /* Input styles */
+  .input {
+    width: 100%;
+    padding: 10px 5px;
+    font-size: 24px;
+    border: none;
+    outline: none;
+    background: transparent;
+  }
+  
+  /* Placeholder styles */
+  .placeholder {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    transition: 0.3s ease-in-out;
+  
+    pointer-events: none;
+  }
+  
+  .placeholder-label {
+      font-size: 18px;
+      color: red;
+  }
+  
+  /* Placeholder when active */
+  .placeholder.active {
+    top: -16px;
+    left: 4px;
+    font-size: 20px;
+    border-top: 2px dotted rgb(99 102 241 / var(--tw-bg-opacity, 1));
+    border-left: 2px dotted rgb(99 102 241 / var(--tw-bg-opacity, 1));
+    border-right: 2px dotted rgb(99 102 241 / var(--tw-bg-opacity, 1));
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+  }
