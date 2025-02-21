@@ -5,7 +5,7 @@ import { ActivationState } from '../classes/enums/activation-state';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-    selector: 'lib-floating-dropdown',
+    selector: 'floating-dropdown',
     imports: [
         FormsModule,
         ReactiveFormsModule

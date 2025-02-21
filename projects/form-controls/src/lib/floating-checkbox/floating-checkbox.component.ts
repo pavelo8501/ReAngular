@@ -5,7 +5,7 @@ import { FormControl } from '@angular/forms';
 import { ActivationState } from '../classes/enums/activation-state';
 
 @Component({
-    selector: 'lib-floating-checkbox',
+    selector: 'floating-checkbox',
     imports: [
         CommonModule,
         FormsModule

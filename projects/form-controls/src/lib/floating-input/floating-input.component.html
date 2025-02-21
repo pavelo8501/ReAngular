@@ -2,10 +2,9 @@
 <div  [class.floating-input]="true" [class.active]="isFocused()">
     <input
         [id]="computedId()"
-        type="input"
+        type="{{inputType()}}"
         title="Floating Input"
         class="input font-mono"
-
         [formControl]="control()"
         (focus)="handleOnFocus()"
         (blur)="handleLostFocus()"

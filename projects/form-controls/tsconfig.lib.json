@@ -3,6 +3,8 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "strict": true,
+    "forceConsistentCasingInFileNames":true,
     "outDir": "../../out-tsc/lib",
     "declaration": true,
     "declarationMap": true,

@@ -5,9 +5,10 @@ import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule ,ValidationErrors, FormControl } from '@angular/forms';
 import { ActivationState } from '../classes/enums/activation-state';
 import { Subject, takeUntil } from 'rxjs';
+import { InputType } from '../classes/enums/input-type';
 
 @Component({
-    selector: 'lib-floating-input',
+    selector: 'floating-input',
     imports: [
         CommonModule,
         ReactiveFormsModule,
@@ -19,20 +20,19 @@ export class FloatingInputComponent implements OnInit, OnDestroy{
 
   ControlState = ControlState
   ActivationState = ActivationState
+  InputType = InputType
 
-  control = input.required<FormControl>()
+  control = input<FormControl>(new FormControl())
+  inputType = input<InputType>(InputType.TEXT)
+
   controlDirty = signal<boolean>(false)
   controlInvalid = signal<boolean>(false)
   controlTouched = signal<boolean>(false)
 
-  value = model<string>("")
+  value = model<string|undefined>()
 
   private get effectiveValue():string{
-    if(this.control() != undefined){
-      return this.control().value
-    }else{
-      return this.value()
-    }
+    return this.control().value ?? ""
   }
   isFocused = signal<boolean>(false);
 
@@ -73,6 +73,7 @@ export class FloatingInputComponent implements OnInit, OnDestroy{
   private unsubscribe$ = new Subject<void>();
 
   constructor(){
+    
     effect( ()=>{
       const ctrl = this.control()
       if(ctrl){
@@ -81,13 +82,12 @@ export class FloatingInputComponent implements OnInit, OnDestroy{
         this.controlInvalid.set(ctrl.invalid)
         this.controlTouched.set(ctrl.touched)
       }
-
-    },{allowSignalWrites:true})
+    })
   }
 
   printFormControlStats(){
     console.log(`Printing FloatInput ${this.name()} formControl Stats`)
-    console.log(`touched ${this.control()?.touched}`)
+    console.log(`Touched ${this.control()?.touched}`)
     console.log(`Dirty ${this.control()?.dirty}`)
     console.log(`Invalid ${this.control()?.invalid}`)
     console.log(`Errors ${this.control()?.errors}`)
@@ -109,11 +109,10 @@ export class FloatingInputComponent implements OnInit, OnDestroy{
 
   submitValue(){
     console.log("SUBMITTING VALUE")
-    console.log(`Setting ${this.effectiveValue}  to ${this.value()}`)
+    console.log(`Setting ${this.effectiveValue} to ${this.value()}`)
     this.value.set(this.effectiveValue)
   }
 
- 
   handleOnFocus(): void {
     this.isFocused.set(true)
   }
@@ -124,10 +123,14 @@ export class FloatingInputComponent implements OnInit, OnDestroy{
 
   onInputChange(event: Event) {
     console.log(`onInputChange ${event}`)
-    const value =  (event.target as HTMLInputElement).value
-    if(value != null){
-      if(this.control() == undefined){
-        this.value.set(value)
+    const inputValue =  (event.target as HTMLInputElement).value
+    if(inputValue != null){
+      this.control().setValue(inputValue)
+      if(this.control().valid){
+        this.value.set(inputValue)
+      }else{
+        this.value.set("")
+
       }
     }
   }
