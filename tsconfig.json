@@ -9,6 +9,9 @@
     "paths": {
       "form-controls": [
         "./dist/form-controls"
+      ],
+      "net-client": [
+        "./dist/net-client"
       ]
     },
     "noImplicitOverride": true,

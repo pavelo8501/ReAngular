@@ -1,6 +1,6 @@
 {
   "name": "@pavelo8501/form-controls",
-  "version": "0.0.2",
+  "version": "0.0.5",
   "description": "Form controls library for ReAngular",
   "main": "dist/libs/form-controls/index.js",
   "module": "dist/libs/form-controls/index.mjs",

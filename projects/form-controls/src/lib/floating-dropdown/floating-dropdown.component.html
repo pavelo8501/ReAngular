@@ -8,11 +8,9 @@
 
       ngIf="control()" [formControl]="control()!!"
 
-
       (focus)="handleOnFocus()"
       (blur)="handleLostFocus()"
 
-      
       (change)="onChange($event)" >
         @for (option of options(); track $index) {
             <option [value]="option.value" [disabled]="option.value === ''" class="option"  >{{option.label}} </option>  
