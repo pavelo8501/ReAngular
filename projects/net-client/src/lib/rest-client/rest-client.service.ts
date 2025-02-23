@@ -1,15 +1,18 @@
 import { HttpClient, HttpHeaders, HttpErrorResponse  } from '@angular/common/http';
 import {Inject,  Injectable } from '@angular/core';
 import { AuthServiceInterface } from './classes/auth-service.interface';
-import { BehaviorSubject, catchError, filter, Observable, switchMap, take, throwError } from 'rxjs';
-import { AUTH_SERVICE, REST_CLIENT_CONFIG} from './classes/rest-client-config.token';
-import { RESTClientConfig } from './classes/rest-client-config';
-import { RestClientAsset } from './classes/rest-client.asset';
+import { BehaviorSubject, catchError, filter, Observable, Subject, switchMap, take, throwError } from 'rxjs';
+import { AUTH_SERVICE, REST_CLIENT_CONFIG} from './classes/config/rest-client-config.token';
+import { RESTClientConfig } from './classes/config/rest-client-config';
+import { CommonRestAsset } from './classes/rest-assets/rest-client.asset';
 import { RestCallOptions } from './classes/rest-call-options';
 import { RestMethod } from './enums/rest-methos';
 import { RESTClientConnection } from './classes/rest-client-connection';
 import { RESTException } from './classes/rest-exceptions';
 import { ErrorCode } from './enums/error-code';
+import { RESTHeader } from './classes/rest-header';
+import { HeaderKey } from './enums/header-key';
+import { error } from 'console';
 
 
 @Injectable({
@@ -21,17 +24,39 @@ export class RESTClient{
   private refreshTokenSubject = new BehaviorSubject<string | undefined>(undefined);
 
   private connections : RESTClientConnection<any>[] = []
-
+  get http():HttpClient{
+    return this._http
+  }
+  get authService():AuthServiceInterface|undefined{
+    return this._authService
+  }
 
   constructor(
     @Inject(REST_CLIENT_CONFIG) private config: RESTClientConfig, 
-    @Inject(AUTH_SERVICE) private authService : AuthServiceInterface|undefined,  
-    private http: HttpClient
+    @Inject(AUTH_SERVICE) private _authService : AuthServiceInterface|undefined,  
+    private _http: HttpClient
   ){ 
     this.connections = config.getConnections()
+    this.connections.forEach(x=>x.initialize(this))
+    console.log("RESTClient connections")
+    console.log(this.connections)
   }
 
-  private getConnection(id:number):RESTClientConnection<any>{
+
+  private getAuthHeaders(method:RestMethod): RESTHeader|undefined {
+    if(this.authService == undefined){
+      return undefined
+    }else{
+      const token =  this.authService.getToken("some_login")
+      if(token != undefined){
+        return new RESTHeader(method, HeaderKey.AUTHORIZATION, token)
+      }else{
+        return undefined
+      }
+    }
+  }
+
+  getConnection(id:number):RESTClientConnection<any>{
      const found = this.connections.find(x=>x.connectionId == id)
       if(found != undefined){
         return found
@@ -40,37 +65,25 @@ export class RESTClient{
       }
   }
 
-  registerAsset<T>(asset: RestClientAsset<T>, forConnectionId:number):RestClientAsset<T>{
-      const consConnection = this.getConnection(forConnectionId)
-      const existingAssetIndex = consConnection.assets.findIndex(x=>x.endpoint == asset.endpoint && x.method == asset.method)
-      if(existingAssetIndex > 0){
-        return consConnection.assets[existingAssetIndex]
+  createCallOption(asset:CommonRestAsset<any>): RestCallOptions{
+     console.log("createCallOptions call by callback")
+     let restOptions = new RestCallOptions()
+     if(asset.secured){
+      const authHeader = this.getAuthHeaders(asset.method)
+      if(authHeader){
+        restOptions.setAppliedHeadders([authHeader])
       }else{
-        asset.initialize(consConnection.baseUrl, this.http)
-        if(this.authService != undefined){
-          asset.setOnBeforeCall(this.createCallOption)
-        }
-        
-        consConnection.assets.push(asset)
-        return asset
-      }
+        console.warn("autth header null")
+       }
+     }
+     return restOptions
   }
 
-  private createCallOption(method: RestMethod, endpoint: string): RestCallOptions{
-     let options = new RestCallOptions()
-     options.headers = this. getAuthHeaders()
-     options.withCredentials = true 
-     return options
-  }
+  // registerAsset<DATA>(asset: CommonRestAsset<DATA>, forConnectionId:number):CommonRestAsset<DATA>{
+  //     const consConnection = this.getConnection(forConnectionId)
+  //     return consConnection.registerAsset<DATA>(asset)
+  // }
 
-  private getAuthHeaders(): HttpHeaders {
-    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    if(this.authService != undefined){
-      const token = this.authService.getToken("some_login")
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
-    return headers;
-  }
 
   private handleError(error: HttpErrorResponse, requestFn: () => Observable<any>): Observable<any>|undefined {
     if (error.status === 401) {
