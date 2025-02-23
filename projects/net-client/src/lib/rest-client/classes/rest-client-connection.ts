@@ -64,10 +64,8 @@ export class RESTClientConnection<RESPONSE extends RestResponseInterface<any>>{
         this.installPlugin(new ContentNegotiationsPlugin<RESPONSE>(response))
     }
 
-    onBeforeCallMethod(method: RestMethod, endpoint: string):RestCallOptions{
-        console.log("onBeforeCallMethod on connection called")
-        const callOptions =  this.client.createCallOption(method, endpoint)
-        return callOptions
+    onBeforeCallMethod(asset: RestClientAsset<any>):RestCallOptions{
+        return this.client.createCallOption(asset)
     }
 
     installPlugin(plugin : ContentNegotiationsInterface<RESPONSE>){
@@ -75,8 +73,7 @@ export class RESTClientConnection<RESPONSE extends RestResponseInterface<any>>{
     }
 
     callGet<DATA>(asset: RestClientAsset<DATA>, params:CallParamInterface[]){
-    
-       const  restOptions : RestCallOptions  = this.onBeforeCallMethod(RestMethod.GET, asset.endpoint)
+       const  restOptions : RestCallOptions  = this.onBeforeCallMethod(asset)
        restOptions.seDefaultHeadders(this.defaultHeaders.filter(x=>x.methodType == RestMethod.GET)) 
         let paramStr = ""
         
@@ -105,6 +102,27 @@ export class RESTClientConnection<RESPONSE extends RestResponseInterface<any>>{
                 throw new RESTException(err.message, ErrorCode.HTTP_CALL_ERROR)
             },
             complete:() => {}
+        })
+    }
+
+    callPut<DATA, REQUEST>(asset:RestClientAsset<DATA>, id:number, requestData : REQUEST){
+        const paramStr = `?id=${id}`
+        const requestUrl = asset.url+paramStr
+        console.log(`Request url: ${requestUrl}`)
+        const  restOptions : RestCallOptions  = this.onBeforeCallMethod(asset)
+        restOptions.seDefaultHeadders(this.defaultHeaders.filter(x=>x.methodType == RestMethod.PUT)) 
+        const callOptions = RestCallOptions.toOptions(restOptions.getHeaders())
+        this.client.http.put<RESPONSE>(requestUrl, JSON.stringify(requestData), callOptions).subscribe({
+            next:(response)=>{
+                const deserializeResult =  this.contentNegotiations?.deserialize<DATA>(response)
+                if(deserializeResult){
+                    asset.submitResult(deserializeResult)
+                }
+            },
+            error:(err:HttpErrorResponse)=>{
+                throw new RESTException(err.message, ErrorCode.HTTP_CALL_ERROR)
+            },
+            complete:()=>{}
         })
     }
 

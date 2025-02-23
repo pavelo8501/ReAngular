@@ -65,16 +65,18 @@ export class RESTClient{
       }
   }
 
-  createCallOption(method: RestMethod, endpoint: string): RestCallOptions{
-    console.log("createCallOptions call by callback")
-     let options = new RestCallOptions()
-     const authHeader = this.getAuthHeaders(method)
-     if(authHeader != undefined){
-      options.setAppliedHeadders([authHeader])
-     }else{
-      console.warn("autth header null")
+  createCallOption(asset:RestClientAsset<any>): RestCallOptions{
+     console.log("createCallOptions call by callback")
+     let restOptions = new RestCallOptions()
+     if(asset.secured){
+      const authHeader = this.getAuthHeaders(asset.method)
+      if(authHeader){
+        restOptions.setAppliedHeadders([authHeader])
+      }else{
+        console.warn("autth header null")
+       }
      }
-     return options
+     return restOptions
   }
 
   registerAsset<T>(asset: RestClientAsset<T>, forConnectionId:number):RestClientAsset<T>{

@@ -60,22 +60,14 @@ export class RestClientAsset<DATA> implements RestClientAssetInterface{
     }
 
 
-    makeCall(params: CallParamInterface[]): Observable<DATA>;
-    makeCall<T>(request: T): Observable<DATA>;
+    makeCall(params: CallParamInterface[], id:number|undefined): Observable<DATA>;
+    makeCall<T>(request: T, id:number|undefined): Observable<DATA>;
 
-    makeCall<T>(params: any): Observable<DATA>{
+    makeCall<T>(params: any, id:number|undefined= undefined): Observable<DATA>{
         if (Array.isArray(params)) {
             switch(this.method){
                 case RestMethod.GET:
                     this.parentConnection.callGet(this, params)
-
-                break
-                case RestMethod.PUT:
-
-                break
-
-                case RestMethod.PATCH:
-
                 break
                 case RestMethod.DELETE:
 
@@ -83,7 +75,16 @@ export class RestClientAsset<DATA> implements RestClientAssetInterface{
             }
         }else{
             params as T
-            this.parentConnection.callPost(this, params)
+            switch(this.method){
+                case RestMethod.PUT:
+                    if(id){
+                        this.parentConnection.callPut(this, id, params)
+                    }
+                break
+                case RestMethod.POST:
+                    this.parentConnection.callPost(this, params)
+                break
+            }
         }
         return this.responseSubject.asObservable()
     }
@@ -97,7 +98,7 @@ export class RestPostAsset<DATA> extends RestClientAsset<DATA>{
     
     static createPost<DATA>(endpoint: string, secured: boolean, connection: RESTClientConnection<RestResponseInterface<DATA>>): RestPostAsset<DATA> {
         const config : RestClientAssetInterface = {endpoint : endpoint, method : RestMethod.POST, secured: secured }
-        return new RestClientAsset<DATA>(config, connection)
+        return new RestPostAsset<DATA>(config, connection)
     }
 
     override makeCall<T>(request: T): Observable<DATA>{
