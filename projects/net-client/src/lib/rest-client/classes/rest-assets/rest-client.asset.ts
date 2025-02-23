@@ -11,9 +11,8 @@ import { ContentNegotiationsInterface } from "../plugins/content-negotiations.pl
 
 export interface RestAssetInterface<DATA>{
     endpoint:string
-    method: RestMethod
     secured:boolean
-  
+    method: RestMethod
 }
 
 export abstract class CommonRestAsset<DATA> implements RestAssetInterface<DATA>{
@@ -59,11 +58,6 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface<DATA>{
         this.contentNegotiations = parentConnection.contentNegotiations
     }
 
-    initialize(parentConnection : RESTClientConnection<any>){
-        this.baseUrl = parentConnection.baseUrl
-        this.http = parentConnection.client.http
-    }
-
     protected processResponse(response: RestResponseInterface<DATA>){
         if(this.contentNegotiations != undefined){
             const deserializeResult = this.contentNegotiations.deserialize<DATA>(response)
@@ -71,6 +65,15 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface<DATA>{
             this.responseSubject.next(deserializeResult)
         }
     }
+
+    protected handleError(err:HttpErrorResponse, requestFn: (token:string) => void){
+        console.warn(`Received error on request ${err.message}`)
+        if(this.parentConnection.errorHandlerfn != undefined){
+            console.log(`Found error handler on parentConnection, invoking`)
+            this.parentConnection.errorHandlerfn(err, requestFn)
+        }
+    }
+
 }
 
 export class RestPostAsset<DATA> extends CommonRestAsset<DATA>{
@@ -80,6 +83,7 @@ export class RestPostAsset<DATA> extends CommonRestAsset<DATA>{
     }
 
     constructor(config: RestAssetInterface<DATA>, connection : RESTClientConnection<RestResponseInterface<DATA>>){
+        config.method = RestMethod.POST
         super(config, connection)
     }
 
@@ -93,7 +97,6 @@ export class RestPostAsset<DATA> extends CommonRestAsset<DATA>{
             restOptions.seDefaultHeadders(this.parentConnection.defaultHeaders(this.method))
             callOptions = RestCallOptions.toOptions(restOptions.getHeaders())
         }
-
         const requestUrl = this.url
 
         this.http.post<RestResponseInterface<DATA>>(requestUrl, JSON.stringify(requestData)).subscribe({
@@ -101,7 +104,12 @@ export class RestPostAsset<DATA> extends CommonRestAsset<DATA>{
                 this.processResponse(response)
             },
             error: (err : HttpErrorResponse) => {
-                throw new RESTException(err.message, ErrorCode.HTTP_CALL_ERROR)
+                this.handleError(err, (token:string|undefined)=> { 
+                    if(token){
+                        restOptions?.setAuthHeader(token, RestMethod.POST)
+                        this.callPost(requestData) 
+                    }
+                })
             },
             complete:() => {}
         })
@@ -127,6 +135,7 @@ export class RestGetAsset<DATA> extends CommonRestAsset<DATA>{
     }
 
     constructor(config: RestAssetInterface<DATA>, connection : RESTClientConnection<RestResponseInterface<DATA>>){
+        config.method = RestMethod.GET
         super(config, connection)
     }
 
@@ -156,9 +165,13 @@ export class RestGetAsset<DATA> extends CommonRestAsset<DATA>{
                  this.processResponse(response)
              },
              error: (err : HttpErrorResponse) => {
-                 console.warn("GET request error")
-                 console.error(err.message)
-                 throw new RESTException(err.message, ErrorCode.HTTP_CALL_ERROR)
+                this.handleError(err, (token:string|undefined)=> { 
+                    if(token){
+                        restOptions?.setAuthHeader(token, RestMethod.GET)
+                        this.callGet(params) 
+                    }
+                })
+                throw new RESTException(err.message, ErrorCode.HTTP_CALL_ERROR)
              },
              complete:() => {}
          })
@@ -181,6 +194,7 @@ export class RestPutAsset<DATA> extends CommonRestAsset<DATA>{
     }
 
     constructor(config: RestAssetInterface<DATA>, connection : RESTClientConnection<RestResponseInterface<DATA>>){
+        config.method = RestMethod.PUT
         super(config, connection)
     }
 
@@ -190,7 +204,7 @@ export class RestPutAsset<DATA> extends CommonRestAsset<DATA>{
 
         if(restOptions){
             restOptions.seDefaultHeadders(this.parentConnection.defaultHeaders(this.method))
-            const callOptions = RestCallOptions.toOptions(restOptions.getHeaders())
+            callOptions = RestCallOptions.toOptions(restOptions.getHeaders())
         }
 
         const paramStr = `?id=${id}`
@@ -204,6 +218,12 @@ export class RestPutAsset<DATA> extends CommonRestAsset<DATA>{
                 this.processResponse(response)
             },
             error:(err:HttpErrorResponse)=>{
+                this.handleError(err, (token:string|undefined)=> { 
+                    if(token){
+                        restOptions?.setAuthHeader(token, RestMethod.PUT)
+                        this.callPut(id, requestData) 
+                    }
+                })
                 throw new RESTException(err.message, ErrorCode.HTTP_CALL_ERROR)
             },
             complete:()=>{}

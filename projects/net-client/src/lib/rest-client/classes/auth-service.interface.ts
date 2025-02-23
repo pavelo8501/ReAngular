@@ -12,6 +12,7 @@ export interface IUser{
 
 export interface AuthServiceInterface{
 
+    getUser(login:string|undefined):IUser
     refreshToken(login:string):Observable<string|undefined>
     getToken(login:string | undefined):string|undefined
 

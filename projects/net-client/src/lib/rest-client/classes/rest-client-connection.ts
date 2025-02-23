@@ -10,6 +10,8 @@ import { RESTHeader } from "./rest-header";
 import { ContentNegotiationsInterface, JsNegotiationsPlugin } from "./plugins/content-negotiations.plugin";
 import { CallParamInterface } from "./call-param";
 import { RestCallOptions, RestCallOptionsInterface } from "./rest-call-options";
+import { Observable } from "rxjs";
+import { ErrorHandler } from "@angular/core";
 
 
 // RESTClientConnection.prototype.registerAsset = function<T>(
@@ -97,6 +99,8 @@ export class RESTClientConnection<RESPONSE extends RestResponseInterface<any>>{
         }
     }
 
+    errorHandlerfn?: (error: HttpErrorResponse, requestFn: (token:string) => void) => void  
+
     // callGet<DATA>(asset: CommonRestAsset<DATA>, params:CallParamInterface[]){
     //    const  restOptions : RestCallOptions  = this.onBeforeCallMethod(asset)
     //    restOptions.seDefaultHeadders(this._defaultHeaders.filter(x=>x.methodType == RestMethod.GET)) 
@@ -173,21 +177,18 @@ export class RESTClientConnection<RESPONSE extends RestResponseInterface<any>>{
     //     })
     // }
 
-    initialize(client: RESTClient){
+    initialize(client: RESTClient) {
        this._client = client
     }
 
     private registerAsset<DATA>(asset : CommonRestAsset<DATA>){
-        asset.initialize(this)
         this.assets.push(asset)
     }
-
 
     createPostAsset<DATA>(src: RestAssetInterface<DATA>):RestPostAsset<DATA> {
         const asset =  new RestPostAsset(src, this)
         this.registerAsset(asset)
         return asset
-        
     }
 
     createPutAsset<DATA>(src: RestAssetInterface<DATA>){
@@ -201,17 +202,4 @@ export class RESTClientConnection<RESPONSE extends RestResponseInterface<any>>{
         this.registerAsset(asset)
         return asset
     }
-
-    // createAsset<DATA>(src: RestAssetInterface<DATA>): RestAssetInterface<DATA>{
-    //     switch(src.method){
-    //         case RestMethod.GET:
-    //             return RestGetAsset.create(src,this)
-    //         case RestMethod.POST:
-    //             return  RestPutAsset.create(src, this)
-    //         case RestMethod.PUT:
-    //             return RestPutAsset.create(src,this)
-    //         default:
-    //         throw new RESTException(`Unable to create asset for method ${src.method}`, ErrorCode.INVALID_PARAM)
-    //     }
-    // }
 }

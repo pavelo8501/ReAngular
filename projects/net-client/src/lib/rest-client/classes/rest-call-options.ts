@@ -44,6 +44,15 @@ export class RestCallOptions{
         console.log(this.appliedHeaders)
     }
 
+    setAuthHeader(token:string, method: RestMethod){
+       const authHeader = this.getHeaders().find(x=>x.key  == HeaderKey.AUTHORIZATION)
+       if(authHeader){
+            authHeader.value = token
+       }else{
+            this.appliedHeaders.push(new RESTHeader(method, HeaderKey.AUTHORIZATION, token))
+       }
+    }
+
     seDefaultHeadders(headers : RESTHeader[]){
         headers.forEach(x=>{
             if(!this.appliedHeaders.find(f=>f.key === x.key)){
