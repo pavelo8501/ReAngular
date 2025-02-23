@@ -1,4 +1,5 @@
-enum HeaderKey{
+export enum HeaderKey{
     CONTENT_TYPE = "Content-Type",
-    AUTHORIZATION = "Authorization"
+    AUTHORIZATION = "Authorization",
+    ORIGIN = "Origin"
 }

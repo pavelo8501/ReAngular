@@ -1,5 +1,4 @@
 import { BehaviorSubject, map, Observable, Subject } from "rxjs";
-import { User } from "../../../models/user/user";
 import { WSRequestInterface } from "../requests/wsRequests";
 import { DataSubscriberInterface } from "./webSocketSubscriber";
 import { webSocket, WebSocketSubject } from "rxjs/webSocket";
@@ -7,6 +6,7 @@ import { WSResponseInterface, WSResponseWithRequestInterface, WSServiceResponseI
 import { WSService } from "../web-socket-service.service";
 import { ErrorCodes, WSException } from "./wsExceptions";
 import { json } from "stream/consumers";
+import { User } from "./user";
 
 type WSResponse<ResponseDataType> = WSResponseInterface<ResponseDataType> | WSServiceResponseInterface;
 

@@ -3,27 +3,30 @@ import { RestMethod } from "../enums/rest-methos"
 import { HttpClient, HttpErrorResponse, HttpHeaders } from "@angular/common/http"
 import { RESTException } from "./rest-exceptions"
 import { ErrorCode } from "../enums/error-code"
-import { CallParamInterface } from "./call-param"
+import { CallParam, CallParamInterface } from "./call-param"
 import { RestCallOptions, RestCallOptionsInterface } from "./rest-call-options"
 import { error } from "console"
+import { RESTClientConnection } from "./rest-client-connection"
+import { RestResponseInterface } from "./dataflow/rest-response"
 
 export interface RestClientAssetInterface{
     endpoint:string
     method: RestMethod
+    secured:boolean
 }
 
-export class RestClientAsset<RESULT_TYPE> implements RestClientAssetInterface{
+export class RestClientAsset<DATA> implements RestClientAssetInterface{
 
-    static create<T>(endpoint: string, method:RestMethod): RestClientAsset<T> {
-        const config : RestClientAssetInterface = {endpoint : endpoint, method : method}
-        return new RestClientAsset(config)
+    static create<DATA>(endpoint: string, method:RestMethod, secured:boolean, connection: RESTClientConnection<RestResponseInterface<DATA>>): RestClientAsset<DATA> {
+        const config : RestClientAssetInterface = {endpoint : endpoint, method : method, secured: secured}
+        return new RestClientAsset<DATA>(config, connection)
     }
-
+    
     static truncateTrailingChar(str: string, char: string): string {
         return str.replace(new RegExp(`${char}+$`), ''); // Removes all trailing occurrences of char
     }
 
-    private responseSubject : Subject<RESULT_TYPE>  = new Subject<RESULT_TYPE>()
+    protected responseSubject : Subject<DATA>  = new Subject<DATA>()
 
     private _http:HttpClient|undefined = undefined
     get http():HttpClient{
@@ -43,10 +46,12 @@ export class RestClientAsset<RESULT_TYPE> implements RestClientAssetInterface{
     
     endpoint:string= ""
     method: RestMethod = RestMethod.GET
+    secured: boolean = false
 
-    private constructor(config: RestClientAssetInterface){
+    constructor(config: RestClientAssetInterface, protected parentConnection : RESTClientConnection<any>){
         this.endpoint = config.endpoint
         this.method = config.method
+        this.secured = config.secured
     }
 
     initialize(apiUrl:string,  httpClient:HttpClient){
@@ -54,61 +59,49 @@ export class RestClientAsset<RESULT_TYPE> implements RestClientAssetInterface{
         this._http = httpClient
     }
 
-    setOnBeforeCall(fn:  (method:RestMethod, endpoint:string)=>RestCallOptionsInterface){
-        this.onBeforeCall = fn
-    }
 
-    private callGet(params:CallParamInterface[]){
-        let callOptions : RestCallOptionsInterface | undefined = undefined
+    makeCall(params: CallParamInterface[]): Observable<DATA>;
+    makeCall<T>(request: T): Observable<DATA>;
 
-        if(this.onBeforeCall != undefined){
-            this.onBeforeCall.bind(this)
-            callOptions =  this.onBeforeCall(this.method, this.endpoint)
-        }
+    makeCall<T>(params: any): Observable<DATA>{
+        if (Array.isArray(params)) {
+            switch(this.method){
+                case RestMethod.GET:
+                    this.parentConnection.callGet(this, params)
 
-        let paramStr = "?" 
-        params.forEach(x=> paramStr+= `${x.key}=${x.value}&`)
-        paramStr =  RestClientAsset.truncateTrailingChar(paramStr, '&')
-        const requestUrl = this.url+paramStr
-        console.log(`Making Get call with url : ${requestUrl}`)
-        
-        this.http.get<RESULT_TYPE>(requestUrl, RestCallOptions.toOptions(callOptions)).subscribe(
-            (response)=>{
-                this.responseSubject.next(response)
-            },
-            (error:HttpErrorResponse)=>{
-                throw new RESTException(error.message, ErrorCode.HTTP_CALL_ERROR)
-            },
-            () => {
-                console.log("call ended")
-             }
-        )
-    }
+                break
+                case RestMethod.PUT:
 
-    makeCall(...params:CallParamInterface[]): Observable<RESULT_TYPE>{
+                break
 
-        switch(this.method){
-            case RestMethod.GET:
-                this.callGet(params)
-            break
-            case RestMethod.PUT:
+                case RestMethod.PATCH:
 
-            break
+                break
+                case RestMethod.DELETE:
 
-            case RestMethod.PATCH:
-
-            break
-
-            case RestMethod.POST:
-
-            break
-
-            case RestMethod.DELETE:
-
-            break
+                break
+            }
+        }else{
+            params as T
+            this.parentConnection.callPost(this, params)
         }
         return this.responseSubject.asObservable()
     }
 
+    submitResult(result:DATA){
+        this.responseSubject.next(result)
+    }
+}
 
+export class RestPostAsset<DATA> extends RestClientAsset<DATA>{
+    
+    static createPost<DATA>(endpoint: string, secured: boolean, connection: RESTClientConnection<RestResponseInterface<DATA>>): RestPostAsset<DATA> {
+        const config : RestClientAssetInterface = {endpoint : endpoint, method : RestMethod.POST, secured: secured }
+        return new RestClientAsset<DATA>(config, connection)
+    }
+
+    override makeCall<T>(request: T): Observable<DATA>{
+        this.parentConnection.callPost(this, request)
+        return this.responseSubject.asObservable()
+    }
 }
