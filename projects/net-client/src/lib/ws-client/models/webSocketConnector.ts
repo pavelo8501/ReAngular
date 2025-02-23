@@ -5,7 +5,6 @@ import { webSocket, WebSocketSubject } from "rxjs/webSocket";
 import { WSResponseInterface, WSResponseWithRequestInterface, WSServiceResponseInterface } from "../responses/apiResponse";
 import { WSService } from "../web-socket-service.service";
 import { ErrorCodes, WSException } from "./wsExceptions";
-import { json } from "stream/consumers";
 import { User } from "./user";
 
 type WSResponse<ResponseDataType> = WSResponseInterface<ResponseDataType> | WSServiceResponseInterface;

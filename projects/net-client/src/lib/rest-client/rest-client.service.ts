@@ -12,7 +12,6 @@ import { RESTException } from './classes/rest-exceptions';
 import { ErrorCode } from './enums/error-code';
 import { RESTHeader } from './classes/rest-header';
 import { HeaderKey } from './enums/header-key';
-import { error } from 'console';
 
 
 @Injectable({

@@ -11,19 +11,6 @@ import { RESTClientConnection } from "../classes/rest-client-connection";
 //     }
 // }
     
-      
-    
-//   declare module "../classes/rest-client-connection" {
-    
-//     interface RESTClientConnection<RESPONSE extends RestResponseInterface<any>> {
-//       registerAsset<T>(
-//         assetFactory: (conn: RESTClientConnection<RestResponseInterface<any>>) => CommonRestAsset<T>
-//       ): RestAssetInterface<any>;
-//     }
-//   }
-
-  
-
 //   RESTClientConnection.prototype.registerAsset = function<T>(
     
 //     assetFactory: <T>(conn: RESTClientConnection<RestResponseInterface<any>>) => CommonRestAsset<T>

@@ -12,10 +12,6 @@ import { CallParamInterface } from "./call-param";
 import { RestCallOptions, RestCallOptionsInterface } from "./rest-call-options";
 
 
-
-
-
-
 // RESTClientConnection.prototype.registerAsset = function<T>(
 //     assetFactory: <T>(conn: RESTClientConnection<RestResponseInterface<any>>) => CommonRestAsset<T>
 //   ): RestAssetInterface<T> {
@@ -31,9 +27,6 @@ import { RestCallOptions, RestCallOptionsInterface } from "./rest-call-options";
 //         return asset;
 //     }
 //   }
-
-
-
 
 
 export class RESTClientConnection<RESPONSE extends RestResponseInterface<any>>{
