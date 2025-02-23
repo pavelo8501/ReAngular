@@ -1,11 +1,21 @@
 import { Observable } from "rxjs"
 
+
+export interface IUser{
+    id?:number
+    login:string
+    name:string
+    email:string
+    password:string
+    group:string
+}
+
 export interface AuthServiceInterface{
 
     refreshToken(login:string):Observable<string|undefined>
-    getToken(login:string|undefined):string|undefined
+    getToken(login:string | undefined):string|undefined
 
-    logout():boolean
-    throwOut():boolean
+    logout(user: IUser | undefined):boolean
+    throwAway():boolean
 
 }

@@ -1,6 +1,6 @@
 {
   "name": "@pavelo8501/net-client",
-  "version": "0.0.4",
+  "version": "0.0.7",
   "description": "Connectivity services library for ReAngular",
   "main": "dist/libs/net-client/index.js",
   "module": "dist/libs/net-client/index.mjs",
@@ -12,8 +12,8 @@
     "rxjs": "^7.8.0"
   },
   "scripts": {
-    "build": "nx build form-controls",
-    "publish": "npm publish --access public"
+    "build": "build form-controls",
+    "release": "npm version patch && ng build net-client && npm publish --access public"
   },
   "repository": {
     "type": "git",

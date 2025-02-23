@@ -113,8 +113,8 @@ export class RESTClient{
         catchError((err) => {
           this.isRefreshing = false;
           if(this.authService != undefined){
-            this.authService.logout()
-            this.authService.throwOut(); // ✅ Logout if refresh fails
+            this.authService.logout(undefined)
+            this.authService.throwAway(); // ✅ Logout if refresh fails
           }
           return throwError(() => err);
         })
