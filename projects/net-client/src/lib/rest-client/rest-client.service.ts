@@ -4,7 +4,7 @@ import { AuthServiceInterface } from './classes/auth-service.interface';
 import { BehaviorSubject, catchError, filter, Observable, Subject, switchMap, take, throwError } from 'rxjs';
 import { AUTH_SERVICE, REST_CLIENT_CONFIG} from './classes/config/rest-client-config.token';
 import { RESTClientConfig } from './classes/config/rest-client-config';
-import { RestClientAsset } from './classes/rest-client.asset';
+import { CommonRestAsset } from './classes/rest-assets/rest-client.asset';
 import { RestCallOptions } from './classes/rest-call-options';
 import { RestMethod } from './enums/rest-methos';
 import { RESTClientConnection } from './classes/rest-client-connection';
@@ -65,7 +65,7 @@ export class RESTClient{
       }
   }
 
-  createCallOption(asset:RestClientAsset<any>): RestCallOptions{
+  createCallOption(asset:CommonRestAsset<any>): RestCallOptions{
      console.log("createCallOptions call by callback")
      let restOptions = new RestCallOptions()
      if(asset.secured){
@@ -79,10 +79,10 @@ export class RESTClient{
      return restOptions
   }
 
-  registerAsset<T>(asset: RestClientAsset<T>, forConnectionId:number):RestClientAsset<T>{
-      const consConnection = this.getConnection(forConnectionId)
-      return consConnection.registerAsset(asset)
-  }
+  // registerAsset<DATA>(asset: CommonRestAsset<DATA>, forConnectionId:number):CommonRestAsset<DATA>{
+  //     const consConnection = this.getConnection(forConnectionId)
+  //     return consConnection.registerAsset<DATA>(asset)
+  // }
 
 
   private handleError(error: HttpErrorResponse, requestFn: () => Observable<any>): Observable<any>|undefined {

@@ -1,12 +1,18 @@
 import { RestResponseInterface } from "../dataflow/rest-response";
 
+
+
 export interface ContentNegotiationsInterface<RESPONSE extends RestResponseInterface<any>>{
+    
+    type: string
 
     deserialize<T>(response:RESPONSE):T
 
 }
 
-export class ContentNegotiationsPlugin<RESPONSE extends RestResponseInterface<any>> implements ContentNegotiationsInterface<RESPONSE>{
+export class JsNegotiationsPlugin<RESPONSE extends RestResponseInterface<any>> implements ContentNegotiationsInterface<RESPONSE>{
+
+    type = 'jsNegotiations'
 
     deserialize<T>(response:RESPONSE):T{
         const jsObj: RESPONSE = response
