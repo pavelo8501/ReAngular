@@ -1,7 +1,7 @@
 import { HttpHeaders } from "@angular/common/http";
 import { RESTHeader } from "./rest-header";
-import { RestMethod } from "../enums/rest-methos";
-import { HeaderKey } from "../enums/header-key";
+import { RestMethod } from "../../enums/rest-methos";
+import { HeaderKey } from "../../enums/header-key";
 
 export interface RestCallOptionsInterface{
     headers?: HttpHeaders
@@ -53,7 +53,7 @@ export class RestCallOptions{
        }
     }
 
-    seDefaultHeadders(headers : RESTHeader[]){
+    setDefaultHeadders(headers : RESTHeader[]){
         headers.forEach(x=>{
             if(!this.appliedHeaders.find(f=>f.key === x.key)){
                 this.appliedHeaders.push(x)

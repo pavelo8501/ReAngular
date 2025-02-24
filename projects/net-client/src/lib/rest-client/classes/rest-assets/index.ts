@@ -1,4 +1,4 @@
 
 
-export * from "./test-typed.assets"
+export * from "./rest-typed.assets"
 

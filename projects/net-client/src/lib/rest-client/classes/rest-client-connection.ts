@@ -5,12 +5,13 @@ import { RestMethod } from "../enums/rest-methos";
 import { RestClient } from "../rest-client.service";
 import { ResponseBase } from "./dataflow/rest-response";
 import { CommonRestAsset} from "./rest-assets/rest-client.asset";
-import {RestGetAsset, RestPostAsset, RestPutAsset, RestTypedAssetInterface} from "./rest-assets/test-typed.assets"
+import {RestGetAsset, RestPostAsset, RestPutAsset, RestTypedAssetInterface} from "./rest-assets/rest-typed.assets"
 import { RESTException } from "./exceptions/rest-exceptions";
-import { RESTHeader } from "./rest-header";
+import { RESTHeader } from "./dataflow/rest-header";
 import { ContentNegotiationsInterface, JsNegotiationsPlugin} from "./plugins/content/content-negotiations.plugin";
-import { RestCallOptions} from "./rest-call-options";
+import { RestCallOptions} from "./dataflow/rest-call-options";
 import { RestServiceAsset } from "./rest-assets/rest-service.assets";
+import { AssetType } from "./rest-assets/rest-asset.enums";
 
 
 
@@ -54,10 +55,7 @@ export class RestConnection<RESPONSE extends ResponseBase<any>>{
         }
     }
 
-    private _defaultHeaders : RESTHeader[]= []
-    defaultHeaders(methodType: RestMethod):RESTHeader[]{
-        return this._defaultHeaders.filter(x=>x.methodType == methodType)
-    }
+    private defaultHeaders : RESTHeader[]= []
 
     private compare(str1:string, str2:string):boolean{
         if(str1.toLocaleLowerCase() == str2.toLocaleLowerCase()){
@@ -67,17 +65,17 @@ export class RestConnection<RESPONSE extends ResponseBase<any>>{
     }
 
     private createdDefaultHeaders(){
-        this._defaultHeaders.push(new RESTHeader(RestMethod.GET, HeaderKey.CONTENT_TYPE, "application/json"))
-        this._defaultHeaders.push(new RESTHeader(RestMethod.POST, HeaderKey.CONTENT_TYPE, "application/json"))
-        this._defaultHeaders.push(new RESTHeader(RestMethod.PUT, HeaderKey.CONTENT_TYPE, "application/json"))
+        this.defaultHeaders.push(new RESTHeader(RestMethod.GET, HeaderKey.CONTENT_TYPE, "application/json"))
+        this.defaultHeaders.push(new RESTHeader(RestMethod.POST, HeaderKey.CONTENT_TYPE, "application/json"))
+        this.defaultHeaders.push(new RESTHeader(RestMethod.PUT, HeaderKey.CONTENT_TYPE, "application/json"))
     }
 
     private addOrOverrideHeader(header : RESTHeader){
-        let existingHeader = this._defaultHeaders.find(x=> this.compare(x.key, header.key) && this.compare(x.methodType.toString(), header.methodType.toString()))
+        let existingHeader = this.defaultHeaders.find(x=> this.compare(x.key, header.key) && this.compare(x.methodType.toString(), header.methodType.toString()))
         if(existingHeader != undefined){
             existingHeader.value = header.value
         }else{
-            this._defaultHeaders.push(header)
+            this.defaultHeaders.push(header)
         }
     }
 
@@ -96,9 +94,7 @@ export class RestConnection<RESPONSE extends ResponseBase<any>>{
         this.contentNegotiations =   new JsNegotiationsPlugin<RESPONSE>(response)
     }
 
-    onBeforeCallMethod(asset: CommonRestAsset<any>):RestCallOptions{
-        return this.client.createCallOption(asset)
-    }
+   
 
     installPlugin(plugin : ContentNegotiationsInterface<RESPONSE>){
 
@@ -116,42 +112,48 @@ export class RestConnection<RESPONSE extends ResponseBase<any>>{
        this._http = http
     }
 
+    tokenAuthenticator():RestServiceAsset<string>|undefined{
+       return this.serviceAssets.find(x=>x.type == AssetType.ATHENTICATE)
+    }
+
+    tokenRefresher():RestServiceAsset<string>|undefined{
+         return this.serviceAssets.find(x=>x.type == AssetType.REFRESH)
+    }
+
     private registerAsset<DATA>(asset : CommonRestAsset<DATA>){
+        asset.callOptions.setDefaultHeadders(this.defaultHeaders.filter(x=>x.methodType == asset.method))
+        if(asset.secured){
+             asset.callOptions.setAppliedHeadders([new RESTHeader(asset.method, HeaderKey.AUTHORIZATION, "")])
+        }
         this.assets.push(asset)
     }
 
-    private registerServiceAsset<DATA>(asset : CommonRestAsset<DATA>){
-        const serviceAsset =  new RestServiceAsset<DATA>(asset, this)
-        this.serviceAssets.push(serviceAsset)
+    private registerServiceAsset<DATA>(asset : RestServiceAsset<DATA>){
+        asset.callOptions.setDefaultHeadders(this.defaultHeaders.filter(x=>x.methodType == asset.method))
+        this.serviceAssets.push(asset)
     }
 
-    createPostAsset<DATA>(src: RestTypedAssetInterface,  service:boolean = false):RestPostAsset<DATA>{
-        const asset =  new RestPostAsset<DATA>(src.endpoint, src.secured, this)
-        if(!service){
-             this.registerAsset(asset)
+    createPostAsset<DATA>(src: RestTypedAssetInterface,  type : AssetType = AssetType.NON_SERVICE){
+        if(type == AssetType.NON_SERVICE){
+            this.registerAsset(new RestPostAsset<DATA>(src.endpoint, src.secured, this))
         }else{
-            this.registerServiceAsset(asset)
+            this.registerServiceAsset(new RestServiceAsset<DATA>(src.endpoint, RestMethod.POST, this, type))
         }
-        return asset
     }
 
-    createPutAsset<DATA>(src: RestTypedAssetInterface, service:boolean = false):RestPutAsset<DATA>{
-        const asset =  new RestPutAsset<DATA>(src.endpoint, src.secured, this)
-        if(!service){
-             this.registerAsset(asset)
+    createPutAsset<DATA>(src: RestTypedAssetInterface, type : AssetType = AssetType.NON_SERVICE){
+        if(type == AssetType.NON_SERVICE){
+             this.registerAsset(new RestPutAsset<DATA>(src.endpoint, src.secured, this))
         }else{
-            this.registerServiceAsset(asset)
+           this.registerServiceAsset(new RestServiceAsset<DATA>(src.endpoint, RestMethod.PUT, this, type))
         }
-        return asset
     }
 
-    createGetAsset<DATA>(src: RestTypedAssetInterface,  service:boolean = false):RestGetAsset<DATA>{
-        const asset = new RestGetAsset<DATA>(src.endpoint, src.secured, this)
-        if(!service){
-             this.registerAsset(asset)
+    createGetAsset<DATA>(src: RestTypedAssetInterface,  type : AssetType = AssetType.NON_SERVICE){
+        if(type == AssetType.NON_SERVICE){
+             this.registerAsset(new RestGetAsset<DATA>(src.endpoint, src.secured, this))
         }else{
-            this.registerServiceAsset(asset)
+             this.registerServiceAsset(new RestServiceAsset<DATA>(src.endpoint, RestMethod.GET, this, type))
         }
-        return asset
     }
 }

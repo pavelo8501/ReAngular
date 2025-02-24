@@ -1,16 +1,17 @@
 import { HttpClient} from '@angular/common/http';
 import {Injectable } from '@angular/core';
 import { CommonRestAsset } from './classes/rest-assets/rest-client.asset';
-import { RestCallOptions } from './classes/rest-call-options';
+import { RestCallOptions } from './classes/dataflow/rest-call-options';
 import { RestMethod } from './enums/rest-methos';
 import { RESTException } from './classes/exceptions/rest-exceptions';
 import { ErrorCode } from './classes/exceptions/error-code';
-import { RESTHeader } from './classes/rest-header';
+import { RESTHeader } from './classes/dataflow/rest-header';
 import { HeaderKey } from './enums/header-key';
 import { AuthService } from './classes/plugins/auth/authentication.plugin';
 import { RestConnection } from './classes/rest-client-connection';
 import { RestConnectionConfig } from './classes/config';
 import { ResponseBase } from '../../public-api';
+import { AssetType } from './classes/rest-assets/rest-asset.enums';
 
 
 @Injectable({
@@ -33,7 +34,7 @@ export class RestClient{
     //this.initializeAuthentication()
   }
 
-  private getAuthHeaders(method:RestMethod): RESTHeader|undefined {
+  private getAuthHeaders2(method:RestMethod): RESTHeader|undefined {
     if(this.authService == undefined){
       return undefined
     }else{
@@ -56,8 +57,8 @@ export class RestClient{
     const newConnection =  new RestConnection<T>(config.id, config.baseUrl, config.responseTemplate)
     newConnection.initialize(this, this.http)
     if(config.withJwtAuth){
-    //  const loginAsset  =    newConnection.createPostAsset<string>({endpoint: withJwtAuth.getTokenEndpoint, secured:false}, true)
-    //  const refreshAsset  =  newConnection.createPostAsset<string>({endpoint: withJwtAuth.refreshTokenEndpoint, secured:false}, true)
+       newConnection.createPostAsset<string>({endpoint: config.withJwtAuth.getTokenEndpoint, secured:false}, AssetType.ATHENTICATE)
+       newConnection.createPostAsset<string>({endpoint: config.withJwtAuth.refreshTokenEndpoint, secured:false}, AssetType.REFRESH)
     }
     this.connections.push(newConnection)  
   }
@@ -76,11 +77,11 @@ export class RestClient{
   }
 
 
- createCallOption(asset:CommonRestAsset<any>): RestCallOptions{
+ createCallOption2(asset:CommonRestAsset<any>): RestCallOptions{
     console.log("createCallOptions call by callback")
     let restOptions = new RestCallOptions()
     if(asset.secured){
-     const authHeader = this.getAuthHeaders(asset.method)
+     const authHeader = this.getAuthHeaders2(asset.method)
      if(authHeader){
        restOptions.setAppliedHeadders([authHeader])
      }else{

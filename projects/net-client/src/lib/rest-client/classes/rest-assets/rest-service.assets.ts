@@ -1,10 +1,11 @@
-import { ErrorCode } from "net-client"
 import { ResponseBase } from "../dataflow/rest-response"
-import { RESTException } from "../exceptions"
+import { RESTException, ErrorCode } from "../exceptions"
 import { RestConnection } from "../rest-client-connection"
 import { CommonRestAsset, RestAssetInterface} from "./rest-client.asset"
 import { HttpErrorResponse } from "@angular/common/http"
-import { BehaviorSubject, Observable } from "rxjs"
+import { BehaviorSubject, Observable, Subject } from "rxjs"
+import { AssetType } from "./rest-asset.enums"
+import { RestMethod } from "net-client"
 
 
 export interface AuthRequestInterface<T>{
@@ -17,17 +18,21 @@ export class LoginRequest{
 
 export class RestServiceAsset<DATA> extends CommonRestAsset<DATA>{
 
-    private sourceAsset :  CommonRestAsset<DATA>
     private currentToken: DATA | undefined = undefined
 
-    constructor(asset: RestAssetInterface, connection : RestConnection<ResponseBase<DATA>>){
-        super({endpoint:asset.endpoint, method: asset.method, secured: asset.secured}, connection)
-        this.sourceAsset = asset as CommonRestAsset<DATA>
+    constructor(
+        endpoint:string, 
+        method:RestMethod,   
+        connection : RestConnection<ResponseBase<DATA>>, 
+        public type: AssetType
+    ){
+        super({endpoint:endpoint, method: method, secured: false}, connection)
     }
 
-    private tokenSubject = new BehaviorSubject<DATA|undefined>(this.currentToken);
+    private tokenSubject = new Subject<DATA|undefined>();
+
     private login(login: string, password: string){
-        console.log(`call Post to ${this.url}`)
+        console.log(`call Post to ${this.apiUrl}`)
         this.callPost<LoginRequest>(new LoginRequest(login, password))
         this.responseSubject.subscribe({
              next:(response)=>{
@@ -42,7 +47,7 @@ export class RestServiceAsset<DATA> extends CommonRestAsset<DATA>{
     }
 
     getToken(login: string, password: string):Observable<DATA|undefined>{
-        console.log(`token requested for login ${login}`)
+        console.log(`token requested for login : ${login}`)
         if(!this.currentToken){
             this.login(login, password)
         }else{
