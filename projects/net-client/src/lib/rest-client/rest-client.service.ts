@@ -2,7 +2,7 @@ import { HttpClient} from '@angular/common/http';
 import {Injectable } from '@angular/core';
 import { CommonRestAsset } from './classes/rest-assets/rest-client.asset';
 import { RestCallOptions } from './classes/dataflow/rest-call-options';
-import { RestMethod } from './enums/rest-methos';
+import { RestMethod } from './enums/rest-method.enums';
 import { RESTException } from './classes/exceptions/rest-exceptions';
 import { ErrorCode } from './classes/exceptions/error-code';
 import { RESTHeader } from './classes/dataflow/rest-header';
@@ -25,13 +25,7 @@ export class RestClient{
   constructor(
     private http: HttpClient
   ){
-    console.log("RestClient constructor") 
-    // authService.setRestClient(this)
-    // this.connections = config.getConnections()
-    // this.connections.forEach(x=>x.initialize(this))
-    console.log("Info frpm Service")
-    this.restClientInfo()
-    //this.initializeAuthentication()
+    
   }
 
   private getAuthHeaders2(method:RestMethod): RESTHeader|undefined {
@@ -47,20 +41,29 @@ export class RestClient{
     }
   }
 
-  private initializeAuthentication(){
-      this.getConnection(0)
-  }
-
   createConnection<T extends ResponseBase<any>>(config: RestConnectionConfig<T>){
-    
     console.log(`Create connection call`)
     const newConnection =  new RestConnection<T>(config.id, config.baseUrl, config.responseTemplate)
     newConnection.initialize(this, this.http)
     if(config.withJwtAuth){
-       newConnection.createServiceAsset<string>({endpoint: config.withJwtAuth.getTokenEndpoint, secured:false}, AssetType.ATHENTICATE)
-       newConnection.createServiceAsset<string>({endpoint: config.withJwtAuth.refreshTokenEndpoint, secured:false}, AssetType.REFRESH)
+        const authEndpoint = config.withJwtAuth.getTokenEndpoint
+        const refreshEndpoint = config.withJwtAuth.getTokenEndpoint
+        const method = config.withJwtAuth.method
+
+       newConnection.createServiceAsset<string|undefined>(
+            authEndpoint,
+            method,
+            AssetType.ATHENTICATE
+       )
+
+       newConnection.createServiceAsset<string|undefined>(
+            refreshEndpoint,
+            method,
+            AssetType.REFRESH
+       )
     }
     this.connections.push(newConnection)  
+    this.restClientInfo()
   }
 
   getConnection(id:number):RestConnection<any>{

@@ -1,18 +1,18 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { ErrorCode } from "./exceptions/error-code";
 import { HeaderKey } from "../enums/header-key";
-import { RestMethod } from "../enums/rest-methos";
+import { RestMethod } from "../enums/rest-method.enums";
 import { RestClient } from "../rest-client.service";
 import { ResponseBase } from "./dataflow/rest-response";
 import { CommonRestAsset} from "./rest-assets/rest-client.asset";
-import {RestGetAsset, RestPostAsset, RestPutAsset, RestTypedAssetInterface} from "./rest-assets/rest-typed.assets"
+import { RestGetAsset, RestPostAsset, RestPutAsset, RestTypedAssetInterface} from "./rest-assets/rest-typed.assets"
 import { RESTException } from "./exceptions/rest-exceptions";
 import { RESTHeader } from "./dataflow/rest-header";
 import { ContentNegotiationsInterface, JsNegotiationsPlugin} from "./plugins/content/content-negotiations.plugin";
 import { RestCallOptions} from "./dataflow/rest-call-options";
 import { RestServiceAsset } from "./rest-assets/rest-service.assets";
 import { AssetType } from "./rest-assets/rest-asset.enums";
-
+import { BehaviorSubject, Observable } from "rxjs";
 
 
 // RESTClientConnection.prototype.registerAsset = function<T>(
@@ -81,7 +81,28 @@ export class RestConnection<RESPONSE extends ResponseBase<any>>{
 
     contentNegotiations : ContentNegotiationsInterface<RESPONSE>
 
-    activeToken: string | undefined
+    private $tokenSubject = new  BehaviorSubject<string|undefined>(undefined)
+    get tokenSubject():Observable<string|undefined>{
+        return this.$tokenSubject.asObservable()
+    }
+    get token():string{
+        const value = this.$tokenSubject.getValue()
+        if(value){
+            return value
+        }else{
+            throw new RESTException("Accessing token undefined", ErrorCode.FATAL_INIT_FAILURE)
+        }
+    }
+    set token(value:string){
+        const subjectValue = this.$tokenSubject.getValue()
+        if( subjectValue != value){
+            this.$tokenSubject.next(value)
+        }else{
+            console.warn("Trying to update exixtent token with same value")
+        }
+    }
+    
+
 
     constructor(
         public connectionId : number, 
@@ -136,8 +157,21 @@ export class RestConnection<RESPONSE extends ResponseBase<any>>{
         return asset
     }
 
-    createServiceAsset<DATA>(src: RestTypedAssetInterface,  type : AssetType):RestServiceAsset<DATA>{
-         return this.registerServiceAsset(new RestServiceAsset<DATA>(src.endpoint, RestMethod.POST, this, type))
+    createServiceAsset<DATA>(
+            endpoint: string, 
+            method: RestMethod, 
+            type: AssetType, 
+        ):RestServiceAsset<DATA>{
+
+         return this.registerServiceAsset(
+            new RestServiceAsset<DATA>(
+                endpoint, 
+                method,
+                this, 
+                type, 
+                this.$tokenSubject
+                )
+            )
     }
 
     createPostAsset<DATA>(src: RestTypedAssetInterface):RestPostAsset<DATA>{

@@ -1,5 +1,5 @@
 import { Subject } from "rxjs"
-import { RestMethod } from "../../enums/rest-methos"
+import { RestMethod } from "../../enums/rest-method.enums"
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParamsOptions } from "@angular/common/http"
 import { ContentNegotiationsInterface } from "../plugins/content/content-negotiations.plugin"
 import { RestConnection } from "../rest-client-connection"
@@ -54,9 +54,26 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
         this.contentNegotiations = parentConnection.contentNegotiations
     }
 
+    private preCallRoutine(){
+
+        console.log(`Running pre call routine for ${this.method} asset, to endoint: ${this.endpoint} secured : ${this.secured}`)
+
+        if(this.secured){
+            if(this.callOptions.hasJwtToken == false){
+                if(this.parentConnection.token){
+                     this.callOptions.replaceJwtToken(this.parentConnection.token)
+                }else{
+                      console.warn(`${this.method}Assed marked as secured but was unable to obtain jwt token from connection.
+                    Most likely reques will fail`)
+                }
+            }
+        }
+    }
+
     protected callPost<REQUEST>(requestData : REQUEST){
     
         let paramStr = ""
+        this.preCallRoutine()
         console.log(`callPost url : ${this.apiUrl} requestData ${requestData} `)
         this.http.post<ResponseBase<DATA>>(
             this.apiUrl, 
@@ -77,19 +94,19 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
             },
             complete:() => {}
         })
-     }
+    }
 
 
      protected callGet<RESPONSE>(params:CallParamInterface[]){
 
         let paramStr = ""
-
         if(params.length>0){
              paramStr = "?"
              params.forEach(x=> paramStr+= `${x.key}=${x.value}&`)
              paramStr =  CommonRestAsset.truncateTrailingChar(paramStr, '&')
          }
          const requestUrl = this.apiUrl+paramStr
+         this.preCallRoutine()
          console.log(`Making Get call with url : ${requestUrl}`)
 
          this.http.get<ResponseBase<DATA>>(requestUrl,  RestCallOptions.toOptions(this.callOptions.getHeaders())).subscribe({
@@ -113,9 +130,9 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
 
     protected callPut<REQUEST>(id:number, requestData : REQUEST){
     
-       
         const paramStr = `?id=${id}`
         const requestUrl = this.apiUrl+paramStr
+        this.preCallRoutine()
         console.log(`Request url: ${requestUrl}`)
       
         this.http.put<ResponseBase<DATA>>(

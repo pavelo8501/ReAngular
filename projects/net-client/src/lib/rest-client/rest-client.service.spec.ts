@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { RestClient } from './rest-client.service';
 import { BackendResponse } from '../../../../playground/src/classes/backend-response';
@@ -7,6 +7,7 @@ import { ConnectionID } from '../../../../playground/src/enums/connection-id';
 import { environment } from '../../../../playground/src/environments/environment.prod';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { HeaderKey } from 'net-client';
+import { RestMethod } from './enums/rest-method.enums';
 
 describe('RestClient', () => {
   let service: RestClient;
@@ -22,7 +23,7 @@ describe('RestClient', () => {
                         ConnectionID.BACKEND,
                         "",
                         new BackendResponse<any>(),
-                        {getTokenEndpoint: "auth/login", refreshTokenEndpoint : "auth/refresh"}
+                        {getTokenEndpoint: "auth/login", refreshTokenEndpoint : "auth/refresh", method : RestMethod.POST}
                     )
                 )
         ]
@@ -58,35 +59,73 @@ describe('RestClient', () => {
          const connection = service.getConnection(ConnectionID.BACKEND)
          const mockResponse = { data: 'test' };
 
-         connection.tokenAuthenticator()?.getToken("login", "password").subscribe((response)=>{
-            expect(response).toEqual('test');
-         })
+        connection.tokenAuthenticator()?.getToken("login", "password")
+        connection.tokenSubject.subscribe(token => {
+           expect(token).toEqual('test');
+        });
+        
         const req = httpMock.expectOne('/auth/login');
         expect(req.request.method).toBe('POST');
         req.flush(mockResponse);
    });
 
-    it('assets should keep auth token unill expired', () => {
-         const service = TestBed.inject(REST_CLIENT);
-         const connection = service.getConnection(ConnectionID.BACKEND)
+    it('should retain auth token until expired', fakeAsync(() => {
+        const service = TestBed.inject(REST_CLIENT);
+        const connection = service.getConnection(ConnectionID.BACKEND);
 
-         const mockAuthResponse = {  data: 'mock-token' };
-         const mockResponse = { ok:true, msg:"msg", errorCode:0,  data: ["record1", "record2"]};
+        const mockAuthResponse = { data: 'mock-token' };
+        let tokenFetchCount = 0;
 
-         const testsGet = connection.createGetAsset<string[]>({endpoint:"api/tests", secured:true})
-         connection.tokenAuthenticator()?.getToken("login", "password").subscribe((response)=>{
-            connection.activeToken = response
-         })
-         
-         const authReq = httpMock.expectOne('/auth/login')
-         authReq.flush(mockAuthResponse); 
+        connection.tokenAuthenticator()?.getToken("login", "password")
+        connection.tokenSubject.subscribe(token => {
+           if(token){tokenFetchCount ++ }
+        });
 
-         testsGet.makeCall([])
-         const req = httpMock.expectOne('/api/tests');
-         expect(testsGet.callOptions.getHeaders().find(x=>x.key == HeaderKey.AUTHORIZATION)).toBeDefined()
-         expect(req.request.headers.get(HeaderKey.AUTHORIZATION)).toBe('Bearer mock-token');
-         
-   });
+        httpMock.expectOne('/auth/login').flush(mockAuthResponse);
+        tick();
 
+        const testsGet = connection.createGetAsset<string[]>({ endpoint: "api/tests", secured: true });
+        testsGet.makeCall([]);
+        assertTokenHeader('/api/tests', 'mock-token');
+
+        tick(); 
+        testsGet.makeCall([]);
+        assertTokenHeader('/api/tests', 'mock-token');
+        expect(tokenFetchCount).toBe(1);
+    }));
+
+ it('should invalidate ', fakeAsync(() => {
+        const service = TestBed.inject(REST_CLIENT);
+        const connection = service.getConnection(ConnectionID.BACKEND);
+
+        const mockAuthResponse = { data: 'mock-token' };
+        let tokenFetchCount = 0;
+
+        connection.tokenAuthenticator()?.getToken("login", "password")
+        connection.tokenSubject.subscribe(token => {
+           if(token){tokenFetchCount ++ }
+        });
+
+        httpMock.expectOne('/auth/login').flush(mockAuthResponse);
+        tick();
+
+        const testsGet = connection.createGetAsset<string[]>({ endpoint: "api/tests", secured: true });
+        testsGet.makeCall([]);
+        assertTokenHeader('/api/tests', 'mock-token');
+
+        tick(); 
+        testsGet.makeCall([]);
+        assertTokenHeader('/api/tests', 'mock-token');
+        expect(tokenFetchCount).toBe(1);
+    }));
+
+
+   function assertTokenHeader(endpoint: string, expectedToken: string) {
+        const req = httpMock.expectOne(endpoint);
+        expect(req.request.headers.has(HeaderKey.AUTHORIZATION)).toBeTrue();
+        expect(req.request.headers.get(HeaderKey.AUTHORIZATION)).toBe(`Bearer ${expectedToken}`);
+    }
 
 });
+
+

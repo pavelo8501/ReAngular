@@ -8,5 +8,5 @@ export * from './classes/rest-assets/rest-client.asset'
 
 export * from './classes/exceptions/error-code'
 export * from './enums/header-key'
-export * from './enums/rest-methos'
+export * from './enums/rest-method.enums'
 export * from './classes/handlers/error-handler'

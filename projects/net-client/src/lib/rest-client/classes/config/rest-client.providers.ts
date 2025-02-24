@@ -2,7 +2,7 @@ import { EnvironmentProviders, inject, makeEnvironmentProviders } from "@angular
 import { REST_CLIENT, RestClientConfig } from "./rest-client-config";
 import { ErrorCode } from "../exceptions/error-code";
 import { HeaderKey } from "../../enums/header-key";
-import { RestMethod } from "../../enums/rest-methos";
+import { RestMethod } from "../../enums/rest-method.enums";
 import { RestConnection } from "./../rest-client-connection";
 import {ResponseBase}  from "./../dataflow/rest-response"
 import {RestClient} from "./../../rest-client.service"
@@ -20,7 +20,7 @@ export class RestConnectionConfig<T extends ResponseBase<any>>{
         public id: number, 
         public baseUrl: string, 
         public responseTemplate: T,  
-        public withJwtAuth?: {getTokenEndpoint:string, refreshTokenEndpoint:string}
+        public withJwtAuth?: {getTokenEndpoint:string, refreshTokenEndpoint:string, method: RestMethod}
         ){}
 }
  

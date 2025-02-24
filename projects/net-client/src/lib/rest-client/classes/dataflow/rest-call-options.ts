@@ -1,6 +1,6 @@
 import { HttpHeaders } from "@angular/common/http";
 import { RESTHeader } from "./rest-header";
-import { RestMethod } from "../../enums/rest-methos";
+import { RestMethod } from "../../enums/rest-method.enums";
 import { HeaderKey } from "../../enums/header-key";
 
 export interface RestCallOptionsInterface{
@@ -16,20 +16,42 @@ export class RestCallOptions{
         let withCredentials: boolean = false
         restHeaders.forEach(header=> {
             if(header.key == HeaderKey.AUTHORIZATION){
-                headers = headers.set("Authorization", `Bearer ${header.value}`)
-                withCredentials = true
+                if(header.value.length> 0){
+                    headers = headers.set("Authorization", `Bearer ${header.value}`)
+                    withCredentials = true
+                }else{
+                    console.warn(`Unable to set header's ${HeaderKey.AUTHORIZATION}  value, provaded RestHeader has empty value`)
+                }
             }else{
-                console.log(`set ${header.value}`)
                 headers = headers.append(header.key, [header.value])
             }
         })
         const options = {headers:  headers, withCredentials:withCredentials}
-        console.log("created options object")
-        console.log(options)
         return options
     }
 
     private appliedHeaders : RESTHeader[] = []
+
+    private getAuthHeader(): RESTHeader | undefined{
+      return  this.appliedHeaders.find(x=>x.key == HeaderKey.AUTHORIZATION)
+    }
+
+    get hasJwtToken():boolean{
+        if(this.appliedHeaders.find(x=>x.key == HeaderKey.AUTHORIZATION)?.value.length?? 0  > 0 ){
+            return true
+        }else{
+             return false
+        }
+    }
+
+    replaceJwtToken(token:string):boolean{
+        const  header = this.getAuthHeader()
+        if(!header){
+            return false
+        }
+        header.value = token
+        return true
+    }
 
     setAppliedHeadders(headers : RESTHeader[]){
         headers.forEach(x=>{
@@ -45,7 +67,7 @@ export class RestCallOptions{
     }
 
     setAuthHeader(token:string, method: RestMethod){
-       const authHeader = this.getHeaders().find(x=>x.key  == HeaderKey.AUTHORIZATION)
+       const authHeader = this.getAuthHeader()
        if(authHeader){
             authHeader.value = token
        }else{
@@ -62,8 +84,6 @@ export class RestCallOptions{
     }
 
     getHeaders():RESTHeader[]{
-        console.log("getHeaders")
-        console.log(this.appliedHeaders)
         return this.appliedHeaders
     }
 

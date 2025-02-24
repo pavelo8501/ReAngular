@@ -5,7 +5,7 @@ import { CommonRestAsset, RestAssetInterface} from "./rest-client.asset"
 import { HttpErrorResponse } from "@angular/common/http"
 import { BehaviorSubject, Observable, Subject } from "rxjs"
 import { AssetType } from "./rest-asset.enums"
-import { RestMethod } from "net-client"
+import { RestMethod } from "./../../enums/rest-method.enums"
 
 
 export interface AuthRequestInterface<T>{
@@ -24,37 +24,37 @@ export class RestServiceAsset<DATA> extends CommonRestAsset<DATA>{
         endpoint:string, 
         method:RestMethod,   
         connection : RestConnection<ResponseBase<DATA>>, 
-        public type: AssetType
+        public type: AssetType,
+        private tokenSubject: BehaviorSubject<string|undefined>
     ){
         super({endpoint:endpoint, method: method, secured: false}, connection)
     }
 
-    private tokenSubject = new Subject<DATA|undefined>();
 
     private login(login: string, password: string){
         console.log(`call Post to ${this.apiUrl}`)
         this.callPost<LoginRequest>(new LoginRequest(login, password))
         this.responseSubject.subscribe({
              next:(response)=>{
-                    console.log(`token received ${response}`)
-                  this.tokenSubject.next(response)
+                    console.warn(`token received in RestServiceAsset ${response}`)
+
+                    this.tokenSubject.next(response as string)
                 },
             error:(error: HttpErrorResponse)  =>{
                 console.error(`token received ${error}`)
-                throw new RESTException(error.message, ErrorCode.FATAL_INIT_FAILURE)
+                 this.tokenSubject.error(error)
             }
         })
     }
 
-    getToken(login: string, password: string):Observable<DATA|undefined>{
+    getToken(login: string, password: string){
         console.log(`token requested for login : ${login}`)
         if(!this.currentToken){
             this.login(login, password)
         }else{
             console.log(`supplying existent ${login}`)
-            this.tokenSubject.next(this.currentToken)
+            this.tokenSubject.next(this.currentToken as string)
         }
-        return this.tokenSubject.asObservable()
     }
 
 }
