@@ -63,26 +63,26 @@ export class AuthService{
       }
     }
   
-    login(login: string, password: string){
-        if(this.rest){
-            let loginAsset =  this.rest.getConnection(0).createPostAsset<string>({endpoint:"auth/login", secured: false})
-            loginAsset.makeCall<LoginRequest>(new LoginRequest(login, password)).subscribe({
-                next:(token)=>{
-                  this.currentToken = token
-                  this.currentTokenPayload = jwtDecode(token)
-                  window.sessionStorage.removeItem(TOKEN_KEY)
-                  window.sessionStorage.setItem(TOKEN_KEY, this.currentToken)
-                  this.authenticated = true
-                  this.authenticatedStatusSubject.next(true)
-                },
-                error:(error)  =>{
-                  this.authenticated = false
-                  this.authenticatedStatusSubject.next(false)
-                  this.authenticatedStatusSubject.error(error)
-                }
-              })
-        }
-    }
+    // login(login: string, password: string){
+    //     if(this.rest){
+    //         let loginAsset =  this.rest.getConnection(0).createPostAsset<string>({endpoint:"auth/login", secured: false})
+    //         loginAsset.makeCall<LoginRequest>(new LoginRequest(login, password)).subscribe({
+    //             next:(token)=>{
+    //               this.currentToken = token
+    //               this.currentTokenPayload = jwtDecode(token)
+    //               window.sessionStorage.removeItem(TOKEN_KEY)
+    //               window.sessionStorage.setItem(TOKEN_KEY, this.currentToken)
+    //               this.authenticated = true
+    //               this.authenticatedStatusSubject.next(true)
+    //             },
+    //             error:(error)  =>{
+    //               this.authenticated = false
+    //               this.authenticatedStatusSubject.next(false)
+    //               this.authenticatedStatusSubject.error(error)
+    //             }
+    //           })
+    //     }
+    // }
   
     getToken():string|undefined{
         return this.currentToken

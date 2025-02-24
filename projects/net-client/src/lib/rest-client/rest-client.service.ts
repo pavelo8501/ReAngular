@@ -57,8 +57,8 @@ export class RestClient{
     const newConnection =  new RestConnection<T>(config.id, config.baseUrl, config.responseTemplate)
     newConnection.initialize(this, this.http)
     if(config.withJwtAuth){
-       newConnection.createPostAsset<string>({endpoint: config.withJwtAuth.getTokenEndpoint, secured:false}, AssetType.ATHENTICATE)
-       newConnection.createPostAsset<string>({endpoint: config.withJwtAuth.refreshTokenEndpoint, secured:false}, AssetType.REFRESH)
+       newConnection.createServiceAsset<string>({endpoint: config.withJwtAuth.getTokenEndpoint, secured:false}, AssetType.ATHENTICATE)
+       newConnection.createServiceAsset<string>({endpoint: config.withJwtAuth.refreshTokenEndpoint, secured:false}, AssetType.REFRESH)
     }
     this.connections.push(newConnection)  
   }
@@ -109,5 +109,4 @@ export class RestClient{
       }
       console.log(`Is httpClient injected?  ${yesNo}`)
   }
-
 }

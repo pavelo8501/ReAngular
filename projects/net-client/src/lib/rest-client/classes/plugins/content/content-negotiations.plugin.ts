@@ -10,11 +10,13 @@ export class JsNegotiationsPlugin<RESPONSE extends ResponseBase<any>> implements
     type = 'jsNegotiations'
 
     deserialize<T>(response:RESPONSE):T{
+        
         const jsObj: RESPONSE = response
         console.log(jsObj)
         const dataObject : T = this.responseTemplate.extractData(response)
         console.log(dataObject)
         return dataObject
+
     }
     constructor(private responseTemplate : RESPONSE){}
 

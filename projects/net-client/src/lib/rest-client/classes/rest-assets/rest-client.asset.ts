@@ -57,13 +57,15 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
     protected callPost<REQUEST>(requestData : REQUEST){
     
         let paramStr = ""
+        console.log(`callPost url : ${this.apiUrl} requestData ${requestData} `)
         this.http.post<ResponseBase<DATA>>(
             this.apiUrl, 
             JSON.stringify(requestData), 
             RestCallOptions.toOptions(this.callOptions.getHeaders())
         ).subscribe({
             next:(response)=>{
-                this.processResponse(response)
+                 console.log(`callPost raw response  ${response} `)
+                 this.processResponse(response)
             },
             error: (err : HttpErrorResponse) => {
                 this.handleError(err, (token:string|undefined)=> { 
@@ -139,9 +141,14 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
     }
 
     protected processResponse(response: ResponseBase<DATA>){
-        if(this.contentNegotiations != undefined){
+        try{
+            console.log(`processResponse response  ${response} `)
             const deserializeResult = this.contentNegotiations.deserialize<DATA>(response)
+            console.log(`processResponse response data  ${deserializeResult} `)
             this.responseSubject.next(deserializeResult)
+        }catch(err:any){
+            console.error(err.message)
+            this.responseSubject.error(err)
         }
     }
 

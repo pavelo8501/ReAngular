@@ -6,6 +6,7 @@ import { provideRestClient, RestConnectionConfig, REST_CLIENT } from './classes/
 import { ConnectionID } from '../../../../playground/src/enums/connection-id';
 import { environment } from '../../../../playground/src/environments/environment.prod';
 import { provideHttpClient, withFetch } from '@angular/common/http';
+import { HeaderKey } from 'net-client';
 
 describe('RestClient', () => {
   let service: RestClient;
@@ -55,15 +56,36 @@ describe('RestClient', () => {
     it('should fetch token from API', () => {
          const service = TestBed.inject(REST_CLIENT);
          const connection = service.getConnection(ConnectionID.BACKEND)
-         const mockResponse = 'test';
+         const mockResponse = { data: 'test' };
 
          connection.tokenAuthenticator()?.getToken("login", "password").subscribe((response)=>{
-            expect(response).toEqual(mockResponse);
+            expect(response).toEqual('test');
          })
-
         const req = httpMock.expectOne('/auth/login');
         expect(req.request.method).toBe('POST');
         req.flush(mockResponse);
+   });
+
+    it('assets should keep auth token unill expired', () => {
+         const service = TestBed.inject(REST_CLIENT);
+         const connection = service.getConnection(ConnectionID.BACKEND)
+
+         const mockAuthResponse = {  data: 'mock-token' };
+         const mockResponse = { ok:true, msg:"msg", errorCode:0,  data: ["record1", "record2"]};
+
+         const testsGet = connection.createGetAsset<string[]>({endpoint:"api/tests", secured:true})
+         connection.tokenAuthenticator()?.getToken("login", "password").subscribe((response)=>{
+            connection.activeToken = response
+         })
+         
+         const authReq = httpMock.expectOne('/auth/login')
+         authReq.flush(mockAuthResponse); 
+
+         testsGet.makeCall([])
+         const req = httpMock.expectOne('/api/tests');
+         expect(testsGet.callOptions.getHeaders().find(x=>x.key == HeaderKey.AUTHORIZATION)).toBeDefined()
+         expect(req.request.headers.get(HeaderKey.AUTHORIZATION)).toBe('Bearer mock-token');
+         
    });
 
 
