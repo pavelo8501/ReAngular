@@ -1,16 +1,11 @@
-import { RestResponseInterface } from "../../dataflow/rest-response";
+import {ResponseBase} from "./../../dataflow/rest-response"
 
-
-
-export interface ContentNegotiationsInterface<RESPONSE extends RestResponseInterface<any>>{
-    
+export interface ContentNegotiationsInterface<RESPONSE extends ResponseBase<any>>{
     type: string
-
     deserialize<T>(response:RESPONSE):T
-
 }
 
-export class JsNegotiationsPlugin<RESPONSE extends RestResponseInterface<any>> implements ContentNegotiationsInterface<RESPONSE>{
+export class JsNegotiationsPlugin<RESPONSE extends ResponseBase<any>> implements ContentNegotiationsInterface<RESPONSE>{
 
     type = 'jsNegotiations'
 
@@ -21,9 +16,6 @@ export class JsNegotiationsPlugin<RESPONSE extends RestResponseInterface<any>> i
         console.log(dataObject)
         return dataObject
     }
-
-    constructor(private responseTemplate : RESPONSE){
-        
-    }
+    constructor(private responseTemplate : RESPONSE){}
 
 }

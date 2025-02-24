@@ -3,7 +3,7 @@ import { RestClient } from "../../../rest-client.service"
 import { LoginRequest, AuthRequestInterface } from "./models/auth-service-request"
 import { jwtDecode, JwtPayload } from "jwt-decode"
 import { TokenPayloadInterface } from "./models/token-payload"
-import { IUser } from "net-client"
+import { IUser } from "./models/user"
 
 
 const TOKEN_KEY = 'jwt-token';
@@ -94,6 +94,7 @@ export class AuthService{
     }
   
     private authLogoutSubject : Subject<boolean> = new Subject<boolean>();
+
     logout(user: IUser|undefined): boolean {
       this.authLogoutSubject.next(false)
       this.clean();

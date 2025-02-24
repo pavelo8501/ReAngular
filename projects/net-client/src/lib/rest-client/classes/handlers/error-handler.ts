@@ -1,14 +1,15 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { RestClient } from './../../rest-client.service'
 import { BehaviorSubject, catchError, Observable,  throwError } from "rxjs";
-import { AuthServiceInterface } from "../../../../../../auth-services/src/lib/classes/auth-service.interface";
+import { AuthService } from "../plugins";
+
 
 export class RestErrorHandler{
 
     private isRefreshing = false;
     private refreshTokenSubject = new BehaviorSubject<string | undefined>(undefined);
 
-    constructor(private restclient :RestClient, private authService :AuthServiceInterface ){
+    constructor(private restclient :RestClient, private authService :AuthService ){
         this.initDependancies()
     }
 
@@ -29,7 +30,7 @@ export class RestErrorHandler{
           this.isRefreshing = true;
           this.refreshTokenSubject.next(undefined);
           const user = this.authService.getUser(undefined)
-          this.authService.refreshToken(user?.login).subscribe(
+          this.authService.refreshToken().subscribe(
             (newToken?: string) => {
               if(newToken == undefined){
                 console.warn("Unable to refresh token service returbned undefined")

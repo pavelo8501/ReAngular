@@ -1,4 +1,4 @@
-import { ErrorCode } from "../enums/error-code";
+import { ErrorCode } from "./error-code";
 
 export class RESTException extends Error {
     

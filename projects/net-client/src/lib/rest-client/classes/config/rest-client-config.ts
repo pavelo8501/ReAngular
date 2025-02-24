@@ -1,24 +1,31 @@
-import { RESTClientConnection } from "../rest-client-connection";
+import { RestConnection } from "../rest-client-connection";
 import { InjectionToken } from '@angular/core';
-import { AuthServiceInterface } from '../../../../../../auth-services/src/lib/classes/auth-service.interface';
+import {ResponseBase} from "./../dataflow/rest-response"
+import {RestClient} from "./../../rest-client.service"
 
 
-export const REST_CLIENT_CONFIG = new InjectionToken<RESTClientConfig>('RESTClientConfig');
-export const AUTH_SERVICE = new InjectionToken<AuthServiceInterface>('AuthService');
+export class RestClientConfig {
+  private connections: RestConnection<ResponseBase<any>>[] = [];
+  
+  constructor() {}
 
-export interface RESTClientConfigInterface {
-    timeout: number|undefined // Optional configuration
+  addConnection(connection: RestConnection<ResponseBase<any>>, withOptions? : object ) {
+    this.connections.push(connection);
   }
 
-  export class RESTClientConfig implements RESTClientConfigInterface {
+  getConnections(): RestConnection<ResponseBase<any>>[] {
+    return this.connections;
+  }
+}
 
-    constructor(private connections : RESTClientConnection<any>[], public timeout: number|undefined = undefined){
-        this.connections = connections
-        this.timeout = timeout
-    }
+export type ConnectionFactory = <T extends ResponseBase<any>>(
+  id: number,
+  baseUrl: string,
+  responseTemplate: T
+) => RestConnection<T>;
 
-    getConnections():RESTClientConnection<any>[]{
-      return this.connections
-    }
+export const REST_CLIENT = new InjectionToken<RestClient>('RestClient');
 
-  } 
+
+
+

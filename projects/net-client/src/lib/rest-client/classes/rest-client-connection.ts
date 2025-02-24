@@ -1,17 +1,17 @@
-import { HttpErrorResponse } from "@angular/common/http";
-import { ErrorCode } from "../enums/error-code";
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
+import { ErrorCode } from "./exceptions/error-code";
 import { HeaderKey } from "../enums/header-key";
 import { RestMethod } from "../enums/rest-methos";
 import { RestClient } from "../rest-client.service";
-import { RestResponseInterface } from "./dataflow/rest-response";
-import { CommonRestAsset, RestAssetInterface, RestGetAsset, RestPostAsset, RestPutAsset, RestTypedAssetInterface} from "./rest-assets/rest-client.asset";
-import { RESTException } from "./rest-exceptions";
+import { ResponseBase } from "./dataflow/rest-response";
+import { CommonRestAsset} from "./rest-assets/rest-client.asset";
+import {RestGetAsset, RestPostAsset, RestPutAsset, RestTypedAssetInterface} from "./rest-assets/test-typed.assets"
+import { RESTException } from "./exceptions/rest-exceptions";
 import { RESTHeader } from "./rest-header";
-import { ContentNegotiationsInterface, JsNegotiationsPlugin } from "./plugins/content/content-negotiations.plugin";
-import { CallParamInterface } from "./call-param";
-import { RestCallOptions, RestCallOptionsInterface } from "./rest-call-options";
-import { Observable } from "rxjs";
-import { ErrorHandler } from "@angular/core";
+import { ContentNegotiationsInterface, JsNegotiationsPlugin} from "./plugins/content/content-negotiations.plugin";
+import { RestCallOptions} from "./rest-call-options";
+import { RestServiceAsset } from "./rest-assets/rest-service.assets";
+
 
 
 // RESTClientConnection.prototype.registerAsset = function<T>(
@@ -31,10 +31,20 @@ import { ErrorHandler } from "@angular/core";
 //   }
 
 
-export class RESTClientConnection<RESPONSE extends RestResponseInterface<any>>{
+export class RestConnection<RESPONSE extends ResponseBase<any>>{
    
+    serviceAssets:RestServiceAsset<any>[] = []
     assets: CommonRestAsset<any>[] = []
 
+    private _http: HttpClient| undefined
+    get http():HttpClient{
+        if(this._http){
+             return this._http
+        }else{
+            throw new RESTException("HTTP Client not injected ", ErrorCode.FATAL_INIT_FAILURE)
+        }
+    }
+ 
     private _client: RestClient|undefined
     get client():RestClient{
         if(this._client != undefined){
@@ -101,29 +111,47 @@ export class RESTClientConnection<RESPONSE extends RestResponseInterface<any>>{
 
     errorHandlerfn?: (error: HttpErrorResponse, requestFn: (token:string) => void) => void  
 
-    initialize(client: RestClient) {
+    initialize(client: RestClient, http: HttpClient) {
        this._client = client
+       this._http = http
     }
 
     private registerAsset<DATA>(asset : CommonRestAsset<DATA>){
         this.assets.push(asset)
     }
 
-    createPostAsset<DATA>(src: RestTypedAssetInterface):RestPostAsset<DATA> {
-        const asset =  new RestPostAsset(src.endpoint, src.secured, this)
-        this.registerAsset(asset)
+    private registerServiceAsset<DATA>(asset : CommonRestAsset<DATA>){
+        const serviceAsset =  new RestServiceAsset<DATA>(asset, this)
+        this.serviceAssets.push(serviceAsset)
+    }
+
+    createPostAsset<DATA>(src: RestTypedAssetInterface,  service:boolean = false):RestPostAsset<DATA>{
+        const asset =  new RestPostAsset<DATA>(src.endpoint, src.secured, this)
+        if(!service){
+             this.registerAsset(asset)
+        }else{
+            this.registerServiceAsset(asset)
+        }
         return asset
     }
 
-    createPutAsset<DATA>(src: RestTypedAssetInterface){
-        const asset =  new RestPutAsset(src.endpoint, src.secured, this)
-        this.registerAsset(asset)
+    createPutAsset<DATA>(src: RestTypedAssetInterface, service:boolean = false):RestPutAsset<DATA>{
+        const asset =  new RestPutAsset<DATA>(src.endpoint, src.secured, this)
+        if(!service){
+             this.registerAsset(asset)
+        }else{
+            this.registerServiceAsset(asset)
+        }
         return asset
     }
 
-    createGetAsset<DATA>(src: RestTypedAssetInterface){
-        const asset = new RestGetAsset(src.endpoint, src.secured, this)
-        this.registerAsset(asset)
+    createGetAsset<DATA>(src: RestTypedAssetInterface,  service:boolean = false):RestGetAsset<DATA>{
+        const asset = new RestGetAsset<DATA>(src.endpoint, src.secured, this)
+        if(!service){
+             this.registerAsset(asset)
+        }else{
+            this.registerServiceAsset(asset)
+        }
         return asset
     }
 }

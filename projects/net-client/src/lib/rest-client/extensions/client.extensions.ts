@@ -1,6 +1,5 @@
-import { RestResponseInterface } from "../classes/dataflow/rest-response";
-import { CommonRestAsset, RestAssetInterface } from "../classes/rest-assets/rest-client.asset";
-import { RESTClientConnection } from "../classes/rest-client-connection";
+
+
 
 // declare module "../classes/rest-client-connection" {
     

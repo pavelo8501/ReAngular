@@ -1,13 +1,10 @@
 {
   "name": "@pavelo8501/net-client",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Connectivity services library for ReAngular",
   "main": "dist/libs/net-client/index.js",
   "module": "dist/libs/net-client/index.mjs",
   "types": "dist/libs/net-client/index.d.ts",
-  "peerDependencies": {
-    "@pavelo8501/net-client": "^0.1.8"
-  },
   "devDependencies": {
     "@angular/core": "^19.1.7",
     "@angular/common": "^19.1.7",

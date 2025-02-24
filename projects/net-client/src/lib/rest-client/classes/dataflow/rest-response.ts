@@ -1,8 +1,8 @@
-import { of } from "rxjs";
 
-export interface RestResponseInterface<DATA>{
 
-    factoryFn? : (src:RestResponseInterface<DATA>)=> DATA 
-    extractData(src: RestResponseInterface<DATA>):DATA | undefined;
+export interface ResponseBase<DATA>{
+
+    factoryFn? : (src:ResponseBase<DATA>)=> DATA 
+    extractData(src: ResponseBase<DATA>):DATA | undefined;
 
 }

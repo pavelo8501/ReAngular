@@ -1,16 +1,16 @@
-import { HttpClient, HttpHeaders, HttpErrorResponse  } from '@angular/common/http';
-import {Inject,  Injectable } from '@angular/core';
-import { RESTClientConfig } from './classes/config/rest-client-config';
+import { HttpClient} from '@angular/common/http';
+import {Injectable } from '@angular/core';
 import { CommonRestAsset } from './classes/rest-assets/rest-client.asset';
 import { RestCallOptions } from './classes/rest-call-options';
 import { RestMethod } from './enums/rest-methos';
-import { RESTClientConnection } from './classes/rest-client-connection';
-import { RESTException } from './classes/rest-exceptions';
-import { ErrorCode } from './enums/error-code';
+import { RESTException } from './classes/exceptions/rest-exceptions';
+import { ErrorCode } from './classes/exceptions/error-code';
 import { RESTHeader } from './classes/rest-header';
 import { HeaderKey } from './enums/header-key';
-import { AUTH_SERVICE, REST_CLIENT_CONFIG } from 'net-client';
 import { AuthService } from './classes/plugins/auth/authentication.plugin';
+import { RestConnection } from './classes/rest-client-connection';
+import { RestConnectionConfig } from './classes/config';
+import { ResponseBase } from '../../public-api';
 
 
 @Injectable({
@@ -18,24 +18,19 @@ import { AuthService } from './classes/plugins/auth/authentication.plugin';
 })
 export class RestClient{
 
-
-  private connections : RESTClientConnection<any>[] = []
-  get http():HttpClient{
-    return this._http
-  }
- 
+  private connections : RestConnection<any>[] = []
+  private authService : AuthService| undefined
 
   constructor(
-    @Inject(REST_CLIENT_CONFIG) private config: RESTClientConfig, 
-    @Inject(AUTH_SERVICE) private authService : AuthService,  
-    private _http: HttpClient
+    private http: HttpClient
   ){
     console.log("RestClient constructor") 
-    authService.setRestClient(this)
-    this.connections = config.getConnections()
-    this.connections.forEach(x=>x.initialize(this))
+    // authService.setRestClient(this)
+    // this.connections = config.getConnections()
+    // this.connections.forEach(x=>x.initialize(this))
     console.log("Info frpm Service")
     this.restClientInfo()
+    //this.initializeAuthentication()
   }
 
   private getAuthHeaders(method:RestMethod): RESTHeader|undefined {
@@ -51,7 +46,23 @@ export class RestClient{
     }
   }
 
-  getConnection(id:number):RESTClientConnection<any>{
+  private initializeAuthentication(){
+      this.getConnection(0)
+  }
+
+  createConnection<T extends ResponseBase<any>>(config: RestConnectionConfig<T>){
+    
+    console.log(`Create connection call`)
+    const newConnection =  new RestConnection<T>(config.id, config.baseUrl, config.responseTemplate)
+    newConnection.initialize(this, this.http)
+    if(config.withJwtAuth){
+    //  const loginAsset  =    newConnection.createPostAsset<string>({endpoint: withJwtAuth.getTokenEndpoint, secured:false}, true)
+    //  const refreshAsset  =  newConnection.createPostAsset<string>({endpoint: withJwtAuth.refreshTokenEndpoint, secured:false}, true)
+    }
+    this.connections.push(newConnection)  
+  }
+
+  getConnection(id:number):RestConnection<any>{
     const found = this.connections.find(x=>x.connectionId == id)
      if(found != undefined){
        return found
@@ -60,7 +71,7 @@ export class RestClient{
      }
   }
 
-  connectionList():RESTClientConnection<any>[]{
+  connectionList():RestConnection<any>[]{
     return this.connections
   }
 
@@ -81,7 +92,7 @@ export class RestClient{
 
  injectAuthService(service : AuthService){
       this.authService = service
-      this.connections.forEach(x=>x.initialize(this))
+      this.connections.forEach(x=>x.initialize(this, this.http))
  }
 
   restClientInfo(){
@@ -92,7 +103,7 @@ export class RestClient{
     }
     console.log(`Is auth module injected?  ${yesNo}`)
       yesNo = "no"
-      if(this._http){
+      if(this.http){
         yesNo = "yes"
       }
       console.log(`Is httpClient injected?  ${yesNo}`)

@@ -1,37 +1,23 @@
-import { Observable, Subject, throwError } from "rxjs"
+import { Subject } from "rxjs"
 import { RestMethod } from "../../enums/rest-methos"
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParamsOptions } from "@angular/common/http"
-import { RESTException } from "../rest-exceptions"
-import { ErrorCode } from "../../enums/error-code"
-import { CallParamInterface } from "../call-param"
-import { RestCallOptions } from "../rest-call-options"
-import { RESTClientConnection } from "../rest-client-connection"
-import { RestResponseInterface } from "../dataflow/rest-response"
 import { ContentNegotiationsInterface } from "../plugins/content/content-negotiations.plugin"
+import { RestConnection } from "../rest-client-connection"
+import { ResponseBase } from "../dataflow/rest-response"
+import {RestTypedAssetInterface} from "./test-typed.assets"
+import { RestCallOptions } from "../rest-call-options"
+import { CallParamInterface } from "../call-param"
+import { RESTException, ErrorCode } from "../exceptions"
 
 
 
-
-export interface RestTypedAssetInterface{
-    endpoint:string
-    secured:boolean
-}
-
-export interface RestAssetInterface<DATA>  extends RestTypedAssetInterface{
+export interface RestAssetInterface{
     endpoint:string
     secured:boolean
     method: RestMethod
 }
 
-export abstract class CommonRestAsset<DATA> implements RestAssetInterface<DATA>{
-
-    static create<DATA>(
-        src : RestAssetInterface<DATA>,
-        connection: RESTClientConnection<RestResponseInterface<DATA>>
-    ): RestAssetInterface<DATA> {
-        let a : RestAssetInterface<DATA> = Object.create(CommonRestAsset<DATA>)  (src, connection)
-        return a
-    }
+export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
 
     static truncateTrailingChar(str: string, char: string): string {
         return str.replace(new RegExp(`${char}+$`), ''); // Removes all trailing occurrences of char
@@ -46,51 +32,28 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface<DATA>{
         return  `${this.baseUrl}/${this.endpoint}`
     }
 
-    contentNegotiations : ContentNegotiationsInterface<RestResponseInterface<DATA>>
+    contentNegotiations : ContentNegotiationsInterface<ResponseBase<DATA>>
 
-   
     endpoint:string= ""
     method: RestMethod = RestMethod.GET
     secured: boolean = false
 
+    service: boolean = false
+
     protected constructor(
-        config: RestAssetInterface<DATA>, 
-        protected parentConnection : RESTClientConnection<RestResponseInterface<DATA>>
+        config: RestAssetInterface,
+        protected parentConnection : RestConnection<ResponseBase<DATA>>
     ){
         this.endpoint = config.endpoint
         this.method = config.method
         this.secured = config.secured
         this.baseUrl = parentConnection.baseUrl
-        this.http = parentConnection.client.http
+        this.http = parentConnection.http
         this.contentNegotiations = parentConnection.contentNegotiations
     }
 
-    protected processResponse(response: RestResponseInterface<DATA>){
-        if(this.contentNegotiations != undefined){
-            const deserializeResult = this.contentNegotiations.deserialize<DATA>(response)
-           
-            this.responseSubject.next(deserializeResult)
-        }
-    }
-
-    protected handleError(err:HttpErrorResponse, requestFn: (token:string) => void){
-        console.warn(`Received error on request ${err.message}`)
-        if(this.parentConnection.errorHandlerfn != undefined){
-            console.log(`Found error handler on parentConnection, invoking`)
-            this.parentConnection.errorHandlerfn(err, requestFn)
-        }
-    }
-
-}
-
-export class RestPostAsset<DATA> extends CommonRestAsset<DATA>{
-
-    constructor(endpoint :string, secured: boolean , connection : RESTClientConnection<RestResponseInterface<DATA>>){
-        super({endpoint : endpoint, method : RestMethod.POST, secured: secured }, connection)
-    }
-
-    private callPost<REQUEST>(requestData : REQUEST){
-
+     protected callPost<REQUEST>(requestData : REQUEST){
+    
         let paramStr = ""
         let restOptions = this.parentConnection.onBeforeCallMethod(this)
         let callOptions  : object | undefined
@@ -101,7 +64,7 @@ export class RestPostAsset<DATA> extends CommonRestAsset<DATA>{
         }
         const requestUrl = this.url
 
-        this.http.post<RestResponseInterface<DATA>>(requestUrl, JSON.stringify(requestData)).subscribe({
+        this.http.post<ResponseBase<DATA>>(requestUrl, JSON.stringify(requestData)).subscribe({
             next:(response)=>{
                 this.processResponse(response)
             },
@@ -115,23 +78,10 @@ export class RestPostAsset<DATA> extends CommonRestAsset<DATA>{
             },
             complete:() => {}
         })
-    }
+     }
 
 
-    makeCall<REQUEST>(request: REQUEST): Observable<DATA>{
-        this.callPost(request)
-        return this.responseSubject.asObservable()
-    }
-}
-
-export class RestGetAsset<DATA> extends CommonRestAsset<DATA>{
-    
-    constructor(endpoint : string,  secured : boolean, connection : RESTClientConnection<RestResponseInterface<DATA>>){
-
-        super({endpoint : endpoint, method : RestMethod.GET, secured: secured }, connection)
-    }
-
-   private callGet<RESPONSE>(params:CallParamInterface[]){
+     protected callGet<RESPONSE>(params:CallParamInterface[]){
 
         let paramStr = ""
         console.log("onBeforeCall callback")
@@ -154,7 +104,7 @@ export class RestGetAsset<DATA> extends CommonRestAsset<DATA>{
          console.log(`Making Get call with url : ${requestUrl}`)
 
  
-         this.http.get<RestResponseInterface<DATA>>(requestUrl, callOptions).subscribe({
+         this.http.get<ResponseBase<DATA>>(requestUrl, callOptions).subscribe({
              next:(response)=>{
                  console.log("raw response")
                  console.log(response)
@@ -173,20 +123,7 @@ export class RestGetAsset<DATA> extends CommonRestAsset<DATA>{
          })
      }
 
-    makeCall<REQUEST>(params: CallParamInterface[]): Observable<DATA>{
-        this.callGet(params)
-        return this.responseSubject.asObservable()
-    }
-}
-
-
-export class RestPutAsset<DATA> extends CommonRestAsset<DATA>{
-    
-    constructor(endpoint : string,  secured : boolean, connection : RESTClientConnection<RestResponseInterface<DATA>>){
-        super({endpoint:endpoint, method: RestMethod.PUT, secured:true}, connection)
-    }
-
-    private callPut<REQUEST>(id:number, requestData : REQUEST){
+    protected callPut<REQUEST>(id:number, requestData : REQUEST){
         let  restOptions = this.parentConnection.onBeforeCallMethod(this)
         let callOptions  : object | undefined
 
@@ -199,7 +136,7 @@ export class RestPutAsset<DATA> extends CommonRestAsset<DATA>{
         const requestUrl = this.url+paramStr
         console.log(`Request url: ${requestUrl}`)
       
-        this.http.put<RestResponseInterface<DATA>>(requestUrl, JSON.stringify(requestData), callOptions).subscribe({
+        this.http.put<ResponseBase<DATA>>(requestUrl, JSON.stringify(requestData), callOptions).subscribe({
             next:(response)=>{
                 console.log("raw response")
                 console.log(response)
@@ -217,9 +154,22 @@ export class RestPutAsset<DATA> extends CommonRestAsset<DATA>{
             complete:()=>{}
         })
     }
-    
-    makeCall<REQUEST>(id:number, data: DATA): Observable<DATA>{
-        this.callPut(id, data)
-        return this.responseSubject.asObservable()
+
+    protected processResponse(response: ResponseBase<DATA>){
+        if(this.contentNegotiations != undefined){
+            const deserializeResult = this.contentNegotiations.deserialize<DATA>(response)
+            this.responseSubject.next(deserializeResult)
+        }
     }
+
+    protected handleError(err:HttpErrorResponse, requestFn: (token:string) => void){
+        console.warn(`Received error on request ${err.message}`)
+        if(this.parentConnection.errorHandlerfn != undefined){
+            console.log(`Found error handler on parentConnection, invoking`)
+            this.parentConnection.errorHandlerfn(err, requestFn)
+        }
+    }
+
 }
+
+
