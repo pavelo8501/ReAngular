@@ -2,12 +2,12 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { ErrorCode } from "../enums/error-code";
 import { HeaderKey } from "../enums/header-key";
 import { RestMethod } from "../enums/rest-methos";
-import { RESTClient } from "../rest-client.service";
+import { RestClient } from "../rest-client.service";
 import { RestResponseInterface } from "./dataflow/rest-response";
-import { CommonRestAsset, RestAssetInterface, RestGetAsset, RestPostAsset, RestPutAsset} from "./rest-assets/rest-client.asset";
+import { CommonRestAsset, RestAssetInterface, RestGetAsset, RestPostAsset, RestPutAsset, RestTypedAssetInterface} from "./rest-assets/rest-client.asset";
 import { RESTException } from "./rest-exceptions";
 import { RESTHeader } from "./rest-header";
-import { ContentNegotiationsInterface, JsNegotiationsPlugin } from "./plugins/content-negotiations.plugin";
+import { ContentNegotiationsInterface, JsNegotiationsPlugin } from "./plugins/content/content-negotiations.plugin";
 import { CallParamInterface } from "./call-param";
 import { RestCallOptions, RestCallOptionsInterface } from "./rest-call-options";
 import { Observable } from "rxjs";
@@ -35,8 +35,8 @@ export class RESTClientConnection<RESPONSE extends RestResponseInterface<any>>{
    
     assets: CommonRestAsset<any>[] = []
 
-    private _client: RESTClient|undefined
-    get client():RESTClient{
+    private _client: RestClient|undefined
+    get client():RestClient{
         if(this._client != undefined){
             return this._client
         }else{
@@ -101,83 +101,7 @@ export class RESTClientConnection<RESPONSE extends RestResponseInterface<any>>{
 
     errorHandlerfn?: (error: HttpErrorResponse, requestFn: (token:string) => void) => void  
 
-    // callGet<DATA>(asset: CommonRestAsset<DATA>, params:CallParamInterface[]){
-    //    const  restOptions : RestCallOptions  = this.onBeforeCallMethod(asset)
-    //    restOptions.seDefaultHeadders(this._defaultHeaders.filter(x=>x.methodType == RestMethod.GET)) 
-    //     let paramStr = ""
-        
-    //     if(params.length>0){
-    //         paramStr = "?"
-    //         params.forEach(x=> paramStr+= `${x.key}=${x.value}&`)
-    //         paramStr =  CommonRestAsset.truncateTrailingChar(paramStr, '&')
-    //     }
-    //     const requestUrl = asset.url+paramStr
-    //     console.log(`Making Get call with url : ${requestUrl}`)
-        
-    //     const callOptions = RestCallOptions.toOptions(restOptions.getHeaders())
-
-    //     this.client.http.get<RESPONSE>(requestUrl, callOptions).subscribe({
-    //         next:(response)=>{
-    //             console.log("raw response")
-    //             console.log(response)
-    //             if(this.contentNegotiations != undefined){
-    //                 const deserializeResult = this.contentNegotiations.deserialize<DATA>(response)
-    //                 asset.submitResult(deserializeResult)
-    //              }
-    //         },
-    //         error: (err : HttpErrorResponse) => {
-    //             console.warn("GET request error")
-    //             console.error(err.message)
-    //             throw new RESTException(err.message, ErrorCode.HTTP_CALL_ERROR)
-    //         },
-    //         complete:() => {}
-    //     })
-    // }
-
-    // callPut<DATA, REQUEST>(asset:CommonRestAsset<DATA>, id:number, requestData : REQUEST){
-    //     const paramStr = `?id=${id}`
-    //     const requestUrl = asset.url+paramStr
-    //     console.log(`Request url: ${requestUrl}`)
-    //     const  restOptions : RestCallOptions  = this.onBeforeCallMethod(asset)
-    //     restOptions.seDefaultHeadders(this._defaultHeaders.filter(x=>x.methodType == RestMethod.PUT)) 
-    //     const callOptions = RestCallOptions.toOptions(restOptions.getHeaders())
-    //     this.client.http.put<RESPONSE>(requestUrl, JSON.stringify(requestData), callOptions).subscribe({
-    //         next:(response)=>{
-    //             const deserializeResult =  this.contentNegotiations?.deserialize<DATA>(response)
-    //             if(deserializeResult){
-    //                 asset.submitResult(deserializeResult)
-    //             }
-    //         },
-    //         error:(err:HttpErrorResponse)=>{
-    //             throw new RESTException(err.message, ErrorCode.HTTP_CALL_ERROR)
-    //         },
-    //         complete:()=>{}
-    //     })
-    // }
-
-    // callPost<DATA, REQUEST>(asset: CommonRestAsset<DATA>, requestData : REQUEST){
-    //     const requestUrl = asset.url
-    //     console.log(`Request url: ${requestUrl}`)
-    //     const request : object = {data: requestData}
-    //     console.log(`Request body: ${JSON.stringify(request)}`)
-    //     this.client.http.post<RESPONSE>(requestUrl, JSON.stringify(request)).subscribe({
-    //         next:(result)=>{
-    //             console.log("Post returned result")
-    //             console.log(result)
-    //             if(this.contentNegotiations != undefined){
-    //                const deserializeResult =  this.contentNegotiations.deserialize<DATA>(result)
-    //                asset.submitResult(deserializeResult)
-    //                console.log(deserializeResult)
-    //             }
-    //         },
-    //         error: (err : HttpErrorResponse) => {
-    //             throw new RESTException(err.message, ErrorCode.HTTP_CALL_ERROR)
-    //         },
-    //         complete:() => {}
-    //     })
-    // }
-
-    initialize(client: RESTClient) {
+    initialize(client: RestClient) {
        this._client = client
     }
 
@@ -185,20 +109,20 @@ export class RESTClientConnection<RESPONSE extends RestResponseInterface<any>>{
         this.assets.push(asset)
     }
 
-    createPostAsset<DATA>(src: RestAssetInterface<DATA>):RestPostAsset<DATA> {
-        const asset =  new RestPostAsset(src, this)
+    createPostAsset<DATA>(src: RestTypedAssetInterface):RestPostAsset<DATA> {
+        const asset =  new RestPostAsset(src.endpoint, src.secured, this)
         this.registerAsset(asset)
         return asset
     }
 
-    createPutAsset<DATA>(src: RestAssetInterface<DATA>){
-        const asset =  new RestPutAsset(src, this)
+    createPutAsset<DATA>(src: RestTypedAssetInterface){
+        const asset =  new RestPutAsset(src.endpoint, src.secured, this)
         this.registerAsset(asset)
         return asset
     }
 
-    createGetAsset<DATA>(src: RestAssetInterface<DATA>){
-        const asset = new RestGetAsset(src, this)
+    createGetAsset<DATA>(src: RestTypedAssetInterface){
+        const asset = new RestGetAsset(src.endpoint, src.secured, this)
         this.registerAsset(asset)
         return asset
     }

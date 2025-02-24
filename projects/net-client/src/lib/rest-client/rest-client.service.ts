@@ -1,8 +1,5 @@
 import { HttpClient, HttpHeaders, HttpErrorResponse  } from '@angular/common/http';
 import {Inject,  Injectable } from '@angular/core';
-import { AuthServiceInterface } from './classes/auth-service.interface';
-import { BehaviorSubject, catchError, filter, Observable, Subject, switchMap, take, throwError } from 'rxjs';
-import { AUTH_SERVICE, REST_CLIENT_CONFIG} from './classes/config/rest-client-config.token';
 import { RESTClientConfig } from './classes/config/rest-client-config';
 import { CommonRestAsset } from './classes/rest-assets/rest-client.asset';
 import { RestCallOptions } from './classes/rest-call-options';
@@ -12,37 +9,40 @@ import { RESTException } from './classes/rest-exceptions';
 import { ErrorCode } from './enums/error-code';
 import { RESTHeader } from './classes/rest-header';
 import { HeaderKey } from './enums/header-key';
+import { AUTH_SERVICE, REST_CLIENT_CONFIG } from 'net-client';
+import { AuthService } from './classes/plugins/auth/authentication.plugin';
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class RESTClient{
-
+export class RestClient{
 
 
   private connections : RESTClientConnection<any>[] = []
   get http():HttpClient{
     return this._http
   }
-  get authService():AuthServiceInterface|undefined{
-    return this._authService
-  }
+ 
 
   constructor(
     @Inject(REST_CLIENT_CONFIG) private config: RESTClientConfig, 
-    @Inject(AUTH_SERVICE) private _authService : AuthServiceInterface|undefined,  
+    @Inject(AUTH_SERVICE) private authService : AuthService,  
     private _http: HttpClient
-  ){ 
+  ){
+    console.log("RestClient constructor") 
+    authService.setRestClient(this)
     this.connections = config.getConnections()
     this.connections.forEach(x=>x.initialize(this))
+    console.log("Info frpm Service")
+    this.restClientInfo()
   }
 
   private getAuthHeaders(method:RestMethod): RESTHeader|undefined {
     if(this.authService == undefined){
       return undefined
     }else{
-      const token =  this.authService.getToken(undefined)
+      const token =  this.authService.getToken()
       if(token != undefined){
         return new RESTHeader(method, HeaderKey.AUTHORIZATION, token)
       }else{
@@ -79,15 +79,15 @@ export class RESTClient{
     return restOptions
  }
 
- injectAuthService(service : AuthServiceInterface){
-      this._authService = service
+ injectAuthService(service : AuthService){
+      this.authService = service
       this.connections.forEach(x=>x.initialize(this))
  }
 
   restClientInfo(){
     console.log(`Number of connections applied ${this.connections.length}`)
     let yesNo : string  = "no"
-    if(this._authService){
+    if(this.authService){
       yesNo = "yes"
     }
     console.log(`Is auth module injected?  ${yesNo}`)

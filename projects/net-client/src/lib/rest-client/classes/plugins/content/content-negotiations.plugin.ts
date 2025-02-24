@@ -1,4 +1,4 @@
-import { RestResponseInterface } from "../dataflow/rest-response";
+import { RestResponseInterface } from "../../dataflow/rest-response";
 
 
 

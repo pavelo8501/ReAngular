@@ -7,9 +7,17 @@ import { CallParamInterface } from "../call-param"
 import { RestCallOptions } from "../rest-call-options"
 import { RESTClientConnection } from "../rest-client-connection"
 import { RestResponseInterface } from "../dataflow/rest-response"
-import { ContentNegotiationsInterface } from "../plugins/content-negotiations.plugin"
+import { ContentNegotiationsInterface } from "../plugins/content/content-negotiations.plugin"
 
-export interface RestAssetInterface<DATA>{
+
+
+
+export interface RestTypedAssetInterface{
+    endpoint:string
+    secured:boolean
+}
+
+export interface RestAssetInterface<DATA>  extends RestTypedAssetInterface{
     endpoint:string
     secured:boolean
     method: RestMethod
@@ -40,8 +48,7 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface<DATA>{
 
     contentNegotiations : ContentNegotiationsInterface<RestResponseInterface<DATA>>
 
-    onBeforeCall? : (asset: RestAssetInterface<DATA>)=>RestCallOptions
-    
+   
     endpoint:string= ""
     method: RestMethod = RestMethod.GET
     secured: boolean = false
@@ -77,20 +84,15 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface<DATA>{
 }
 
 export class RestPostAsset<DATA> extends CommonRestAsset<DATA>{
-    static createPostAsset<DATA>(src: RestAssetInterface<DATA>, connection: RESTClientConnection<RestResponseInterface<DATA>>): RestPostAsset<DATA> {
-        const config : RestAssetInterface<DATA> = {endpoint : src.endpoint, method : RestMethod.POST, secured: src.secured }
-        return new RestPostAsset<DATA>(config, connection)
-    }
 
-    constructor(config: RestAssetInterface<DATA>, connection : RESTClientConnection<RestResponseInterface<DATA>>){
-        config.method = RestMethod.POST
-        super(config, connection)
+    constructor(endpoint :string, secured: boolean , connection : RESTClientConnection<RestResponseInterface<DATA>>){
+        super({endpoint : endpoint, method : RestMethod.POST, secured: secured }, connection)
     }
 
     private callPost<REQUEST>(requestData : REQUEST){
 
         let paramStr = ""
-        const  restOptions = this.onBeforeCall?.(this)
+        let restOptions = this.parentConnection.onBeforeCallMethod(this)
         let callOptions  : object | undefined
 
         if(restOptions){
@@ -122,27 +124,21 @@ export class RestPostAsset<DATA> extends CommonRestAsset<DATA>{
     }
 }
 
-
-
 export class RestGetAsset<DATA> extends CommonRestAsset<DATA>{
     
-    static  method = RestMethod.GET
-    static createGetAsset<DATA>(src: RestAssetInterface<DATA>, connection: RESTClientConnection<RestResponseInterface<DATA>>): RestGetAsset<DATA> {
-        return new RestGetAsset<DATA>(
-            {endpoint : src.endpoint, method : RestMethod.GET, secured: src.secured }, 
-            connection
-        )
-    }
+    constructor(endpoint : string,  secured : boolean, connection : RESTClientConnection<RestResponseInterface<DATA>>){
 
-    constructor(config: RestAssetInterface<DATA>, connection : RESTClientConnection<RestResponseInterface<DATA>>){
-        config.method = RestMethod.GET
-        super(config, connection)
+        super({endpoint : endpoint, method : RestMethod.GET, secured: secured }, connection)
     }
 
    private callGet<RESPONSE>(params:CallParamInterface[]){
 
         let paramStr = ""
-        const  restOptions = this.onBeforeCall?.(this)
+        console.log("onBeforeCall callback")
+        console.log(this.parentConnection.onBeforeCallMethod)
+        let  restOptions = this.parentConnection.onBeforeCallMethod(this)
+        console.log("Received options")
+        console.log(restOptions)
         let callOptions  : object | undefined
 
         if(restOptions){
@@ -186,20 +182,12 @@ export class RestGetAsset<DATA> extends CommonRestAsset<DATA>{
 
 export class RestPutAsset<DATA> extends CommonRestAsset<DATA>{
     
-    static createPutAsset<DATA>(src: RestAssetInterface<DATA>, connection: RESTClientConnection<RestResponseInterface<DATA>>): RestPutAsset<DATA> {
-        return new RestPutAsset<DATA>(
-            {endpoint : src.endpoint, method : RestMethod.POST, secured: src.secured }, 
-            connection
-        )
-    }
-
-    constructor(config: RestAssetInterface<DATA>, connection : RESTClientConnection<RestResponseInterface<DATA>>){
-        config.method = RestMethod.PUT
-        super(config, connection)
+    constructor(endpoint : string,  secured : boolean, connection : RESTClientConnection<RestResponseInterface<DATA>>){
+        super({endpoint:endpoint, method: RestMethod.PUT, secured:true}, connection)
     }
 
     private callPut<REQUEST>(id:number, requestData : REQUEST){
-        const  restOptions = this.onBeforeCall?.(this)
+        let  restOptions = this.parentConnection.onBeforeCallMethod(this)
         let callOptions  : object | undefined
 
         if(restOptions){

@@ -7,6 +7,9 @@
     "forceConsistentCasingInFileNames":true,
     "strict": true,
     "paths": {
+      "auth-services": [
+        "./dist/auth-services"
+      ],
       "form-controls": [
         "./dist/form-controls"
       ],

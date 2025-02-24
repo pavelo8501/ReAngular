@@ -1,16 +1,14 @@
 import { HttpErrorResponse } from "@angular/common/http";
-import { RESTClient } from './../../rest-client.service'
-import { BehaviorSubject, catchError, filter, Observable, switchMap, take, throwError } from "rxjs";
-import { AuthServiceInterface } from "../auth-service.interface";
-import { subscribe } from "diagnostics_channel";
-import { error } from "console";
+import { RestClient } from './../../rest-client.service'
+import { BehaviorSubject, catchError, Observable,  throwError } from "rxjs";
+import { AuthServiceInterface } from "../../../../../../auth-services/src/lib/classes/auth-service.interface";
 
 export class RestErrorHandler{
 
     private isRefreshing = false;
     private refreshTokenSubject = new BehaviorSubject<string | undefined>(undefined);
 
-    constructor(private restclient :RESTClient, private authService :AuthServiceInterface ){
+    constructor(private restclient :RestClient, private authService :AuthServiceInterface ){
         this.initDependancies()
     }
 
