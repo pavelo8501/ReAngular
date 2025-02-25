@@ -32,9 +32,7 @@ export function provideRestClient(
 
     provide: REST_CLIENT, useFactory: () => {
        // const restClientService  = inject(RestClient);
-       
          const http = inject(HttpClient);
-
          const restClientService = new RestClient(http);
         connections.forEach(conn => {
           console.log(`provideRestClient addConnection`);

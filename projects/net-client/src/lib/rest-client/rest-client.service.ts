@@ -28,18 +28,6 @@ export class RestClient{
     
   }
 
-  private getAuthHeaders2(method:RestMethod): RESTHeader|undefined {
-    if(this.authService == undefined){
-      return undefined
-    }else{
-      const token =  this.authService.getToken()
-      if(token != undefined){
-        return new RESTHeader(method, HeaderKey.AUTHORIZATION, token)
-      }else{
-        return undefined
-      }
-    }
-  }
 
   createConnection<T extends ResponseBase<any>>(config: RestConnectionConfig<T>){
     console.log(`Create connection call`)
@@ -47,7 +35,7 @@ export class RestClient{
     newConnection.initialize(this, this.http)
     if(config.withJwtAuth){
         const authEndpoint = config.withJwtAuth.getTokenEndpoint
-        const refreshEndpoint = config.withJwtAuth.getTokenEndpoint
+        const refreshEndpoint = config.withJwtAuth.refreshTokenEndpoint
         const method = config.withJwtAuth.method
 
        newConnection.createServiceAsset<string|undefined>(
@@ -79,20 +67,6 @@ export class RestClient{
     return this.connections
   }
 
-
- createCallOption2(asset:CommonRestAsset<any>): RestCallOptions{
-    console.log("createCallOptions call by callback")
-    let restOptions = new RestCallOptions()
-    if(asset.secured){
-     const authHeader = this.getAuthHeaders2(asset.method)
-     if(authHeader){
-       restOptions.setAppliedHeadders([authHeader])
-     }else{
-       console.warn("autth header null")
-      }
-    }
-    return restOptions
- }
 
  injectAuthService(service : AuthService){
       this.authService = service

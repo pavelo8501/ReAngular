@@ -1,14 +1,13 @@
-import { Subject } from "rxjs"
+import { pipe, skip, Subject, take } from "rxjs"
 import { RestMethod } from "../../enums/rest-method.enums"
-import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParamsOptions } from "@angular/common/http"
+import { HttpClient, HttpErrorResponse} from "@angular/common/http"
 import { ContentNegotiationsInterface } from "../plugins/content/content-negotiations.plugin"
 import { RestConnection } from "../rest-client-connection"
 import { ResponseBase } from "../dataflow/rest-response"
-import {RestTypedAssetInterface} from "./rest-typed.assets"
 import { RestCallOptions } from "../dataflow/rest-call-options"
 import { CallParamInterface } from "../call-param"
 import { RESTException, ErrorCode } from "../exceptions"
-import { RESTHeader } from "../dataflow/rest-header"
+import { AssetType } from "./rest-asset.enums"
 
 
 
@@ -35,12 +34,14 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
 
     contentNegotiations : ContentNegotiationsInterface<ResponseBase<DATA>>
 
-    endpoint:string= ""
-    method: RestMethod = RestMethod.GET
-    secured: boolean = false
-    service: boolean = false
+    endpoint:string
+    secured: boolean
+    method: RestMethod
+    assetType: AssetType = AssetType.NON_SERVICE
 
     callOptions = new RestCallOptions()
+
+   // private errorHandlerfn?: (error: HttpErrorResponse, requestFn: (token:string) => void) => void  
 
     protected constructor(
         config: RestAssetInterface,
@@ -70,96 +71,8 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
         }
     }
 
-    protected callPost<REQUEST>(requestData : REQUEST){
-    
-        let paramStr = ""
-        this.preCallRoutine()
-        console.log(`callPost url : ${this.apiUrl} requestData ${requestData} `)
-        this.http.post<ResponseBase<DATA>>(
-            this.apiUrl, 
-            JSON.stringify(requestData), 
-            RestCallOptions.toOptions(this.callOptions.getHeaders())
-        ).subscribe({
-            next:(response)=>{
-                 console.log(`callPost raw response  ${response} `)
-                 this.processResponse(response)
-            },
-            error: (err : HttpErrorResponse) => {
-                this.handleError(err, (token:string|undefined)=> { 
-                    if(token){
-                        this.callOptions.setAuthHeader(token, RestMethod.POST)
-                        this.callPost(requestData) 
-                    }
-                })
-            },
-            complete:() => {}
-        })
-    }
-
-
-     protected callGet<RESPONSE>(params:CallParamInterface[]){
-
-        let paramStr = ""
-        if(params.length>0){
-             paramStr = "?"
-             params.forEach(x=> paramStr+= `${x.key}=${x.value}&`)
-             paramStr =  CommonRestAsset.truncateTrailingChar(paramStr, '&')
-         }
-         const requestUrl = this.apiUrl+paramStr
-         this.preCallRoutine()
-         console.log(`Making Get call with url : ${requestUrl}`)
-
-         this.http.get<ResponseBase<DATA>>(requestUrl,  RestCallOptions.toOptions(this.callOptions.getHeaders())).subscribe({
-             next:(response)=>{
-                 console.log("raw response")
-                 console.log(response)
-                 this.processResponse(response)
-             },
-             error: (err : HttpErrorResponse) => {
-                this.handleError(err, (token:string|undefined)=> { 
-                    if(token){
-                        this.callOptions.setAuthHeader(token, RestMethod.GET)
-                        this.callGet(params) 
-                    }
-                })
-                throw new RESTException(err.message, ErrorCode.HTTP_CALL_ERROR)
-             },
-             complete:() => {}
-         })
-     }
-
-    protected callPut<REQUEST>(id:number, requestData : REQUEST){
-    
-        const paramStr = `?id=${id}`
-        const requestUrl = this.apiUrl+paramStr
-        this.preCallRoutine()
-        console.log(`Request url: ${requestUrl}`)
-      
-        this.http.put<ResponseBase<DATA>>(
-            requestUrl, 
-            JSON.stringify(requestData),  
-            RestCallOptions.toOptions(this.callOptions.getHeaders())).subscribe({
-            next:(response)=>{
-                console.log("raw response")
-                console.log(response)
-                this.processResponse(response)
-            },
-            error:(err:HttpErrorResponse)=>{
-                this.handleError(err, (token:string|undefined)=> { 
-                    if(token){
-                        this.callOptions.setAuthHeader(token, RestMethod.PUT)
-                        this.callPut(id, requestData) 
-                    }
-                })
-                throw new RESTException(err.message, ErrorCode.HTTP_CALL_ERROR)
-            },
-            complete:()=>{}
-        })
-    }
-
-    protected processResponse(response: ResponseBase<DATA>){
+    private processResponse(response: ResponseBase<DATA>){
         try{
-            console.log(`processResponse response  ${response} `)
             const deserializeResult = this.contentNegotiations.deserialize<DATA>(response)
             console.log(`processResponse response data  ${deserializeResult} `)
             this.responseSubject.next(deserializeResult)
@@ -169,14 +82,131 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
         }
     }
 
-    protected handleError(err:HttpErrorResponse, requestFn: (token:string) => void){
-        console.warn(`Received error on request ${err.message}`)
-        if(this.parentConnection.errorHandlerfn != undefined){
-            console.log(`Found error handler on parentConnection, invoking`)
-            this.parentConnection.errorHandlerfn(err, requestFn)
+    private handleError(err:HttpErrorResponse, requestFn: (token:string) => void){
+
+
+        switch(err.status){
+            case 401 :
+                console.log(`Processing Unauthorized`)
+              this.parentConnection.tokenInvalidation().pipe(
+                    skip(1),
+                    take(1)
+               ).subscribe({ next : (token)=>{
+                if(token){
+                    //Repeat last call
+                    requestFn(token)
+                }else{
+                    console.warn("handleError Another unsuccesfull atempt to reaquire token")
+                    return
+                }},
+                error: (err:any)=>{
+                    console.warn(`handleError Atempt to reaquire token resulted in error ${err}`)
+                    return
+                }, 
+                complete:() => {
+                     console.warn(`handleError observable closed`)
+                    return
+                }})
+            return
+
+            default:
+                console.warn(`Unmanaged ${err.status} | ${err.message} when  ${this.method} to ${this.endpoint}`)
+                throw new RESTException(err.message, ErrorCode.UNMANAGED_GENERIC_EXCEPTION)
+            break
         }
     }
 
+    protected callPost<REQUEST>(requestData : REQUEST){
+    
+        this.preCallRoutine()
+        console.log(`callPost url : ${this.apiUrl} requestData ${requestData} `)
+        this.http.post<ResponseBase<DATA>>(
+            this.apiUrl, 
+            JSON.stringify(requestData), 
+            RestCallOptions.toOptions(this.callOptions.getHeaders())
+        ).subscribe({
+            next:(response)=>{
+                 this.processResponse(response)
+            },
+            error: (err : HttpErrorResponse) => {
+                console.error(`callPost ${err.message}`)
+                if(this.assetType == AssetType.NON_SERVICE){
+                    this.handleError(err, (token:string|undefined)=> { 
+                        if(token){
+                            this.callOptions.setAuthHeader(token, RestMethod.POST)
+                            this.callPost(requestData) 
+                        }
+                    })
+                }
+            },
+            complete:() => {}
+        })
+    }
+
+    protected callGet<RESPONSE>(params:CallParamInterface[]){
+
+        let paramStr = ""
+        if(params.length>0){
+             paramStr = "?"
+             params.forEach(x=> paramStr+= `${x.key}=${x.value}&`)
+             paramStr =  CommonRestAsset.truncateTrailingChar(paramStr, '&')
+         }
+         const requestUrl = this.apiUrl+paramStr
+         this.preCallRoutine()
+         this.http.get<ResponseBase<DATA>>(
+            requestUrl,  
+            RestCallOptions.toOptions(this.callOptions.getHeaders())
+            ).subscribe({
+                next:(response)=>{
+                    this.processResponse(response)
+                },
+                error: (err : HttpErrorResponse) => {
+                    console.error(`callGet ${err.message}`)
+                    if(this.assetType == AssetType.NON_SERVICE){
+
+                        this.handleError(err, (token:string|undefined)=> { 
+                            if(token){
+                                this.callOptions.setAuthHeader(token, RestMethod.GET)
+                                this.callGet(params) 
+                            }
+                        })
+                    }
+                },
+                complete:() => {}
+            })
+    }
+
+    protected callPut<REQUEST>(id:number, requestData : REQUEST){
+    
+        const paramStr = `?id=${id}`
+        const requestUrl = this.apiUrl+paramStr
+
+        this.preCallRoutine()
+       
+        this.http.put<ResponseBase<DATA>>(
+            requestUrl, 
+            JSON.stringify(requestData),
+            RestCallOptions.toOptions(this.callOptions.getHeaders())).subscribe({
+                next:(response)=>{
+                    console.log("raw response")
+                    console.log(response)
+                    this.processResponse(response)
+                },
+                error:(err:HttpErrorResponse)=>{
+                console.error(`callPut ${err.message}`)
+                    if(this.assetType == AssetType.NON_SERVICE){
+                        this.handleError(err, (token:string|undefined)=> { 
+                            if(token){
+                                this.callOptions.setAuthHeader(token, RestMethod.PUT)
+                                this.callPut(id, requestData) 
+                            }
+                        })
+                     }
+                },
+                
+                complete:()=>{}
+            })
+    }
 }
 
 

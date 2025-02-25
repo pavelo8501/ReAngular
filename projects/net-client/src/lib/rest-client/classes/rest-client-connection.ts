@@ -102,8 +102,6 @@ export class RestConnection<RESPONSE extends ResponseBase<any>>{
         }
     }
     
-
-
     constructor(
         public connectionId : number, 
         public baseUrl:string, 
@@ -117,17 +115,24 @@ export class RestConnection<RESPONSE extends ResponseBase<any>>{
         this.contentNegotiations =   new JsNegotiationsPlugin<RESPONSE>(response)
     }
 
+    tokenInvalidation():Observable<string|undefined> {
+        console.log("Invalidations current token")
+        this.assets.filter(x=>x.secured == true).forEach(asset=> asset.callOptions.replaceJwtToken(""))
+        this.$tokenSubject.next(undefined)
+        const validator = this.tokenAuthenticator()
+        if(validator){
+            validator.getToken("login", "password")
+        }
+        return  this.$tokenSubject.asObservable()
+    }
 
     installPlugin(plugin : ContentNegotiationsInterface<RESPONSE>){
-
         switch(plugin.type){
             case "jsNegotiations":
                 this.contentNegotiations = plugin
             break
         }
     }
-
-    errorHandlerfn?: (error: HttpErrorResponse, requestFn: (token:string) => void) => void  
 
     initialize(client: RestClient, http: HttpClient) {
        this._client = client

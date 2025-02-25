@@ -52,7 +52,6 @@ export class WSService {
 					consUser = user
 				}
 
-
 				const newConnection = new WebSocketConnector<RequestDataType, ResponseDataType>(consUser, request, undefined ,this);
 				let newSubscription 
 				if (subscriber != undefined){
@@ -78,7 +77,6 @@ export class WSService {
 		}
 	}
 
-  
 	public addDataSubscription<RequestDataType,ResponseDataType>(
 		user: WSUserInterface, 
 		request: WSRequestInterface<RequestDataType>, 

@@ -15,17 +15,13 @@ export class RestErrorHandler{
 
     initDependancies(){
         this.restclient.connectionList().forEach(x=> {
-            if(!x.errorHandlerfn){
-                x.errorHandlerfn = this.handleError
-                console.log(`Applied error handler to connection id : ${x.connectionId}`)
-            }
+            
         })
     }
 
     private handle401Error(error: HttpErrorResponse, requestFn: (token:string) => void): Observable<any> | undefined {
     
         let result : Observable<any> | undefined
-    
         if (!this.isRefreshing && this.authService) {
           this.isRefreshing = true;
           this.refreshTokenSubject.next(undefined);
@@ -70,6 +66,7 @@ export class RestErrorHandler{
     }
 
     handleError(error: HttpErrorResponse, requestFn: (token:string) => void): Observable<any>|undefined {
+        
         if (error.status === 401) {
           return this.handle401Error(error, requestFn);
         }
