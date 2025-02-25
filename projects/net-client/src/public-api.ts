@@ -9,4 +9,3 @@ export * from "./lib/rest-client/classes/config";
 export * from "./lib/rest-client/classes/dataflow";
 export * from "./lib/rest-client/classes/plugins";
 export * from "./lib/rest-client/classes/rest-assets";
-export * from "./lib/rest-client/enums";
