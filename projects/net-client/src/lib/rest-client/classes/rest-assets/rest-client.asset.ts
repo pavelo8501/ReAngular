@@ -5,9 +5,9 @@ import { ContentNegotiationsInterface } from "../plugins/content/content-negotia
 import { RestConnection } from "../rest-client-connection"
 import { ResponseBase } from "../dataflow/rest-response"
 import { RestCallOptions } from "../dataflow/rest-call-options"
-import { CallParamInterface } from "../call-param"
 import { RESTException, ErrorCode } from "../exceptions"
 import { AssetType } from "./rest-asset.enums"
+import { CallParamInterface } from "../dataflow"
 
 
 

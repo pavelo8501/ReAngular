@@ -4,10 +4,9 @@ import { RestClient } from './rest-client.service';
 import { BackendResponse } from '../../../../playground/src/classes/backend-response';
 import { provideRestClient, RestConnectionConfig, REST_CLIENT } from './classes/config';
 import { ConnectionID } from '../../../../playground/src/enums/connection-id';
-import { environment } from '../../../../playground/src/environments/environment.prod';
 import { provideHttpClient, withFetch } from '@angular/common/http';
-import { HeaderKey } from 'net-client';
 import { RestMethod } from './enums/rest-method.enum';
+import { HeaderKey } from './enums';
 
 describe('RestClient', () => {
   let service: RestClient;

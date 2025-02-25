@@ -1,45 +1,27 @@
 import { EnvironmentProviders, inject, makeEnvironmentProviders } from "@angular/core";
-import { REST_CLIENT, RestClientConfig } from "./rest-client-config";
-import { ErrorCode } from "../exceptions/error-code";
-import { HeaderKey } from "../../enums/header-key.enum";
-import { RestMethod } from "../../enums/rest-method.enum";
-import { RestConnection } from "./../rest-client-connection";
 import {ResponseBase}  from "./../dataflow/rest-response"
 import {RestClient} from "./../../rest-client.service"
 import { HttpClient } from '@angular/common/http';
-
-export const ENUMS = {
-  ErrorCode,
-  HeaderKey,
-  RestMethod
-}
+import { REST_CLIENT, RestConnectionConfig, RestServiceOptions, RestServiceOptionsInterface } from "./rest-client-config";
 
 
-export class RestConnectionConfig<T extends ResponseBase<any>>{
-    constructor(
-        public id: number, 
-        public baseUrl: string, 
-        public responseTemplate: T,  
-        public withJwtAuth?: {getTokenEndpoint:string, refreshTokenEndpoint:string, method: RestMethod}
-        ){}
-}
- 
 export function provideRestClient(
+    options?:RestServiceOptions,
   ... connections: RestConnectionConfig<ResponseBase<any>>[]
 ): EnvironmentProviders {
     console.log(`provideRestClient`)
   return makeEnvironmentProviders([{ 
 
     provide: REST_CLIENT, useFactory: () => {
-       // const restClientService  = inject(RestClient);
-         const http = inject(HttpClient);
-         const restClientService = new RestClient(http);
+        const http = inject(HttpClient);
+        const restClientService = new RestClient(http, options);
         connections.forEach(conn => {
-          console.log(`provideRestClient addConnection`);
-          restClientService.createConnection(conn)
+            console.log(`provideRestClient addConnection`);
+            restClientService.createConnection(conn)
         })
+        
         return restClientService;
-    } 
+    }
     
     }]);
 }

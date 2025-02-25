@@ -9,7 +9,7 @@ import { RESTHeader } from './classes/dataflow/rest-header';
 import { HeaderKey } from './enums/header-key.enum';
 import { AuthService } from './classes/plugins/auth/authentication.plugin';
 import { RestConnection } from './classes/rest-client-connection';
-import { RestConnectionConfig } from './classes/config';
+import { RestConnectionConfig, RestServiceOptions, RestServiceOptionsInterface } from './classes/config';
 import { ResponseBase } from '../../public-api';
 import { AssetType } from './classes/rest-assets/rest-asset.enums';
 
@@ -21,13 +21,23 @@ export class RestClient{
 
   private connections : RestConnection<any>[] = []
   private authService : AuthService| undefined
+    private production: boolean = false
+ 
+    private onInitialized? : () => void
+
+    initialized = (callback: () => void) => {
+        this.onInitialized = callback  
+    }
 
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+    private options?:RestServiceOptions
   ){
-    
+    if(this.options){
+        this.production = this.options.production
+    }
+    if(!this.production){console.log("Starting config")}
   }
-
 
   createConnection<T extends ResponseBase<any>>(config: RestConnectionConfig<T>){
     console.log(`Create connection call`)
@@ -43,7 +53,6 @@ export class RestClient{
             method,
             AssetType.ATHENTICATE
        )
-
        newConnection.createServiceAsset<string|undefined>(
             refreshEndpoint,
             method,
@@ -52,6 +61,13 @@ export class RestClient{
     }
     this.connections.push(newConnection)  
     this.restClientInfo()
+  }
+
+  configComplete(){
+    if(this.onInitialized){
+        this.onInitialized()
+    }
+    if(!this.production){console.log("On Config Complete")}
   }
 
   getConnection(id:number):RestConnection<any>{

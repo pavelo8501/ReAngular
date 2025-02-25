@@ -4,7 +4,7 @@ import { RestMethod } from "../../enums/rest-method.enum"
 import { ResponseBase } from "../dataflow/rest-response"
 import { RestCallOptions } from "../dataflow/rest-call-options"
 import { RESTException, ErrorCode } from "../exceptions"
-import { CallParamInterface } from "../call-param"
+import { CallParamInterface } from "../dataflow/call-param"
 import { HttpErrorResponse } from "@angular/common/http"
 import { Observable } from "rxjs"
 
