@@ -1,8 +1,8 @@
 import { EnvironmentProviders, inject, makeEnvironmentProviders } from "@angular/core";
 import { REST_CLIENT, RestClientConfig } from "./rest-client-config";
 import { ErrorCode } from "../exceptions/error-code";
-import { HeaderKey } from "../../enums/header-key";
-import { RestMethod } from "../../enums/rest-method.enums";
+import { HeaderKey } from "../../enums/header-key.enum";
+import { RestMethod } from "../../enums/rest-method.enum";
 import { RestConnection } from "./../rest-client-connection";
 import {ResponseBase}  from "./../dataflow/rest-response"
 import {RestClient} from "./../../rest-client.service"

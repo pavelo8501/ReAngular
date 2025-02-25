@@ -1,4 +1,4 @@
-import { RestMethod } from "../../enums/rest-method.enums"
+import { RestMethod } from "../../enums/rest-method.enum"
 
 
 export class RESTHeader{

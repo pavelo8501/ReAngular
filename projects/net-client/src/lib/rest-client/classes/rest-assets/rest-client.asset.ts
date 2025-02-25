@@ -1,5 +1,5 @@
 import { pipe, skip, Subject, take } from "rxjs"
-import { RestMethod } from "../../enums/rest-method.enums"
+import { RestMethod } from "../../enums/rest-method.enum"
 import { HttpClient, HttpErrorResponse} from "@angular/common/http"
 import { ContentNegotiationsInterface } from "../plugins/content/content-negotiations.plugin"
 import { RestConnection } from "../rest-client-connection"

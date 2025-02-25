@@ -5,7 +5,7 @@ import { CommonRestAsset, RestAssetInterface} from "./rest-client.asset"
 import { HttpErrorResponse } from "@angular/common/http"
 import { BehaviorSubject, Observable, Subject } from "rxjs"
 import { AssetType } from "./rest-asset.enums"
-import { RestMethod } from "./../../enums/rest-method.enums"
+import { RestMethod } from "../../enums/rest-method.enum"
 
 
 export interface AuthRequestInterface<T>{

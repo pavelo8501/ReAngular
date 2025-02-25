@@ -7,7 +7,7 @@ import { ConnectionID } from '../../../../playground/src/enums/connection-id';
 import { environment } from '../../../../playground/src/environments/environment.prod';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { HeaderKey } from 'net-client';
-import { RestMethod } from './enums/rest-method.enums';
+import { RestMethod } from './enums/rest-method.enum';
 
 describe('RestClient', () => {
   let service: RestClient;

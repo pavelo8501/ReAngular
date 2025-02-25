@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { ErrorCode } from "./exceptions/error-code";
-import { HeaderKey } from "../enums/header-key";
-import { RestMethod } from "../enums/rest-method.enums";
+import { HeaderKey } from "../enums/header-key.enum";
+import { RestMethod } from "../enums/rest-method.enum";
 import { RestClient } from "../rest-client.service";
 import { ResponseBase } from "./dataflow/rest-response";
 import { CommonRestAsset} from "./rest-assets/rest-client.asset";

@@ -1,7 +1,7 @@
 import { HttpHeaders } from "@angular/common/http";
 import { RESTHeader } from "./rest-header";
-import { RestMethod } from "../../enums/rest-method.enums";
-import { HeaderKey } from "../../enums/header-key";
+import { RestMethod } from "../../enums/rest-method.enum";
+import { HeaderKey } from "../../enums/header-key.enum";
 
 export interface RestCallOptionsInterface{
     headers?: HttpHeaders

@@ -1,6 +1,6 @@
 import {CommonRestAsset} from "./rest-client.asset"
 import { RestConnection } from "../rest-client-connection"
-import { RestMethod } from "../../enums/rest-method.enums"
+import { RestMethod } from "../../enums/rest-method.enum"
 import { ResponseBase } from "../dataflow/rest-response"
 import { RestCallOptions } from "../dataflow/rest-call-options"
 import { RESTException, ErrorCode } from "../exceptions"
