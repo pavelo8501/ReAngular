@@ -1,33 +1,58 @@
+import { CommonRestAsset } from "../rest-assets/rest-client.asset";
 import { AuthIncident } from "./incident.enum";
 
 
 export class AuthIncidentTracker {
 
-  private incidents: { incident: AuthIncident; timestamp: number }[] = [];
-  private retryCount = 0;
+  private incidents: {method:string, endpoint: string, incident: AuthIncident; timestamp: number }[] = [];
  
+    onMaxPrefaileRetries? : (incidents: object[])=> void
+    onMaxRetries? : (incidents: object[])=> void
+
   constructor(
-        private readonly maxRetries = 1
+        private readonly maxRetries = 3,
+        private readonly maxPrefaileRetries = 1
     ){
 
     }
 
-  registerIncident(incident: AuthIncident): void {
-    console.warn(`[Auth Incident] ${incident} at ${new Date().toISOString()}`);
-    this.incidents.push({ incident, timestamp: Date.now() });
+    lastIncident: AuthIncident | undefined = undefined
 
-    if (incident === AuthIncident.SERVER_INVALIDATED) {
-      this.retryCount++;
+    private incidentsControl(incident: AuthIncident){
+
+        let filterd  = this.incidents.filter(x=>x.incident == incident)
+        switch(incident){
+            
+            case AuthIncident.PRE_FAILED_CALL:
+                if(filterd.length > this.maxPrefaileRetries){
+                     this.onMaxPrefaileRetries?.(filterd)
+                }
+            break
+            case  AuthIncident.SERVER_INVALIDATED:
+                if(filterd.length > this.maxRetries){
+                    this.onMaxPrefaileRetries?.(filterd)
+                }
+            break
+        }
     }
-  }
 
-  hasReachedRetryLimit(): boolean {
-    return this.retryCount >= this.maxRetries;
-  }
+    registerIncident(method:string, endpoint: string, incident: AuthIncident): void {
+        console.warn(`[Auth Incident] ${incident} at ${new Date().toISOString()}`);
+        this.incidents.push({method: method, endpoint: endpoint,  incident, timestamp: Date.now() });
 
-  resetRetries(): void {
-    this.retryCount = 0;
-  }
+        this.incidentsControl(incident)
+        this.lastIncident = incident
+    }
+
+
+    onHasReachedRetryLimit(callback?: (reached : boolean)=>void):boolean{
+        let result = false
+        return result
+    }
+
+    resetRetries(resetIncident: AuthIncident): void {
+       this.incidents =  this.incidents.filter(x=>x.incident != resetIncident)
+    }
 
  
   getIncidents(): { incident: AuthIncident; timestamp: number }[] {

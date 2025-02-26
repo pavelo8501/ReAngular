@@ -4,7 +4,7 @@ import { CommonRestAsset} from "./rest-client.asset"
 import { HttpErrorResponse } from "@angular/common/http"
 import { BehaviorSubject} from "rxjs"
 import { AssetType, RestMethod } from "./rest-asset.enums"
-import { TokenSubjectException } from "../exceptions"
+import { TokenSubjectException } from "./../security/token-subject.exception"
 
 
 
@@ -30,7 +30,7 @@ export class RestServiceAsset<DATA> extends CommonRestAsset<DATA>{
         method:RestMethod,   
         connection : RestConnection<ResponseBase<DATA>>, 
         public type: AssetType,
-        private tokenSubject: BehaviorSubject<string|TokenSubjectException|undefined>
+        private tokenSubject: BehaviorSubject<TokenSubjectException|string>
     ){
         super({endpoint:endpoint, method: method, secured: false}, connection)
     }

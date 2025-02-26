@@ -16,7 +16,6 @@ export class RestPostAsset<DATA> extends CommonRestAsset<DATA>{
         super({endpoint : endpoint, method : RestMethod.POST, secured: secured}, connection)
     }
 
-   
     makeCall<REQUEST>(request: REQUEST): Observable<DATA>{
         this.callPost(request)
         return this.responseSubject.asObservable()

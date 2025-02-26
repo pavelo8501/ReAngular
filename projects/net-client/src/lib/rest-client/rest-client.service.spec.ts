@@ -8,7 +8,8 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 import { HeaderKey } from './enums';
 import { RestMethod } from './classes/rest-assets';
 import { provideRestClient } from "./classes/config/index"
-import { ErrorCode, TokenSubjectException } from './classes/exceptions';
+import {  } from './classes/exceptions';
+import { TokenSubjectException } from './classes/security/token-subject.exception';
 
 describe('RestClient', () => {
   let service: RestClient;
@@ -60,7 +61,7 @@ describe('RestClient', () => {
          const mockResponse = { data: 'test' };
 
         connection.tokenAuthenticator()?.getToken("login", "password")
-        const handler  = connection.tokenSubject.subscribe(token => {
+        const handler  = connection.subscribeToTokenUpdates("test").subscribe(token => {
             if(token){
                  expect(token).toEqual('test');
             }
@@ -81,7 +82,7 @@ describe('RestClient', () => {
         let tokenFetchCount = 0;
 
         connection.tokenAuthenticator()?.getToken("login", "password")
-        const handler  = connection.tokenSubject.subscribe(token => {
+        const handler  = connection.subscribeToTokenUpdates("test").subscribe(token => {
            if(token){tokenFetchCount ++ }
         });
 
@@ -108,7 +109,7 @@ describe('RestClient', () => {
         let tokenFetchCount = 0;
 
         connection.tokenAuthenticator()?.getToken("login", "password");
-        let handler = connection.tokenSubject.subscribe(token => {
+        let handler = connection.subscribeToTokenUpdates("test").subscribe(token => {
             if (token) tokenFetchCount++;
         });
 
@@ -157,7 +158,7 @@ describe('RestClient', () => {
             return undefined
         })
 
-        connection.tokenSubject.subscribe({
+        connection.subscribeToTokenUpdates("test").subscribe({
             next:(token:string|TokenSubjectException|undefined)=>{
                 if (token instanceof TokenSubjectException) {
                     appropriateErrorReceived = true;

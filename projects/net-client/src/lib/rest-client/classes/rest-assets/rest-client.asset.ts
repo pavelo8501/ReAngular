@@ -7,6 +7,7 @@ import { RestCallOptions } from "../dataflow/rest-call-options"
 import { RESTException, ErrorCode } from "../exceptions"
 import { AssetType, RestMethod } from "./rest-asset.enums"
 import { CallParamInterface } from "../dataflow"
+import { AuthIncident } from "../security"
 
 
 
@@ -55,19 +56,7 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
     }
 
     private preCallRoutine(){
-
-        console.log(`Running pre call routine for ${this.method} asset, to endoint: ${this.endpoint} secured : ${this.secured}`)
-
-        if(this.secured){
-            if(this.callOptions.hasJwtToken == false){
-                if(this.parentConnection.token){
-                     this.callOptions.replaceJwtToken(this.parentConnection.token)
-                }else{
-                      console.warn(`${this.method}Assed marked as secured but was unable to obtain jwt token from connection.
-                    Most likely reques will fail`)
-                }
-            }
-        }
+        if(this.secured){}
     }
 
     private processResponse(response: ResponseBase<DATA>){
@@ -81,43 +70,28 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
         }
     }
 
-    private handleError(err:HttpErrorResponse, requestFn: (token:string) => void){
+    private fallbackEnabled = false
+    enableFallbackFn(enabled:boolean){
+        this.fallbackEnabled = enabled
+    }
+    private handleError(err:HttpErrorResponse, requestFn: () => void){
 
-
-        switch(err.status){
-            case 401 :
+        if(err.status == 401){
                 console.log(`Processing Unauthorized`)
-              this.parentConnection.tokenInvalidation().pipe(
-                    skip(1),
-                    take(1)
-               ).subscribe({ next : (token)=>{
-                if(token!= undefined && token instanceof String ) {
-                    requestFn(token as string)
-                }else{
-                    console.warn("handleError Another unsuccesfull atempt to reaquire token")
-                    return
-                }},
-                error: (err:any)=>{
-                    console.warn(`handleError Atempt to reaquire token resulted in error ${err}`)
-                    return
-                }, 
-                complete:() => {
-                     console.warn(`handleError observable closed`)
-                    return
-                }})
-            return
-
-            default:
+            if(this.fallbackEnabled){
+                const token = this.parentConnection.getJWTToken(this)
+                if(token){
+                     requestFn()
+                }
+            }else{
                 console.warn(`Unmanaged ${err.status} | ${err.message} when  ${this.method} to ${this.endpoint}`)
-                throw new RESTException(err.message, ErrorCode.UNMANAGED_GENERIC_EXCEPTION)
-            break
+            }
         }
     }
 
     protected callPost<REQUEST>(requestData : REQUEST){
     
         this.preCallRoutine()
-        console.log(`callPost url : ${this.apiUrl} requestData ${requestData} `)
         this.http.post<ResponseBase<DATA>>(
             this.apiUrl, 
             JSON.stringify(requestData), 
@@ -128,14 +102,10 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
             },
             error: (err : HttpErrorResponse) => {
                 console.error(`callPost ${err.message}`)
-                if(this.assetType == AssetType.NON_SERVICE){
-                    this.handleError(err, (token:string|undefined)=> { 
-                        if(token){
-                            this.callOptions.setAuthHeader(token, RestMethod.POST)
-                            this.callPost(requestData) 
-                        }
-                    })
-                }
+                this.handleError(err, () => {
+                    this.callOptions.setAuthHeader(this.parentConnection.getJWTToken(this)!, RestMethod.POST);
+                    this.callPost(requestData);
+                });
             },
             complete:() => {}
         })
@@ -160,15 +130,10 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
                 },
                 error: (err : HttpErrorResponse) => {
                     console.error(`callGet ${err.message}`)
-                    if(this.assetType == AssetType.NON_SERVICE){
-
-                        this.handleError(err, (token:string|undefined)=> { 
-                            if(token){
-                                this.callOptions.setAuthHeader(token, RestMethod.GET)
-                                this.callGet(params) 
-                            }
-                        })
-                    }
+                    this.handleError(err, () => {
+                        this.callOptions.setAuthHeader(this.parentConnection.getJWTToken(this)!, RestMethod.GET);
+                        this.callGet(params)
+                    });
                 },
                 complete:() => {}
             })
@@ -192,16 +157,11 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
                 },
                 error:(err:HttpErrorResponse)=>{
                 console.error(`callPut ${err.message}`)
-                    if(this.assetType == AssetType.NON_SERVICE){
-                        this.handleError(err, (token:string|undefined)=> { 
-                            if(token){
-                                this.callOptions.setAuthHeader(token, RestMethod.PUT)
-                                this.callPut(id, requestData) 
-                            }
-                        })
-                     }
+                this.handleError(err, () => {
+                        this.callOptions.setAuthHeader(this.parentConnection.getJWTToken(this)!, RestMethod.PUT);
+                         this.callPut(id, requestData)
+                });
                 },
-                
                 complete:()=>{}
             })
     }

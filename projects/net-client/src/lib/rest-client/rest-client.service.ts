@@ -4,7 +4,7 @@ import { RESTException } from './classes/exceptions/rest-exceptions';
 import { ErrorCode } from './classes/exceptions/error-code';
 import { RestConnection } from './classes/rest-client-connection';
 import { RestConnectionConfig} from './classes/config';
-import { ResponseBase } from '../../public-api';
+import { AuthEventEmitterService, ResponseBase } from '../../public-api';
 import { AssetType } from './classes/rest-assets/rest-asset.enums';
 import { CookieService } from 'ngx-cookie-service';
 
@@ -32,7 +32,8 @@ export class RestClient{
 
     constructor(
        private http: HttpClient,
-       private cookieService: CookieService
+       private cookieService: CookieService,
+       private eventEmitter : AuthEventEmitterService
     ){
        if(!this.production){console.log("Starting config")}
     }
@@ -43,7 +44,7 @@ export class RestClient{
         const token = this.cookieService.get(this.tokenKey(newConnection)) || undefined;
         
         if(token){ this.setToken(newConnection, token) }
-        newConnection.initialize(this, this.http, token)
+        newConnection.initialize(this, this.http, this.eventEmitter, token)
 
         if(config.withJwtAuth){
             const authEndpoint = config.withJwtAuth.getTokenEndpoint
@@ -62,7 +63,6 @@ export class RestClient{
             )
         }
         this.connections.push(newConnection)
-        this.restClientInfo()
     }
 
     setToken(connection:RestConnection<any>, token: string): void {

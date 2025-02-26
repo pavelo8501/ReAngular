@@ -5,12 +5,14 @@ import { RestClient } from "../rest-client.service";
 import { ResponseBase } from "./dataflow/rest-response";
 import { CommonRestAsset} from "./rest-assets/rest-client.asset";
 import { RestGetAsset, RestPostAsset, RestPutAsset, RestTypedAssetInterface} from "./rest-assets/rest-typed.assets"
-import { RESTException, TokenSubjectException } from "./exceptions";
+import { RESTException } from "./exceptions";
 import { RESTHeader } from "./dataflow/rest-header";
 import { ContentNegotiationsInterface, JsNegotiationsPlugin} from "./plugins/content/content-negotiations.plugin";
 import { RestServiceAsset } from "./rest-assets/rest-service.assets";
 import { AssetType, RestMethod } from "./rest-assets/rest-asset.enums";
 import { BehaviorSubject, Observable } from "rxjs";
+import { AuthEventEmitterService, AuthIncidentTracker, AuthEvent, AuthIncident,  } from "./security";
+import { TokenSubjectException } from "./security/token-subject.exception";
 
 
 // RESTClientConnection.prototype.registerAsset = function<T>(
@@ -32,8 +34,7 @@ import { BehaviorSubject, Observable } from "rxjs";
 
 export class RestConnection<RESPONSE extends ResponseBase<any>>{
    
-    private jwtToken : string|undefined = undefined
-
+    
     serviceAssets:RestServiceAsset<any>[] = []
     assets: CommonRestAsset<any>[] = []
 
@@ -55,8 +56,24 @@ export class RestConnection<RESPONSE extends ResponseBase<any>>{
         }
     }
 
+    private _emitter: AuthEventEmitterService|undefined
+    get eventEmitter(): AuthEventEmitterService{
+        if(this._emitter != undefined){
+            return this._emitter
+        }else{
+            throw new RESTException(`AuthEventEmitterService not set for RESTClientConnection with id : ${this.connectionId}`, ErrorCode.FATAL_INIT_FAILURE)
+        }
+    }
     private defaultHeaders : RESTHeader[]= []
 
+    private incidentTracker  = new  AuthIncidentTracker()
+
+    constructor(public connectionId : number, public baseUrl:string, public response: RESPONSE){
+        this.createdDefaultHeaders()
+        this.contentNegotiations =   new JsNegotiationsPlugin<RESPONSE>(response)
+    }
+
+   
     private compare(str1:string, str2:string):boolean{
         if(str1.toLocaleLowerCase() == str2.toLocaleLowerCase()){
             return true
@@ -81,74 +98,49 @@ export class RestConnection<RESPONSE extends ResponseBase<any>>{
 
     contentNegotiations : ContentNegotiationsInterface<RESPONSE>
 
-    private onSupplyToken? : () => string|undefined 
-    supplyToken = (callback: () => string|undefined ) => {
-        console.log("RestConnection  onSupplyToken callback set.");
-        this.onSupplyToken = callback  
-    }
-
-    private $tokenSubject = new  BehaviorSubject<string|TokenSubjectException|undefined>(undefined)
-    get tokenSubject():Observable<string|TokenSubjectException|undefined>{
-        return this.$tokenSubject.asObservable()
-    }
-    get token(): string|undefined {
-        const value = this.$tokenSubject.getValue()
-        if(value){
-            return value as string
+    private tokenSubject = new  BehaviorSubject<string|TokenSubjectException>(new TokenSubjectException(AuthEvent.DEFAULT_TOKEN))
+   
+    getJWTToken(asset: CommonRestAsset<any>):string|undefined{
+        const subjectToken = this.tokenSubject.getValue()
+        if(typeof(subjectToken) === "string"){
+             return subjectToken
         }else{
-           console.log(`Attempting to aquire from external service if this.onSupplyToken callback set :  ${this.onSupplyToken}`)
-            if(this.onSupplyToken){
-                const externalToken = this.onSupplyToken()
-                console.log(`externalToken  :  ${externalToken}`)
-                if(externalToken){
-                    return externalToken
-                }
-              
-                if (!this.$tokenSubject.closed) {
-                    this.$tokenSubject.next(
-                       new TokenSubjectException("Some message", ErrorCode.TOKEN_INVALIDATED)
-                    )
-                    this.$tokenSubject.complete()
-                    return undefined
-                }
-            }
-        }
-        return undefined
-    }
-
-    set token(value:string){
-        const subjectValue = this.$tokenSubject.getValue()
-        if( subjectValue != value){
-            this.$tokenSubject.next(value)
-        }else{
-            console.warn("Trying to update exixtent token with same value")
+             switch((subjectToken as TokenSubjectException).errorCode){
+                case  AuthEvent.DEFAULT_TOKEN:
+                    const newTokenDefaultCase = this.client.getToken(this)
+                    if(newTokenDefaultCase){
+                        return newTokenDefaultCase 
+                    }else{
+                        this.registerIncident(asset, AuthIncident.PRE_FAILED_CALL)
+                         this.incidentTracker.onMaxPrefaileRetries = ((incidents)=>{
+                               console.log(incidents)
+                                asset.enableFallbackFn(false)
+                                this.tokenSubject.next(new TokenSubjectException(AuthEvent.RETRY_LIMIT_REACHED))
+                                return undefined
+                        })
+                        return newTokenDefaultCase 
+                    }
+                break
+                case AuthEvent.TOKEN_INVALIDATED:
+                    const newTokenInvalidatedCase = this.client.getToken(this)
+                    if(newTokenInvalidatedCase){
+                       return  newTokenInvalidatedCase
+                    }else{
+                        this.registerIncident(asset,AuthIncident.SERVER_INVALIDATED)
+                        this.incidentTracker.onMaxRetries = ((incidents)=>{
+                                console.log(incidents)
+                                asset.enableFallbackFn(false)
+                                 this.tokenSubject.next(new TokenSubjectException(AuthEvent.RETRY_LIMIT_REACHED))
+                                return undefined
+                        })
+                      return  newTokenInvalidatedCase
+                    }
+                break
+         } 
+          return undefined
         }
     }
     
-    constructor(
-        public connectionId : number, 
-        public baseUrl:string, 
-        public response: RESPONSE,
-        private headers: RESTHeader[] = []
-    ){
-        this.createdDefaultHeaders()
-        if(headers.length > 0){
-            headers.forEach(x=> this.addOrOverrideHeader(x))
-        }
-        this.contentNegotiations =   new JsNegotiationsPlugin<RESPONSE>(response)
-    }
-
-    tokenInvalidation():Observable<string|TokenSubjectException|undefined> {
-        console.log("Invalidations current token")
-        this.assets.filter(x=>x.secured == true).forEach(asset=> asset.callOptions.replaceJwtToken(""))
-        this.$tokenSubject.next(undefined)
-        const validator = this.tokenAuthenticator()
-        if(validator){
-            validator.getToken("login", "password")
-        }
-        return  this.$tokenSubject.asObservable()
-    }
-
     installPlugin(plugin : ContentNegotiationsInterface<RESPONSE>){
         switch(plugin.type){
             case "jsNegotiations":
@@ -157,9 +149,22 @@ export class RestConnection<RESPONSE extends ResponseBase<any>>{
         }
     }
 
-    initialize(client: RestClient, http: HttpClient, token : string|undefined) {
+    initialize(client: RestClient, http: HttpClient, eventEmitter: AuthEventEmitterService, token : string|undefined) {
        this._client = client
        this._http = http
+       this._emitter = eventEmitter
+       if(token){
+            this.eventEmitter.emit(AuthEvent.TOKEN_SET)
+       }
+    }
+
+    subscribeToTokenUpdates(subscriberName:string):Observable<string|TokenSubjectException>{
+        this.eventEmitter.emit(AuthEvent.NEW_TOKEN_SUBSCRIBER, subscriberName)
+        return this.tokenSubject.asObservable()
+    }
+    private registerIncident(author:CommonRestAsset<any>, incident: AuthIncident){
+        this.eventEmitter.emit(AuthEvent.PRE_FAILED_CALL)
+        this.incidentTracker.registerIncident(author.method, author.endpoint, incident)
     }
 
     tokenAuthenticator():RestServiceAsset<string>|undefined{
@@ -197,7 +202,7 @@ export class RestConnection<RESPONSE extends ResponseBase<any>>{
                 method,
                 this, 
                 type, 
-                this.$tokenSubject
+                this.tokenSubject
                 )
             )
     }
