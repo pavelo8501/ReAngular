@@ -2,22 +2,23 @@ import { RestConnection } from "../rest-client-connection";
 import { InjectionToken } from '@angular/core';
 import {ResponseBase} from "./../dataflow/rest-response"
 import {RestClient} from "./../../rest-client.service"
-import {RestMethod,  HeaderKey} from "./../../enums"
+import {HeaderKey} from "./../../enums"
+import { RestMethod } from "../rest-assets";
 
 
 export const REST_CLIENT = new InjectionToken<RestClient>('RestClient');
-export const REST_CLIENT_OPTIONS = new  InjectionToken<RestServiceOptions>("RestClientOptions")
+export const REST_CLIENT_OPTIONS = new  InjectionToken<RestClientOptions>("RestClientOptions")
 
 export const ENUMS = {
   HeaderKey,
   RestMethod
 }
 
-export interface RestServiceOptionsInterface{
+export interface RestClientOptionsInterface{
     production : boolean
 }
 
-export class RestServiceOptions implements  RestServiceOptionsInterface{
+export class RestClientOptions implements  RestClientOptionsInterface{
     production : boolean = false
 }
 

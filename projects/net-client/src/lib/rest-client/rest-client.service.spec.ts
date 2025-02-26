@@ -1,12 +1,14 @@
-import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { RestClient } from './rest-client.service';
 import { BackendResponse } from '../../../../playground/src/classes/backend-response';
-import { provideRestClient, RestConnectionConfig, REST_CLIENT } from './classes/config';
+import { RestConnectionConfig, REST_CLIENT } from './classes/config';
 import { ConnectionID } from '../../../../playground/src/enums/connection-id';
 import { provideHttpClient, withFetch } from '@angular/common/http';
-import { RestMethod } from './enums/rest-method.enum';
 import { HeaderKey } from './enums';
+import { RestMethod } from './classes/rest-assets';
+import { provideRestClient } from "./classes/config/index"
+import { ErrorCode, TokenSubjectException } from './classes/exceptions';
 
 describe('RestClient', () => {
   let service: RestClient;
@@ -18,13 +20,12 @@ describe('RestClient', () => {
              provideHttpClient(withFetch()),
              provideHttpClientTesting(),
              provideRestClient(
-                   new RestConnectionConfig(
-                        ConnectionID.BACKEND,
-                        "",
-                        new BackendResponse<any>(),
-                        {getTokenEndpoint: "auth/login", refreshTokenEndpoint : "auth/refresh", method : RestMethod.POST}
-                    )
-                )
+                {production:false},
+                new RestConnectionConfig(
+                    ConnectionID.BACKEND, 
+                    "", 
+                    new BackendResponse<any>(), 
+                    {getTokenEndpoint: "auth/login", refreshTokenEndpoint : "auth/refresh", method: RestMethod.POST }))
         ]
     });
     service = TestBed.inject(RestClient);
@@ -98,7 +99,7 @@ describe('RestClient', () => {
         handler.unsubscribe()
     }));
 
- it('should invalidate token and request new on Unauthenticated', fakeAsync(() => {
+    it('should invalidate token and request new on Unauthenticated', fakeAsync(() => {
         const service = TestBed.inject(REST_CLIENT);
         const connection = service.getConnection(ConnectionID.BACKEND);
 
@@ -129,11 +130,67 @@ describe('RestClient', () => {
         handler.unsubscribe()
     }));
 
+    it('should make an attempt to receive token from external', fakeAsync(() => {
+        const service = TestBed.inject(REST_CLIENT);
+        const connection = service.getConnection(ConnectionID.BACKEND);
+        let tokenGrabbed:boolean = false
+         connection.supplyToken(()=>{
+            tokenGrabbed = true
+            return "external-token"
+        })
+        const testsGet = connection.createGetAsset<string[]>({ endpoint: "api/tests", secured: true })
+        testsGet.makeCall([]);
+        assertTokenHeader('/api/tests', 'external-token');
+        expect(tokenGrabbed).toBe(true)
+        
+    }));
 
-   function assertTokenHeader(endpoint: string, expectedToken: string) {
+
+    it('should close token observable by passing error after run out of options to aquire token', fakeAsync(() => {
+        const service = TestBed.inject(REST_CLIENT);
+        const connection = service.getConnection(ConnectionID.BACKEND);
+        let tokenGrabbed:boolean = false
+        let appropriateErrorReceived = false
+        let observableClosed = false
+        connection.supplyToken(()=>{
+            tokenGrabbed = true
+            return undefined
+        })
+
+        connection.tokenSubject.subscribe({
+            next:(token:string|TokenSubjectException|undefined)=>{
+                if (token instanceof TokenSubjectException) {
+                    appropriateErrorReceived = true;
+                }
+            },
+            error:(error) =>{
+                console.warn(error)
+            },
+            complete:()=>{
+                observableClosed = true
+            }
+        })
+
+        const testsGet = connection.createGetAsset<string[]>({ endpoint: "api/tests", secured: true })
+        testsGet.makeCall<string>([])
+        tick()
+         assertTokenHeader('/api/tests', undefined);
+     
+        expect(tokenGrabbed).toBe(true)
+        expect(appropriateErrorReceived).toBe(true)
+        expect(observableClosed).toBe(false)
+        
+    }));
+
+
+   function assertTokenHeader(endpoint: string, expectedToken: string|undefined) {
         const req = httpMock.expectOne(endpoint);
         expect(req.request.headers.has(HeaderKey.AUTHORIZATION)).toBeTrue();
-        expect(req.request.headers.get(HeaderKey.AUTHORIZATION)).toBe(`Bearer ${expectedToken}`);
+        if(expectedToken){
+            expect(req.request.headers.get(HeaderKey.AUTHORIZATION)).toBe(`Bearer ${expectedToken}`);
+        }else{
+            expect(req.request.headers.get(HeaderKey.AUTHORIZATION)).toBe(null);
+        }
     }
 
 });

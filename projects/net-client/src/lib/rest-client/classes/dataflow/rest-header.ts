@@ -1,4 +1,5 @@
-import { RestMethod } from "../../enums/rest-method.enum"
+import { RestMethod } from "../rest-assets";
+
 
 
 export class RESTHeader{

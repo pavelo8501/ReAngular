@@ -1,17 +1,12 @@
 import { HttpClient} from '@angular/common/http';
 import {Injectable } from '@angular/core';
-import { CommonRestAsset } from './classes/rest-assets/rest-client.asset';
-import { RestCallOptions } from './classes/dataflow/rest-call-options';
-import { RestMethod } from './enums/rest-method.enum';
 import { RESTException } from './classes/exceptions/rest-exceptions';
 import { ErrorCode } from './classes/exceptions/error-code';
-import { RESTHeader } from './classes/dataflow/rest-header';
-import { HeaderKey } from './enums/header-key.enum';
-import { AuthService } from './classes/plugins/auth/authentication.plugin';
 import { RestConnection } from './classes/rest-client-connection';
-import { RestConnectionConfig, RestServiceOptions, RestServiceOptionsInterface } from './classes/config';
+import { RestConnectionConfig} from './classes/config';
 import { ResponseBase } from '../../public-api';
 import { AssetType } from './classes/rest-assets/rest-asset.enums';
+import { CookieService } from 'ngx-cookie-service';
 
 
 @Injectable({
@@ -19,87 +14,106 @@ import { AssetType } from './classes/rest-assets/rest-asset.enums';
 })
 export class RestClient{
 
-  private connections : RestConnection<any>[] = []
-  private authService : AuthService| undefined
-    private production: boolean = false
- 
-    private onInitialized? : () => void
+    private  tokenKey(connection : RestConnection<any>){
+       return `auth_token_${connection.connectionId}`
+    }
 
+    private tokens: Map<string, string> = new Map()
+
+    production: boolean = false
+
+    private connections : RestConnection<any>[] = []
+
+    private onInitialized? : () => void
     initialized = (callback: () => void) => {
+        console.log("RestClient initialized callback set.");
         this.onInitialized = callback  
     }
 
-  constructor(
-    private http: HttpClient,
-    private options?:RestServiceOptions
-  ){
-    if(this.options){
-        this.production = this.options.production
+    constructor(
+       private http: HttpClient,
+       private cookieService: CookieService
+    ){
+       if(!this.production){console.log("Starting config")}
     }
-    if(!this.production){console.log("Starting config")}
-  }
 
-  createConnection<T extends ResponseBase<any>>(config: RestConnectionConfig<T>){
-    console.log(`Create connection call`)
-    const newConnection =  new RestConnection<T>(config.id, config.baseUrl, config.responseTemplate)
-    newConnection.initialize(this, this.http)
-    if(config.withJwtAuth){
-        const authEndpoint = config.withJwtAuth.getTokenEndpoint
-        const refreshEndpoint = config.withJwtAuth.refreshTokenEndpoint
-        const method = config.withJwtAuth.method
+    createConnection<T extends ResponseBase<any>>(config: RestConnectionConfig<T>){
+        const newConnection =  new RestConnection<T>(config.id, config.baseUrl, config.responseTemplate)
 
-       newConnection.createServiceAsset<string|undefined>(
-            authEndpoint,
-            method,
-            AssetType.ATHENTICATE
-       )
-       newConnection.createServiceAsset<string|undefined>(
-            refreshEndpoint,
-            method,
-            AssetType.REFRESH
-       )
+        const token = this.cookieService.get(this.tokenKey(newConnection)) || undefined;
+        
+        if(token){ this.setToken(newConnection, token) }
+        newConnection.initialize(this, this.http, token)
+
+        if(config.withJwtAuth){
+            const authEndpoint = config.withJwtAuth.getTokenEndpoint
+            const refreshEndpoint = config.withJwtAuth.refreshTokenEndpoint
+            const method = config.withJwtAuth.method
+
+            newConnection.createServiceAsset<string|undefined>(
+                authEndpoint,
+                method,
+                AssetType.ATHENTICATE
+            )
+            newConnection.createServiceAsset<string|undefined>(
+                refreshEndpoint,
+                method,
+                AssetType.REFRESH
+            )
+        }
+        this.connections.push(newConnection)
+        this.restClientInfo()
     }
-    this.connections.push(newConnection)  
-    this.restClientInfo()
-  }
 
-  configComplete(){
-    if(this.onInitialized){
-        this.onInitialized()
+    setToken(connection:RestConnection<any>, token: string): void {
+        this.tokens.set(this.tokenKey(connection), token)
+        this.cookieService.set(this.tokenKey(connection), token, { secure: true, sameSite: 'Strict' });
     }
-    if(!this.production){console.log("On Config Complete")}
-  }
 
-  getConnection(id:number):RestConnection<any>{
-    const found = this.connections.find(x=>x.connectionId == id)
-     if(found != undefined){
-       return found
-     }else{
-       throw new RESTException(`Connection with id : ${id} not found`, ErrorCode.NOT_FOUND)
-     }
-  }
-
-  connectionList():RestConnection<any>[]{
-    return this.connections
-  }
-
-
- injectAuthService(service : AuthService){
-      this.authService = service
-      this.connections.forEach(x=>x.initialize(this, this.http))
- }
-
-  restClientInfo(){
-    console.log(`Number of connections applied ${this.connections.length}`)
-    let yesNo : string  = "no"
-    if(this.authService){
-      yesNo = "yes"
+    getToken(connection: RestConnection<any>): string | undefined {
+        return this.cookieService.get(this.tokenKey(connection)) || undefined;
     }
-    console.log(`Is auth module injected?  ${yesNo}`)
-      yesNo = "no"
-      if(this.http){
-        yesNo = "yes"
-      }
-      console.log(`Is httpClient injected?  ${yesNo}`)
-  }
+
+    clearToken(connection: RestConnection<any>): void {
+        this.tokens.delete(this.tokenKey(connection))
+        this.cookieService.delete(this.tokenKey(connection));
+    }
+
+    isTokenInPlace(connection: RestConnection<any>): boolean {
+        return !!this.getToken(connection)
+    }
+
+    configComplete() {
+        if (this.onInitialized) {
+            this.onInitialized();
+        }
+
+        if (!this.production) {
+            console.log("On Config Complete");
+            this.restClientInfo()
+        }
+    }
+
+    getConnection(id:number):RestConnection<any>{
+        const found = this.connections.find(x=>x.connectionId == id)
+        if(found != undefined){
+            return found
+        }else{
+            throw new RESTException(`Connection with id : ${id} not found`, ErrorCode.NOT_FOUND)
+        }
+    }
+
+    connectionList():RestConnection<any>[]{
+        return this.connections
+    }
+
+    restClientInfo(){
+        console.log(`Number of connections applied ${this.connections.length}`)
+        let yesNo : string  = "no"
+        if(this.http){
+            yesNo = "yes"
+        }
+        console.log(`Is httpClient injected?  ${yesNo}`)
+        console.log(`production : ${this.production}`)
+    }
 }

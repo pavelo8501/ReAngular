@@ -1,17 +1,15 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { ErrorCode } from "./exceptions/error-code";
 import { HeaderKey } from "../enums/header-key.enum";
-import { RestMethod } from "../enums/rest-method.enum";
 import { RestClient } from "../rest-client.service";
 import { ResponseBase } from "./dataflow/rest-response";
 import { CommonRestAsset} from "./rest-assets/rest-client.asset";
 import { RestGetAsset, RestPostAsset, RestPutAsset, RestTypedAssetInterface} from "./rest-assets/rest-typed.assets"
-import { RESTException } from "./exceptions/rest-exceptions";
+import { RESTException, TokenSubjectException } from "./exceptions";
 import { RESTHeader } from "./dataflow/rest-header";
 import { ContentNegotiationsInterface, JsNegotiationsPlugin} from "./plugins/content/content-negotiations.plugin";
-import { RestCallOptions} from "./dataflow/rest-call-options";
 import { RestServiceAsset } from "./rest-assets/rest-service.assets";
-import { AssetType } from "./rest-assets/rest-asset.enums";
+import { AssetType, RestMethod } from "./rest-assets/rest-asset.enums";
 import { BehaviorSubject, Observable } from "rxjs";
 
 
@@ -34,6 +32,8 @@ import { BehaviorSubject, Observable } from "rxjs";
 
 export class RestConnection<RESPONSE extends ResponseBase<any>>{
    
+    private jwtToken : string|undefined = undefined
+
     serviceAssets:RestServiceAsset<any>[] = []
     assets: CommonRestAsset<any>[] = []
 
@@ -81,18 +81,41 @@ export class RestConnection<RESPONSE extends ResponseBase<any>>{
 
     contentNegotiations : ContentNegotiationsInterface<RESPONSE>
 
-    private $tokenSubject = new  BehaviorSubject<string|undefined>(undefined)
-    get tokenSubject():Observable<string|undefined>{
+    private onSupplyToken? : () => string|undefined 
+    supplyToken = (callback: () => string|undefined ) => {
+        console.log("RestConnection  onSupplyToken callback set.");
+        this.onSupplyToken = callback  
+    }
+
+    private $tokenSubject = new  BehaviorSubject<string|TokenSubjectException|undefined>(undefined)
+    get tokenSubject():Observable<string|TokenSubjectException|undefined>{
         return this.$tokenSubject.asObservable()
     }
-    get token():string{
+    get token(): string|undefined {
         const value = this.$tokenSubject.getValue()
         if(value){
-            return value
+            return value as string
         }else{
-            throw new RESTException("Accessing token undefined", ErrorCode.FATAL_INIT_FAILURE)
+           console.log(`Attempting to aquire from external service if this.onSupplyToken callback set :  ${this.onSupplyToken}`)
+            if(this.onSupplyToken){
+                const externalToken = this.onSupplyToken()
+                console.log(`externalToken  :  ${externalToken}`)
+                if(externalToken){
+                    return externalToken
+                }
+              
+                if (!this.$tokenSubject.closed) {
+                    this.$tokenSubject.next(
+                       new TokenSubjectException("Some message", ErrorCode.TOKEN_INVALIDATED)
+                    )
+                    this.$tokenSubject.complete()
+                    return undefined
+                }
+            }
         }
+        return undefined
     }
+
     set token(value:string){
         const subjectValue = this.$tokenSubject.getValue()
         if( subjectValue != value){
@@ -115,7 +138,7 @@ export class RestConnection<RESPONSE extends ResponseBase<any>>{
         this.contentNegotiations =   new JsNegotiationsPlugin<RESPONSE>(response)
     }
 
-    tokenInvalidation():Observable<string|undefined> {
+    tokenInvalidation():Observable<string|TokenSubjectException|undefined> {
         console.log("Invalidations current token")
         this.assets.filter(x=>x.secured == true).forEach(asset=> asset.callOptions.replaceJwtToken(""))
         this.$tokenSubject.next(undefined)
@@ -134,7 +157,7 @@ export class RestConnection<RESPONSE extends ResponseBase<any>>{
         }
     }
 
-    initialize(client: RestClient, http: HttpClient) {
+    initialize(client: RestClient, http: HttpClient, token : string|undefined) {
        this._client = client
        this._http = http
     }

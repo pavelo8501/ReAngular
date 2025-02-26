@@ -1,19 +1,24 @@
 import { ResponseBase } from "../dataflow/rest-response"
-import { RESTException, ErrorCode } from "../exceptions"
 import { RestConnection } from "../rest-client-connection"
-import { CommonRestAsset, RestAssetInterface} from "./rest-client.asset"
+import { CommonRestAsset} from "./rest-client.asset"
 import { HttpErrorResponse } from "@angular/common/http"
-import { BehaviorSubject, Observable, Subject } from "rxjs"
-import { AssetType } from "./rest-asset.enums"
-import { RestMethod } from "../../enums/rest-method.enum"
+import { BehaviorSubject} from "rxjs"
+import { AssetType, RestMethod } from "./rest-asset.enums"
+import { TokenSubjectException } from "../exceptions"
 
 
-export interface AuthRequestInterface<T>{
-    data: T
+
+export interface AuthRequestInterface{
+    data: object
 }
 
-export class LoginRequest{
-    constructor(public login:string, public  password:string){}
+export class LoginRequest implements AuthRequestInterface {
+
+    data:object 
+        	
+    constructor(login:string, password:string){
+        this.data = {login:login, password : password}
+    }
 }
 
 export class RestServiceAsset<DATA> extends CommonRestAsset<DATA>{
@@ -25,7 +30,7 @@ export class RestServiceAsset<DATA> extends CommonRestAsset<DATA>{
         method:RestMethod,   
         connection : RestConnection<ResponseBase<DATA>>, 
         public type: AssetType,
-        private tokenSubject: BehaviorSubject<string|undefined>
+        private tokenSubject: BehaviorSubject<string|TokenSubjectException|undefined>
     ){
         super({endpoint:endpoint, method: method, secured: false}, connection)
     }

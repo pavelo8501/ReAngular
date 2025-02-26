@@ -1,12 +1,11 @@
 import { pipe, skip, Subject, take } from "rxjs"
-import { RestMethod } from "../../enums/rest-method.enum"
 import { HttpClient, HttpErrorResponse} from "@angular/common/http"
 import { ContentNegotiationsInterface } from "../plugins/content/content-negotiations.plugin"
 import { RestConnection } from "../rest-client-connection"
 import { ResponseBase } from "../dataflow/rest-response"
 import { RestCallOptions } from "../dataflow/rest-call-options"
 import { RESTException, ErrorCode } from "../exceptions"
-import { AssetType } from "./rest-asset.enums"
+import { AssetType, RestMethod } from "./rest-asset.enums"
 import { CallParamInterface } from "../dataflow"
 
 
@@ -92,9 +91,8 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
                     skip(1),
                     take(1)
                ).subscribe({ next : (token)=>{
-                if(token){
-                    //Repeat last call
-                    requestFn(token)
+                if(token!= undefined && token instanceof String ) {
+                    requestFn(token as string)
                 }else{
                     console.warn("handleError Another unsuccesfull atempt to reaquire token")
                     return
