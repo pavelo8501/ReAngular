@@ -4,7 +4,7 @@ import { RESTException } from './classes/exceptions/rest-exceptions';
 import { ErrorCode } from './classes/exceptions/error-code';
 import { RestConnection } from './classes/rest-client-connection';
 import { RestConnectionConfig} from './classes/config';
-import { AuthEventEmitterService, ResponseBase } from '../../public-api';
+import { AuthEventEmitterService, ResponseBase, RestExceptionCode, TokenSubjectException } from '../../public-api';
 import { AssetType } from './classes/rest-assets/rest-asset.enums';
 import { CookieService } from 'ngx-cookie-service';
 
@@ -31,7 +31,7 @@ export class RestClient{
     }
 
     constructor(
-       private http: HttpClient,
+       readonly http: HttpClient,
        private cookieService: CookieService,
        private eventEmitter : AuthEventEmitterService
     ){
@@ -39,12 +39,12 @@ export class RestClient{
     }
 
     createConnection<T extends ResponseBase<any>>(config: RestConnectionConfig<T>){
-        const newConnection =  new RestConnection<T>(config.id, config.baseUrl, config.responseTemplate)
+        const newConnection =  new RestConnection<T>(config, this.http, this)
 
         const token = this.cookieService.get(this.tokenKey(newConnection)) || undefined;
         
         if(token){ this.setToken(newConnection, token) }
-        newConnection.initialize(this, this.http, this.eventEmitter, token)
+        newConnection.initialize(this.eventEmitter, token)
 
         if(config.withJwtAuth){
             const authEndpoint = config.withJwtAuth.getTokenEndpoint
@@ -70,8 +70,12 @@ export class RestClient{
         this.cookieService.set(this.tokenKey(connection), token, { secure: true, sameSite: 'Strict' });
     }
 
-    getToken(connection: RestConnection<any>): string | undefined {
-        return this.cookieService.get(this.tokenKey(connection)) || undefined;
+    getToken(connection: RestConnection<any>): string{
+        try{
+            return this.cookieService.get(this.tokenKey(connection))
+        }catch(err:any){
+           throw  TokenSubjectException.createPredefined(RestExceptionCode.PRE_FAILED_CALL)
+        }
     }
 
     clearToken(connection: RestConnection<any>): void {
@@ -116,4 +120,5 @@ export class RestClient{
         console.log(`Is httpClient injected?  ${yesNo}`)
         console.log(`production : ${this.production}`)
     }
+
 }

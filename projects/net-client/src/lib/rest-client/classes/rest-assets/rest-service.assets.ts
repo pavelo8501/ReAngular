@@ -30,7 +30,7 @@ export class RestServiceAsset<DATA> extends CommonRestAsset<DATA>{
         method:RestMethod,   
         connection : RestConnection<ResponseBase<DATA>>, 
         public type: AssetType,
-        private tokenSubject: BehaviorSubject<TokenSubjectException|string>
+        private tokenSubject: BehaviorSubject<string|undefined>
     ){
         super({endpoint:endpoint, method: method, secured: false}, connection)
     }

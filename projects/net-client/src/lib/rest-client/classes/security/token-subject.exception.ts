@@ -1,28 +1,35 @@
 
 import {AuthEvent} from "./auth-event.enum"
 
+export enum RestExceptionCode{
+    MAX_ATTEMPTS_REACHED = 5001,
+    TOKEN_INVALIDATED = 5002,
+    PRE_FAILED_CALL = 5003
+    
+}
+
 
 export class TokenSubjectException extends Error {
 
-
-
-   static throwPredefined(errorCode : AuthEvent, optionalMessage:string = ""):TokenSubjectException{
+   static createPredefined(errorCode : RestExceptionCode, optionalMessage:string = ""):TokenSubjectException{
         let msg = ""
         switch(errorCode){
-            case AuthEvent.TOKEN_INVALIDATED:
-                msg = "Token invalidated by connection. Unsubscribe and relogin"
+            case RestExceptionCode.TOKEN_INVALIDATED:
+                msg = "Token invalidated by connection. Unsubscribe and Relogin"
+            break
+            case RestExceptionCode.MAX_ATTEMPTS_REACHED:
+              msg = `Maximum number ${optionalMessage} retries reached.`
             break
         }
-        msg = msg + optionalMessage
-        return new TokenSubjectException(errorCode, msg)
+        return new TokenSubjectException(msg, errorCode)
     }
 
-    errorCode: AuthEvent
-    constructor(errorCode:AuthEvent, message: string = "") {
-        super(errorCode);
+    errorCode: RestExceptionCode
+    constructor(message: string = "", errorCode:RestExceptionCode) {
+        super(message);
         this.name = 'TokenSubjectException';
         this.errorCode = errorCode;
-        Object.setPrototypeOf(this, TokenSubjectException.prototype);
+        Object.setPrototypeOf(this, Error.prototype);
     }
     
 }

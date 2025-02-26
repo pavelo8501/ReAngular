@@ -1,4 +1,4 @@
-import { pipe, skip, Subject, take } from "rxjs"
+import { Observable, pipe, skip, Subject, Subscription, take } from "rxjs"
 import { HttpClient, HttpErrorResponse} from "@angular/common/http"
 import { ContentNegotiationsInterface } from "../plugins/content/content-negotiations.plugin"
 import { RestConnection } from "../rest-client-connection"
@@ -6,8 +6,8 @@ import { ResponseBase } from "../dataflow/rest-response"
 import { RestCallOptions } from "../dataflow/rest-call-options"
 import { RESTException, ErrorCode } from "../exceptions"
 import { AssetType, RestMethod } from "./rest-asset.enums"
-import { CallParamInterface } from "../dataflow"
-import { AuthIncident } from "../security"
+import { CallParamInterface, RestCommand } from "../dataflow"
+import { AuthIncident, TokenSubjectException } from "../security"
 
 
 
@@ -19,13 +19,53 @@ export interface RestAssetInterface{
 
 export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
 
+    static toInterface(asset: CommonRestAsset<any>):RestAssetInterface{
+        return   asset
+    }
+
     static truncateTrailingChar(str: string, char: string): string {
         return str.replace(new RegExp(`${char}+$`), ''); // Removes all trailing occurrences of char
     }
 
-    protected responseSubject : Subject<DATA>  = new Subject<DATA>()
+    protected http : HttpClient
+    protected httpHandler : Subscription | undefined
 
-    protected http:HttpClient
+    protected responseSubject : Subject<DATA>  = new Subject<DATA>()
+   
+    private satisfyesAssetInterface(src: RestAssetInterface):boolean{
+        return src && src.endpoint === this.endpoint && src.secured === this.secured && src.method === this.method;
+    }
+
+    private _connection : RestConnection<ResponseBase<DATA>>
+    protected set connection(value : RestConnection<ResponseBase<DATA>>){
+        this._connection = value
+        this.connection.onCommand = (command:RestCommand, param:TokenSubjectException, src?: RestAssetInterface)=>{
+
+            if(!src || !this.satisfyesAssetInterface(src)){
+                return
+            }
+            switch(command){
+                case  RestCommand.CLOSE_CLIENT:
+                    
+                    this.responseSubject.error(param)
+                    throw param
+                    break
+                case RestCommand.CLOSE_HTTP:
+                    this.httpHandler?.unsubscribe()
+                    break
+                case RestCommand.TERMINATE:
+                    this.responseSubject.complete()
+                    this.httpHandler?.unsubscribe()
+                    break
+                default:
+                    console.error(`Unable to process command ${command}`)
+            }
+        }
+    }
+
+    protected get connection (): RestConnection<ResponseBase<DATA>>{
+        return this._connection
+    }
 
     protected baseUrl:string
     get apiUrl():string{
@@ -39,14 +79,19 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
     method: RestMethod
     assetType: AssetType = AssetType.NON_SERVICE
 
+   
+
     callOptions = new RestCallOptions()
 
    // private errorHandlerfn?: (error: HttpErrorResponse, requestFn: (token:string) => void) => void  
 
     protected constructor(
         config: RestAssetInterface,
-        protected parentConnection : RestConnection<ResponseBase<DATA>>
+        parentConnection : RestConnection<ResponseBase<DATA>>
     ){
+        this._connection = parentConnection
+        this.connection = parentConnection
+
         this.endpoint = config.endpoint
         this.method = config.method
         this.secured = config.secured
@@ -79,7 +124,7 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
         if(err.status == 401){
                 console.log(`Processing Unauthorized`)
             if(this.fallbackEnabled){
-                const token = this.parentConnection.getJWTToken(this)
+                const token = this.connection.getJWTToken(this)
                 if(token){
                      requestFn()
                 }
@@ -92,7 +137,7 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
     protected callPost<REQUEST>(requestData : REQUEST){
     
         this.preCallRoutine()
-        this.http.post<ResponseBase<DATA>>(
+        this.httpHandler = this.http.post<ResponseBase<DATA>>(
             this.apiUrl, 
             JSON.stringify(requestData), 
             RestCallOptions.toOptions(this.callOptions.getHeaders())
@@ -103,7 +148,7 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
             error: (err : HttpErrorResponse) => {
                 console.error(`callPost ${err.message}`)
                 this.handleError(err, () => {
-                    this.callOptions.setAuthHeader(this.parentConnection.getJWTToken(this)!, RestMethod.POST);
+                    this.callOptions.setAuthHeader(this.connection.getJWTToken(this)!, RestMethod.POST);
                     this.callPost(requestData);
                 });
             },
@@ -131,7 +176,7 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
                 error: (err : HttpErrorResponse) => {
                     console.error(`callGet ${err.message}`)
                     this.handleError(err, () => {
-                        this.callOptions.setAuthHeader(this.parentConnection.getJWTToken(this)!, RestMethod.GET);
+                        this.callOptions.setAuthHeader(this.connection.getJWTToken(this)!, RestMethod.GET);
                         this.callGet(params)
                     });
                 },
@@ -158,7 +203,7 @@ export abstract class CommonRestAsset<DATA> implements RestAssetInterface{
                 error:(err:HttpErrorResponse)=>{
                 console.error(`callPut ${err.message}`)
                 this.handleError(err, () => {
-                        this.callOptions.setAuthHeader(this.parentConnection.getJWTToken(this)!, RestMethod.PUT);
+                        this.callOptions.setAuthHeader(this.connection.getJWTToken(this)!, RestMethod.PUT);
                          this.callPut(id, requestData)
                 });
                 },
