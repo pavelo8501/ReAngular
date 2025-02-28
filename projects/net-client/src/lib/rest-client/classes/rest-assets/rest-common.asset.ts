@@ -99,6 +99,14 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
         this.contentNegotiations = connection.contentNegotiations
     }
 
+    private toString(){
+        if(this.secured){
+             return `${this.method}|${this.endpoint}(secured)`
+        }else{
+             return `${this.method}|${this.endpoint}`
+        }
+    }
+
     private satisfyesAssetInterface(src: RestAssetInterface): boolean {
         return src && src.endpoint === this.endpoint && src.secured === this.secured && src.method === this.method;
     }
@@ -116,11 +124,16 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
         }
     }
 
-    private processResponse(response: ResponseBase<DATA>) {
+    private processResponse(response: ResponseBase<DATA>|undefined) {
         try {
-            const deserializeResult = this.contentNegotiations.deserialize<DATA>(response)
-            console.log(`processResponse response data  ${deserializeResult} `)
-            this.responseSubject.next(deserializeResult)
+            if(response){
+                console.log(`processResponse received response`,response)
+                const deserializeResult = this.contentNegotiations.deserialize<DATA>(response)
+                console.log(`processResponse response data  ${deserializeResult} `)
+                this.responseSubject.next(deserializeResult)
+            }else{
+                this.eventEmitter.emitRequestEvent(`Undefined response at ${this.toString()}`,RequestError.DATA_RESPONSE_UNDEFINED)
+            }
         } catch (err: any) {
             console.error(err.message)
             this.responseSubject.error(err)
@@ -135,7 +148,10 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
     private handleError(err: HttpErrorResponse, requestFn: () => void) {
 
         if (err.status == 401) {
-            this.eventEmitter.emitRequestEvent(RequestError.UNAUTHORIZED, `Unauthorized request on ${this.method}|${this.endpoint}`)
+            this.eventEmitter.emitRequestEvent(
+                `Unauthorized request on ${this.toString()}`, 
+                RequestError.SERVER_UNAUTHORIZED
+            )
             console.log(`Processing Unauthorized`)
             if (this.fallbackEnabled) {
                 const token = this.connection.getJWTToken(this)
@@ -147,8 +163,9 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
             }
         }else{
             this.eventEmitter.emitRequestEvent(
-                RequestError.OTHER, 
-                `Rrequest error code ${err.status} with message ${err.message} on ${this.method}|${this.endpoint}`)
+                `Request error code ${err.status} with message ${err.message} on ${this.toString()}`,
+                RequestError.OTHER
+            )
         }
     }
 
@@ -174,7 +191,7 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
         })
     }
 
-    protected callGet<RESPONSE>(params: CallParamInterface[]) {
+    protected callGet(params: CallParamInterface[]) {
 
         let paramStr = ""
         if (params.length > 0) {

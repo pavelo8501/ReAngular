@@ -2,6 +2,7 @@ import { Subject, Observable } from 'rxjs';
 import { RequestEvent } from './models/request-event.class';
 import { IncidentEvent } from './models/incident-event.class';
 import { IncidentCode } from './enums/incident-code.enum';
+import { RequestError } from './enums/request-error.enum';
 
 
 export class EventEmitterService {
@@ -27,7 +28,7 @@ export class EventEmitterService {
   private notityConsole(msg:string, errorCode?:number){
     if(!this.production){
       if(errorCode){
-        console.log(`${msg} with ErrorCode : ${errorCode}`)
+        console.warn(`${msg} with ErrorCode : ${errorCode}`)
       }else{
         console.log(msg)
       }
@@ -35,7 +36,7 @@ export class EventEmitterService {
   }
 
   /** Emit request response events */
-  emitRequestEvent(errCode:number, msg:string){
+  emitRequestEvent(msg:string, errCode:RequestError, ){
     this.notityConsole(msg, errCode)
     this.requestEventSubject.next(new RequestEvent(msg, errCode))
   }
