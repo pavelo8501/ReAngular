@@ -1,15 +1,13 @@
 import { fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { RestClient } from '../../rest-client.service';
 import { RestConnection } from "../connection/rest-client-connection"
-import { BackendResponse } from '../../../../../../playground/src/classes/backend-response';
+import { ConnectionID, BackendResponse } from './../../../../../../playground';
 import { RestConnectionConfig, REST_CLIENT } from '../config';
-import { ConnectionID } from '../../../../../../playground/src/enums/connection-id';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { HeaderKey } from '../../enums';
 import { RestMethod } from '../rest-assets';
 import { provideRestClient } from "../config/index"
-import { TokenSubjectException } from '../security/token-subject.exception';
 
 
 describe('RestClient', () => {
@@ -25,14 +23,14 @@ describe('RestClient', () => {
                 provideRestClient(
                     { production: false },
                     new RestConnectionConfig(
-                        ConnectionID.BACKEND,
+                        ConnectionID.BACKEND_API,
                         "",
                         new BackendResponse<any>(),
                         { getTokenEndpoint: "auth/login", refreshTokenEndpoint: "auth/refresh", method: RestMethod.POST }))
             ]
         });
         service = TestBed.inject(REST_CLIENT);
-        connection = service.getConnection(ConnectionID.BACKEND)
+        connection = service.getConnection(ConnectionID.BACKEND_API)
         httpMock = TestBed.inject(HttpTestingController);
     });
 
@@ -86,7 +84,7 @@ describe('RestClient', () => {
 
     it('should make an attempt to receive token from external', fakeAsync(() => {
         const service = TestBed.inject(REST_CLIENT);
-        const connection = service.getConnection(ConnectionID.BACKEND);
+        const connection = service.getConnection(ConnectionID.BACKEND_API);
         let tokenGrabbed: boolean = false
         connection.overrideOnTokenRequest(() => {
             tokenGrabbed = true
@@ -101,7 +99,7 @@ describe('RestClient', () => {
 
     it('should invalidate token and request new on Unauthenticated', fakeAsync(() => {
         const service = TestBed.inject(REST_CLIENT);
-        const connection = service.getConnection(ConnectionID.BACKEND);
+        const connection = service.getConnection(ConnectionID.BACKEND_API);
 
         const initialAuthResponse = { data: 'mock-token' };
         const newAuthResponse = { data: 'new-mock-token' };
