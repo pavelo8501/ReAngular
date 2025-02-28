@@ -39,8 +39,8 @@ export class RestPutAsset<DATA> extends RestCommonAsset<DATA> {
         super({ endpoint: endpoint, method: RestMethod.PUT, secured: secured }, connection)
     }
 
-    makeCall<REQUEST>(id: number, data: DATA): Observable<DATA> {
-        this.callPut(id, data)
+    makeCall(data: DATA): Observable<DATA> {
+        this.callPut(data)
         return this.responseSubject.asObservable()
     }
 }

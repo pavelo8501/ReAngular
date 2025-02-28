@@ -219,16 +219,15 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
         })
     }
 
-    protected callPut<REQUEST>(id: number, requestData: REQUEST) {
+    protected callPut(requestData: DATA) {
 
-        const paramStr = `?id=${id}`
-        const requestUrl = this.apiUrl + paramStr
-
+        const requestBodyStr = JSON.stringify(requestData)
+        console.log(`Put request Url ${this.apiUrl} with body : ${requestBodyStr}`)
         this.preCallRoutine()
 
         this.http.put<ResponseBase<DATA>>(
-            requestUrl,
-            JSON.stringify(requestData),
+            this.apiUrl,
+            requestBodyStr,
             this.callOptions.toOptions()).subscribe({
                 next: (response) => {
                     console.log("raw response")
@@ -239,7 +238,7 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
                     console.error(`callPut ${err.message}`)
                     this.handleError(err, () => {
                         this.callOptions.setAuthHeader(this.connection.getJWTToken(this));
-                        this.callPut(id, requestData)
+                        this.callPut(requestData)
                     });
                 },
                 complete: () => { }
