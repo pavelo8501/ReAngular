@@ -34,10 +34,10 @@ export class RestServiceAsset<DATA> extends RestCommonAsset<DATA> {
 
     getToken(login: string, password: string) {
 
-        const request = {data: {login: login, password: password }}
+        const request = {login: login, password: password }
         console.log(`Token requested body : ${request} `)
 
-        this.callPost<{data: {login: string, password: string }}>(request)
+        this.callPost<{login: string, password: string}>(request)
 
         this.responseSubject.subscribe({
             next: (token) => {

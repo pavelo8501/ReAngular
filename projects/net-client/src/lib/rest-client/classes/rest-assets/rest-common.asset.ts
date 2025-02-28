@@ -169,7 +169,7 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
         }
     }
 
-    protected callPost(requestData: DATA) {
+    protected callPost<REQUEST>(requestData: REQUEST) {
 
         this.preCallRoutine()
         this.httpHandler = this.http.post<ResponseBase<DATA>>(
