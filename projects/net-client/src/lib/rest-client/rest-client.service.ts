@@ -4,7 +4,8 @@ import { RESTException } from './classes/exceptions/rest-exceptions';
 import { ErrorCode } from './classes/exceptions/error-code';
 import { RestConnection } from './classes/connection/rest-client-connection';
 import { RestConnectionConfig } from './classes/config';
-import { AuthEventEmitterService, ResponseBase, RestExceptionCode, TokenSubjectException } from '../../public-api';
+import {EventEmitterService} from "./classes/events"
+import {ResponseBase, RestExceptionCode, TokenSubjectException } from '../../public-api';
 import { AssetType } from './classes/rest-assets/rest-asset.enums';
 import { CookieService } from 'ngx-cookie-service';
 
@@ -30,10 +31,11 @@ export class RestClient {
         this.onInitialized = callback
     }
 
+    private eventEmitter = new EventEmitterService(this.production)
+
     constructor(
         readonly http: HttpClient,
         private cookieService: CookieService,
-        private eventEmitter: AuthEventEmitterService
     ) {
         if (!this.production) { console.log("Starting config") }
     }

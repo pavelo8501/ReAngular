@@ -4,7 +4,6 @@ import {RestClient} from "./../../rest-client.service"
 import { HttpClient } from '@angular/common/http';
 import { REST_CLIENT, RestConnectionConfig, RestClientOptionsInterface} from "./rest-client-config";
 import {CookieService} from 'ngx-cookie-service';
-import  {AuthEventEmitterService} from "./../security"
 
 export function provideRestClient(
     options?:RestClientOptionsInterface,
@@ -15,8 +14,7 @@ export function provideRestClient(
     provide: REST_CLIENT, useFactory: () => {
         const http = inject(HttpClient)
         const cookie = inject(CookieService)
-        const emmiter = inject(AuthEventEmitterService)
-        const restClientService = new RestClient(http, cookie, emmiter);
+        const restClientService = new RestClient(http, cookie);
         restClientService.production = options?.production??false
         connections.forEach(conn => {
             restClientService.createConnection(conn)

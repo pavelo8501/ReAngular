@@ -1,13 +1,14 @@
-import { Observable, pipe, skip, Subject, Subscription, take } from "rxjs"
+import { Observable, Subject, Subscription} from "rxjs"
 import { HttpClient, HttpErrorResponse } from "@angular/common/http"
 import { ContentNegotiationsInterface } from "../plugins/content/content-negotiations.plugin"
 import { RestConnection } from "../connection/rest-client-connection"
 import { ResponseBase } from "../dataflow/rest-response"
 import { RestCallOptions } from "../dataflow/rest-call-options"
-import { RESTException, ErrorCode } from "../exceptions"
 import { AssetType, RestMethod } from "./rest-asset.enums"
 import { CallParamInterface, RestCommand } from "../dataflow"
-import { AuthIncident, TokenSubjectException } from "../security"
+import { TokenSubjectException } from "../security"
+import { EventEmitterService, RequestError } from "../events"
+import { RequestEvent } from "../events/models/request-event.class"
 
 
 export interface RestAssetInterface {
@@ -30,10 +31,6 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
     protected httpHandler: Subscription | undefined
 
     protected responseSubject: Subject<DATA> = new Subject<DATA>()
-
-    private satisfyesAssetInterface(src: RestAssetInterface): boolean {
-        return src && src.endpoint === this.endpoint && src.secured === this.secured && src.method === this.method;
-    }
 
     private _connection: RestConnection<ResponseBase<DATA>>
     protected set connection(value: RestConnection<ResponseBase<DATA>>) {
@@ -74,7 +71,7 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
         return `${this.baseUrl}/${this.endpoint}`
     }
 
-    contentNegotiations: ContentNegotiationsInterface<ResponseBase<DATA>>
+    private contentNegotiations: ContentNegotiationsInterface<ResponseBase<DATA>>
 
     endpoint: string
     secured: boolean
@@ -82,22 +79,28 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
     assetType: AssetType = AssetType.NON_SERVICE
 
     callOptions = new RestCallOptions(this)
+    private eventEmitter: EventEmitterService
 
     // private errorHandlerfn?: (error: HttpErrorResponse, requestFn: (token:string) => void) => void  
 
     protected constructor(
         config: RestAssetInterface,
-        parentConnection: RestConnection<ResponseBase<DATA>>
+        connection: RestConnection<ResponseBase<DATA>>
     ) {
-        this._connection = parentConnection
-        this.connection = parentConnection
+        this._connection = connection
+        this.connection = connection
 
         this.endpoint = config.endpoint
         this.method = config.method
         this.secured = config.secured
-        this.baseUrl = parentConnection.baseUrl
-        this.http = parentConnection.http
-        this.contentNegotiations = parentConnection.contentNegotiations
+        this.baseUrl = connection.baseUrl
+        this.http = connection.http
+        this.eventEmitter = connection.eventEmitter
+        this.contentNegotiations = connection.contentNegotiations
+    }
+
+    private satisfyesAssetInterface(src: RestAssetInterface): boolean {
+        return src && src.endpoint === this.endpoint && src.secured === this.secured && src.method === this.method;
     }
 
     private preCallRoutine() {
@@ -132,6 +135,7 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
     private handleError(err: HttpErrorResponse, requestFn: () => void) {
 
         if (err.status == 401) {
+            this.eventEmitter.emitRequestEvent(RequestError.UNAUTHORIZED, `Unauthorized request on ${this.method}|${this.endpoint}`)
             console.log(`Processing Unauthorized`)
             if (this.fallbackEnabled) {
                 const token = this.connection.getJWTToken(this)
@@ -141,6 +145,10 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
             } else {
                 console.warn(`Unmanaged ${err.status} | ${err.message} when  ${this.method} to ${this.endpoint}`)
             }
+        }else{
+            this.eventEmitter.emitRequestEvent(
+                RequestError.OTHER, 
+                `Rrequest error code ${err.status} with message ${err.message} on ${this.method}|${this.endpoint}`)
         }
     }
 
@@ -219,6 +227,10 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
                 },
                 complete: () => { }
             })
+    }
+
+    subscribeForRequestEvents():Observable<RequestEvent>{
+       return this.eventEmitter.requestEvents$
     }
 }
 

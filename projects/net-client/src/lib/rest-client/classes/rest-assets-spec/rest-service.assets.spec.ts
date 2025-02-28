@@ -51,25 +51,21 @@ describe('RestClient', () => {
   it('should fetch token from API', fakeAsync(() => {
       const service = TestBed.inject(REST_CLIENT);
       const connection = service.getConnection(ConnectionID.BACKEND)
-      const mockResponse = { data: 'test' };
+      const mockResponse = { data: 'test-token' };
 
-      connection.tokenAuthenticator()?.getToken("login", "password")
-
-      connection.subscribeToTokenUpdates("test").subscribe(token => {
+      connection.subscribeToTokenUpdates("TestBed").subscribe(token => {
           if(token){
-              expect(token).toEqual('test');
+              expect(token).toEqual('test-token');
           }
       });
+      connection.tokenAuthenticator()?.getToken("login", "password")
 
       const req = httpMock.expectOne('/auth/login');
       expect(req.request.method).toBe('POST');
       req.flush(mockResponse);
       tick();
-}));
+      connection.closeConnections(true)
+  }));
 
  
-
-
-
-
 })
