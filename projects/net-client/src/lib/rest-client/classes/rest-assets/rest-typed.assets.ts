@@ -16,7 +16,7 @@ export class RestPostAsset<DATA> extends RestCommonAsset<DATA> {
         super({ endpoint: endpoint, method: RestMethod.POST, secured: secured }, connection)
     }
 
-    makeCall<REQUEST>(request: REQUEST): Observable<DATA> {
+    makeCall(request: DATA): Observable<DATA> {
         this.callPost(request)
         return this.responseSubject.asObservable()
     }
@@ -27,7 +27,7 @@ export class RestGetAsset<DATA> extends RestCommonAsset<DATA> {
     constructor(endpoint: string, secured: boolean, connection: RestConnection<ResponseBase<DATA>>) {
         super({ endpoint: endpoint, method: RestMethod.GET, secured: secured }, connection)
     }
-    makeCall<REQUEST>(params: CallParamInterface[]): Observable<DATA> {
+    makeCall(params: CallParamInterface[]): Observable<DATA> {
         this.callGet(params)
         return this.responseSubject.asObservable()
     }
