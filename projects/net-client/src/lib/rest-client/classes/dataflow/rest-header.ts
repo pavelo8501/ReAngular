@@ -2,6 +2,15 @@ import { RestMethod } from "../rest-assets";
 
 
 
-export class RESTHeader{
-    constructor(public methodType: RestMethod, public key:string, public value:string){}
+export class RestHeader{
+
+    constructor(
+        public methodType: RestMethod, 
+        public key:string, 
+        public value:string|undefined){}
+
+        setValue(value:string|undefined){
+            this.value = value
+            console.log(`RestHeader value updated to ${value}`)
+        }
 }

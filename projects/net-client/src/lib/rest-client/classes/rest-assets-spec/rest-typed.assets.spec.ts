@@ -14,12 +14,12 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 
 
-describe('RestClient', () => {
-  let service: RestClient
-  let httpMock: HttpTestingController
-  let connection: RestConnection<any>
-  let putAsset : RestPutAsset<string>
-  let getAsset :RestGetAsset<boolean>
+ describe('RestClient', () => {
+      let service: RestClient
+      let httpMock: HttpTestingController
+      let connection: RestConnection<any>
+      let putAsset : RestPutAsset<string>
+      let getAsset :RestGetAsset<boolean>
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -60,11 +60,17 @@ describe('RestClient', () => {
     const mockAuthResponse = { data: 'mock-token' };
     let tokenFetchCount = 0;
 
-    // connection.tokenAuthenticator()?.getToken("login", "password")
-    // const handler  = connection. ("test").subscribe(token => {
-    //    if(token){tokenFetchCount ++ }
-    // });
+    connection.subscribeToTokenUpdates("test_connection").subscribe({
+      next:(token:string|undefined)=>{
+        if(token){
+          tokenFetchCount++
+        }
+      },error:(err:any)=>{
+        console.warn(err)
+      }
+    })
 
+    connection.tokenAuthenticator()?.getToken("login", "password")
     httpMock.expectOne('/auth/login').flush(mockAuthResponse);
     tick();
 
@@ -76,8 +82,12 @@ describe('RestClient', () => {
     testsGet.makeCall([]);
     assertTokenHeader('/api/tests', 'mock-token');
     expect(tokenFetchCount).toBe(1);
- 
+
 }));
+
+//
+
+
 
 function assertTokenHeader(endpoint: string, expectedToken: string|undefined) {
         const req = httpMock.expectOne(endpoint);

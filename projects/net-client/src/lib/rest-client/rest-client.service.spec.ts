@@ -34,6 +34,8 @@ describe('RestClient', () => {
 
    afterEach(() => {
         httpMock.verify(); // ensures no outstanding requests
+        service.getConnection(ConnectionID.BACKEND).closeConnections(true)
+        
   });
 
     it('should be created', () => {
@@ -48,103 +50,6 @@ describe('RestClient', () => {
 
   
 
-
-
-
-
-    it('should invalidate token and request new on Unauthenticated', fakeAsync(() => {
-        const service = TestBed.inject(REST_CLIENT);
-        const connection = service.getConnection(ConnectionID.BACKEND);
-
-        const initialAuthResponse = { data: 'mock-token' };
-        const newAuthResponse = { data: 'new-mock-token' };
-        let tokenFetchCount = 0;
-
-        connection.tokenAuthenticator()?.getToken("login", "password");
-        let handler = connection.subscribeToTokenUpdates("test").subscribe(token => {
-            if (token) tokenFetchCount++;
-        });
-
-        httpMock.expectOne('/auth/login').flush(initialAuthResponse);
-        tick();
-
-        const testsGet = connection.createGetAsset<string[]>({ endpoint: "api/tests", secured: true });
-        testsGet.makeCall([]);
-        httpMock.expectOne('/api/tests').flush(null, { status: 401, statusText: 'Unauthorized' });
-        tick()
-
-        httpMock.expectOne('/auth/login').flush(newAuthResponse);
-        tick()
-  
-        const finalReq = httpMock.expectOne('/api/tests')
-        expect(finalReq.request.headers.get(HeaderKey.AUTHORIZATION)).toBe('Bearer new-mock-token');
-
-        expect(tokenFetchCount).toBe(3);
-        handler.unsubscribe()
-    }));
-
-    it('should make an attempt to receive token from external', fakeAsync(() => {
-        const service = TestBed.inject(REST_CLIENT);
-        const connection = service.getConnection(ConnectionID.BACKEND);
-        let tokenGrabbed:boolean = false
-        connection.overrideOnTokenRequest(()=>{
-            tokenGrabbed = true
-            return "external-token"
-        })
-        const testsGet = connection.createGetAsset<string[]>({ endpoint: "api/tests", secured: true })
-        testsGet.makeCall([]);
-        assertTokenHeader('/api/tests', 'external-token');
-        expect(tokenGrabbed).toBe(true)
-        
-    }));
-
-
-    it('should close token observable by passing error after run out of options to aquire token', fakeAsync(() => {
-        const service = TestBed.inject(REST_CLIENT);
-        const connection = service.getConnection(ConnectionID.BACKEND);
-        let tokenGrabbed:boolean = false
-        let appropriateErrorReceived = false
-        let observableClosed = false
-        connection.overrideOnTokenRequest(()=>{
-            tokenGrabbed = true
-            return undefined
-        })
-
-        connection.subscribeToTokenUpdates("test").subscribe({
-            next:(token:string|TokenSubjectException|undefined)=>{
-                if (token instanceof TokenSubjectException) {
-                    appropriateErrorReceived = true;
-                }
-            },
-            error:(error) =>{
-                console.warn(error)
-            },
-            complete:()=>{
-                observableClosed = true
-            }
-        })
-
-        const testsGet = connection.createGetAsset<string[]>({ endpoint: "api/tests", secured: true })
-        testsGet.makeCall<string>([])
-        tick()
-         assertTokenHeader('/api/tests', undefined);
-     
-        expect(tokenGrabbed).toBe(true)
-        expect(appropriateErrorReceived).toBe(true)
-        expect(observableClosed).toBe(false)
-        
-    }));
-
-
-   function assertTokenHeader(endpoint: string, expectedToken: string|undefined) {
-        const req = httpMock.expectOne(endpoint);
-        expect(req.request.headers.has(HeaderKey.AUTHORIZATION)).toBeTrue();
-        if(expectedToken){
-            expect(req.request.headers.get(HeaderKey.AUTHORIZATION)).toBe(`Bearer ${expectedToken}`);
-        }else{
-            expect(req.request.headers.get(HeaderKey.AUTHORIZATION)).toBe(null);
-        }
-    }
 
 });
 

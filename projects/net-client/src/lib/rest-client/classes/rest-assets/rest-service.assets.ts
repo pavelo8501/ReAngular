@@ -1,62 +1,71 @@
+import { BehaviorSubject } from "rxjs"
 import { ResponseBase } from "../dataflow/rest-response"
-import { RestConnection } from "../rest-client-connection"
-import { CommonRestAsset} from "./rest-client.asset"
-import { HttpErrorResponse } from "@angular/common/http"
-import { BehaviorSubject} from "rxjs"
+import { RestConnection } from "../connection/rest-client-connection"
 import { AssetType, RestMethod } from "./rest-asset.enums"
-import { TokenSubjectException } from "./../security/token-subject.exception"
+import { RestCommonAsset } from "./rest-common.asset"
+import { HttpErrorResponse } from "@angular/common/http"
 
 
 
-export interface AuthRequestInterface{
-    data: object
+
+export interface AuthRequestInterface {
+    login: string,
+    password: string
 }
 
-export class LoginRequest implements AuthRequestInterface {
+export class LoginRequest {
 
-    data:object 
-        	
-    constructor(login:string, password:string){
-        this.data = {login:login, password : password}
+    data: AuthRequestInterface
+
+    constructor(credentials: AuthRequestInterface) {
+        this.data = credentials
     }
 }
 
-export class RestServiceAsset<DATA> extends CommonRestAsset<DATA>{
+export class RestServiceAsset<DATA> extends RestCommonAsset<DATA> {
 
     private currentToken: DATA | undefined = undefined
 
     constructor(
-        endpoint:string, 
-        method:RestMethod,   
-        connection : RestConnection<ResponseBase<DATA>>, 
+        endpoint: string,
+        method: RestMethod,
+        connection: RestConnection<ResponseBase<DATA>>,
         public type: AssetType,
-        private tokenSubject: BehaviorSubject<string|undefined>
-    ){
-        super({endpoint:endpoint, method: method, secured: false}, connection)
+        private tokenSubject: BehaviorSubject<string | undefined>
+    ) {
+        super({ endpoint: endpoint, method: method, secured: false }, connection)
     }
 
 
-    private login(login: string, password: string){
-        console.log(`call Post to ${this.apiUrl}`)
-        this.callPost<LoginRequest>(new LoginRequest(login, password))
-        this.responseSubject.subscribe({
-             next:(response)=>{
-                    console.warn(`token received in RestServiceAsset ${response}`)
+    private login<DATA>(login: string, password: string) {
 
-                    this.tokenSubject.next(response as string)
-                },
-            error:(error: HttpErrorResponse)  =>{
+        console.log(`call Post to ${this.apiUrl}`)
+
+        this.callPost<string | undefined>(JSON.stringify({ login: login, password: password }))
+
+        this.responseSubject.subscribe({
+            next: (token) => {
+                console.warn(`token received in TokenAuthenticator`)
+                console.log(token)
+                if (token != undefined) {
+                    this.tokenSubject.next(token as string)
+                } else {
+                    this.tokenSubject.next(undefined)
+                }
+            },
+            error: (error: HttpErrorResponse) => {
                 console.error(`token received ${error}`)
-                 this.tokenSubject.error(error)
+                this.tokenSubject.error(error)
+                this.tokenSubject.next(undefined)
             }
         })
     }
 
-    getToken(login: string, password: string){
+    getToken(login: string, password: string) {
         console.log(`token requested for login : ${login}`)
-        if(!this.currentToken){
+        if (!this.currentToken) {
             this.login(login, password)
-        }else{
+        } else {
             console.log(`supplying existent ${login}`)
             this.tokenSubject.next(this.currentToken as string)
         }

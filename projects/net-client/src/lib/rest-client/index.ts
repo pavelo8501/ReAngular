@@ -1,5 +1,5 @@
 
-export * from "./classes/rest-client-connection";
+export * from "./classes/connection";
 export * from "./classes/security";
 export * from "./classes/dataflow";
 export * from "./classes/plugins";

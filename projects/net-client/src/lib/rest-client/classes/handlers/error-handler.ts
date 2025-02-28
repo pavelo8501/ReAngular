@@ -1,15 +1,18 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { RestClient } from './../../rest-client.service'
 import { BehaviorSubject, catchError, Observable,  throwError } from "rxjs";
-import { AuthService } from "../plugins";
 
+
+interface IAuthService{
+
+}
 
 export class RestErrorHandler{
 
     private isRefreshing = false;
     private refreshTokenSubject = new BehaviorSubject<string | undefined>(undefined);
 
-    constructor(private restclient :RestClient, private authService :AuthService ){
+    constructor(private restclient :RestClient, private authService : IAuthService ){
         this.initDependancies()
     }
 
@@ -19,36 +22,36 @@ export class RestErrorHandler{
         })
     }
 
-    private handle401Error(error: HttpErrorResponse, requestFn: (token:string) => void): Observable<any> | undefined {
+    private handle401Error(error: HttpErrorResponse, requestFn: (token:string) => void){
     
-        let result : Observable<any> | undefined
-        if (!this.isRefreshing && this.authService) {
-          this.isRefreshing = true;
-          this.refreshTokenSubject.next(undefined);
-          const user = this.authService.getUser(undefined)
-          this.authService.refreshToken().subscribe(
-            (newToken?: string) => {
-              if(newToken == undefined){
-                console.warn("Unable to refresh token service returbned undefined")
-                result =  undefined
-              }else{
-                this.isRefreshing = false;
-                this.refreshTokenSubject.next(newToken); 
-                requestFn(newToken);  
-              }
-            }),
-            catchError((err) => {
-              this.isRefreshing = false;
-              if(this.authService != undefined){
-                this.authService.logout(undefined)
-                this.authService.throwAway(); 
-              }
-              return throwError(() => err);
-            })
-        } else {
-          this.refreshTokenSubject.next(undefined)
-        }
-        return result
+        // let result : Observable<any> | undefined
+        // if (!this.isRefreshing && this.authService) {
+        //   this.isRefreshing = true;
+        //   this.refreshTokenSubject.next(undefined);
+        //   const user = this.authService.getUser(undefined)
+        //   this.authService.refreshToken().subscribe(
+        //     (newToken?: string) => {
+        //       if(newToken == undefined){
+        //         console.warn("Unable to refresh token service returbned undefined")
+        //         result =  undefined
+        //       }else{
+        //         this.isRefreshing = false;
+        //         this.refreshTokenSubject.next(newToken); 
+        //         requestFn(newToken);  
+        //       }
+        //     }),
+        //     catchError((err) => {
+        //       this.isRefreshing = false;
+        //       if(this.authService != undefined){
+        //         this.authService.logout(undefined)
+        //         this.authService.throwAway(); 
+        //       }
+        //       return throwError(() => err);
+        //     })
+        // } else {
+        //   this.refreshTokenSubject.next(undefined)
+        // }
+        // return result
     }
 
     restErrorHandleInfo(){
@@ -65,11 +68,11 @@ export class RestErrorHandler{
         console.log(`Is restclient injected?  ${yesNo}`)
     }
 
-    handleError(error: HttpErrorResponse, requestFn: (token:string) => void): Observable<any>|undefined {
+    // handleError(error: HttpErrorResponse, requestFn: (token:string) => void): Observable<any>|undefined {
         
-        if (error.status === 401) {
-          return this.handle401Error(error, requestFn);
-        }
-        return throwError(() => error);
-    }
+    //     if (error.status === 401) {
+    //       return this.handle401Error(error, requestFn);
+    //     }
+    //     return throwError(() => error);
+    // }
 }

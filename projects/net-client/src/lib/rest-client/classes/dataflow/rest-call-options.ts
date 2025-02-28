@@ -1,64 +1,78 @@
 import { HttpHeaders } from "@angular/common/http";
-import { RESTHeader } from "./rest-header";
+import { RestHeader } from "./rest-header";
 import { RestMethod } from "../../classes/rest-assets";
 import { HeaderKey } from "../../enums/header-key.enum";
+import { CommonRestAsset } from "../rest-assets/rest-common.asset";
 
-export interface RestCallOptionsInterface{
+export interface RestCallOptionsInterface {
     headers?: HttpHeaders
-    withCredentials : boolean
+    withCredentials: boolean
 }
 
-export class RestCallOptions{
+export class RestCallOptions {
 
-    static toOptions(restHeaders: RESTHeader[]):object{
-        console.log(restHeaders)
+    toOptions(): object {
+        console.log(this.appliedHeaders)
         let headers = new HttpHeaders()
         let withCredentials: boolean = false
-        restHeaders.forEach(header=> {
-            if(header.key == HeaderKey.AUTHORIZATION){
-                if(header.value.length> 0){
+        this.appliedHeaders.forEach(header => {
+            if (header.key == HeaderKey.AUTHORIZATION) {
+                if (header.value != undefined) {
                     headers = headers.set("Authorization", `Bearer ${header.value}`)
                     withCredentials = true
-                }else{
-                    console.warn(`Unable to set header's ${HeaderKey.AUTHORIZATION}  value, provaded RestHeader has empty value`)
+                } else {
+                    console.warn(`Skipping Auth header for  ${this.asset.endpoint}|  ${this.asset.method}
+                       reason, empty toke received  `)
                 }
-            }else{
-                headers = headers.append(header.key, [header.value])
+            } else {
+                headers = headers.append(header.key, "")
             }
         })
-        const options = {headers:  headers, withCredentials:withCredentials}
+        const options = { headers: headers, withCredentials: withCredentials }
         return options
     }
 
-    private appliedHeaders : RESTHeader[] = []
 
-    private getAuthHeader(): RESTHeader | undefined{
-      return  this.appliedHeaders.find(x=>x.key == HeaderKey.AUTHORIZATION)
+    private appliedHeaders: RestHeader[] = []
+
+    constructor(private asset: CommonRestAsset<any>) {
+
     }
 
-    get hasJwtToken():boolean{
-        if(this.appliedHeaders.find(x=>x.key == HeaderKey.AUTHORIZATION)?.value.length?? 0  > 0 ){
+    createRestHeader(key: HeaderKey, value: string | undefined): RestHeader {
+        return new RestHeader(this.asset.method, key, value)
+    }
+
+
+    private getAuthHeader(): RestHeader | undefined {
+        return this.appliedHeaders.find(x => x.key == HeaderKey.AUTHORIZATION)
+    }
+
+    get hasJwtToken(): boolean {
+        if (this.appliedHeaders.find(x => x.key == HeaderKey.AUTHORIZATION)?.value) {
             return true
-        }else{
-             return false
-        }
-    }
-
-    replaceJwtToken(token:string):boolean{
-        const  header = this.getAuthHeader()
-        if(!header){
+        } else {
             return false
         }
-        header.value = token
-        return true
     }
 
-    setAppliedHeadders(headers : RESTHeader[]){
-        headers.forEach(x=>{
-            let found = this.appliedHeaders.find(f=>f.key == x.key)
-            if(found == undefined){
+    replaceJwtToken(token: string) {
+
+        const header = this.getAuthHeader()
+        if (header != undefined) {
+            header.value = token
+        } else {
+            const newHeader = this.createRestHeader(HeaderKey.AUTHORIZATION, token)
+            this.appliedHeaders.push(newHeader)
+        }
+    }
+
+    setAppliedHeadders(headers: RestHeader[]) {
+        headers.forEach(x => {
+            let found = this.appliedHeaders.find(f => f.key == x.key)
+            if (found == undefined) {
                 this.appliedHeaders.push(x)
-            }else{
+            } else {
                 found.value = x.value
             }
         })
@@ -66,24 +80,33 @@ export class RestCallOptions{
         console.log(this.appliedHeaders)
     }
 
-    setAuthHeader(token:string, method: RestMethod){
-       const authHeader = this.getAuthHeader()
-       if(authHeader){
-            authHeader.value = token
-       }else{
-            this.appliedHeaders.push(new RESTHeader(method, HeaderKey.AUTHORIZATION, token))
-       }
+    setAuthHeader(token: string | undefined) {
+        console.log(`setAuthHeader token : ${token} method : ${this.asset.method}`)
+
+        if (this.asset.secured == true) {
+            const authHeader = this.getAuthHeader()
+            if (authHeader) {
+                authHeader.setValue(token)
+            } else {
+                this.appliedHeaders.push(this.createRestHeader(HeaderKey.AUTHORIZATION, token))
+                console.log(`applying new  header with token   ${token} to method ${this.asset.method}`)
+            }
+        } else {
+            console.warn(`Trying to set token ${token} on non secured asset`)
+        }
     }
 
-    setDefaultHeadders(headers : RESTHeader[]){
-        headers.forEach(x=>{
-            if(!this.appliedHeaders.find(f=>f.key === x.key)){
+    setDefaultHeadders(headers: RestHeader[]) {
+
+        headers.filter(h => h.methodType == this.asset.method).forEach(x => {
+
+            if (!this.appliedHeaders.find(f => f.key === x.key)) {
                 this.appliedHeaders.push(x)
             }
         })
     }
 
-    getHeaders():RESTHeader[]{
+    getHeaders(): RestHeader[] {
         return this.appliedHeaders
     }
 

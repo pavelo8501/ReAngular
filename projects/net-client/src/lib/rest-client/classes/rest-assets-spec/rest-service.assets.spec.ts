@@ -36,6 +36,7 @@ describe('RestClient', () => {
 
    afterEach(() => {
       httpMock.verify();
+      service.getConnection(ConnectionID.BACKEND).closeConnections(true)
   });
 
   
@@ -64,8 +65,11 @@ describe('RestClient', () => {
       expect(req.request.method).toBe('POST');
       req.flush(mockResponse);
       tick();
-
 }));
+
+ 
+
+
 
 
 })
