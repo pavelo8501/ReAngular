@@ -169,6 +169,11 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
         }
     }
 
+
+    protected callPost(requestData: DATA): void;
+    protected callPost<REQUEST>(requestData: REQUEST): void;
+
+    
     protected callPost<REQUEST>(requestData: REQUEST) {
 
         this.preCallRoutine()

@@ -22,6 +22,9 @@ export class RestPostAsset<DATA> extends RestCommonAsset<DATA> {
     }
 }
 
+
+
+
 export class RestGetAsset<DATA> extends RestCommonAsset<DATA> {
 
     constructor(endpoint: string, secured: boolean, connection: RestConnection<ResponseBase<DATA>>) {
