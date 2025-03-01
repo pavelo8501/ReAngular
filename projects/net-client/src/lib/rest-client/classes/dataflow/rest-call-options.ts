@@ -2,7 +2,7 @@ import { HttpHeaders } from "@angular/common/http";
 import { RestHeader } from "./rest-header";
 import { RestMethod } from "../../classes/rest-assets";
 import { HeaderKey } from "../../enums/header-key.enum";
-import { CommonRestAsset } from "../rest-assets/rest-common.asset";
+import { RestCommonAsset } from "./../rest-assets/rest-common.asset";
 
 export interface RestCallOptionsInterface {
     headers?: HttpHeaders
@@ -32,17 +32,15 @@ export class RestCallOptions {
         return options
     }
 
-
     private appliedHeaders: RestHeader[] = []
 
-    constructor(private asset: CommonRestAsset<any>) {
+    constructor(private asset: RestCommonAsset<any>) {
 
     }
 
     createRestHeader(key: HeaderKey, value: string | undefined): RestHeader {
         return new RestHeader(this.asset.method, key, value)
     }
-
 
     private getAuthHeader(): RestHeader | undefined {
         return this.appliedHeaders.find(x => x.key == HeaderKey.AUTHORIZATION)

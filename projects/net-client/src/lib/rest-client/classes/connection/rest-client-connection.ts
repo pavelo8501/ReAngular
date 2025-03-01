@@ -10,7 +10,8 @@ import { ContentNegotiationsInterface, JsNegotiationsPlugin } from "../plugins/c
 import { RestServiceAsset } from "../rest-assets/rest-service.assets";
 import { AssetType, RestMethod } from "../rest-assets/rest-asset.enums";
 import { BehaviorSubject, distinctUntilChanged, filter, Observable } from "rxjs";
-import { AuthEventEmitterService, AuthIncidentTracker, AuthEvent, AuthIncident, } from "../security";
+import { AuthIncidentTracker, AuthIncident, } from "../security";
+import {EventEmitterService} from "./../events"
 import { RestExceptionCode, TokenSubjectException } from "../security/token-subject.exception";
 import { TokenPayloadInterface } from "../security/token-payload.interface";
 import { RestConnectionConfig } from "../config";
@@ -52,8 +53,8 @@ export class RestConnection<RESPONSE extends ResponseBase<any>> {
 
     private client: RestClient
 
-    private _emitter: AuthEventEmitterService | undefined
-    get eventEmitter(): AuthEventEmitterService {
+    private _emitter: EventEmitterService | undefined
+    get eventEmitter(): EventEmitterService {
         if (this._emitter != undefined) {
             return this._emitter
         } else {
@@ -64,8 +65,12 @@ export class RestConnection<RESPONSE extends ResponseBase<any>> {
     private defaultHeaders: RestHeader[] = []
     private tokenSubject = new BehaviorSubject<string | undefined>(undefined)
 
+    private onNewIncident(incident : { method: string, endpoint: string, incident: AuthIncident; timestamp: number } ){
+        console.log(incident.incident)
+    }
+
     contentNegotiations: ContentNegotiationsInterface<RESPONSE>
-    private incidentTracker = new AuthIncidentTracker()
+    private incidentTracker = new AuthIncidentTracker(3,1,this.onNewIncident)
 
     constructor(
         config: RestConnectionConfig<RESPONSE>,
@@ -82,7 +87,7 @@ export class RestConnection<RESPONSE extends ResponseBase<any>> {
         this.listenToTokenSubject()
     }
 
-    initialize(eventEmitter: AuthEventEmitterService, token: string | undefined) {
+    initialize(eventEmitter: EventEmitterService, token: string | undefined) {
         this._emitter = eventEmitter
         if (token) {
             this.tokenSubject.next(token)
@@ -122,7 +127,6 @@ export class RestConnection<RESPONSE extends ResponseBase<any>> {
             next: (token: string | undefined) => {
                 if (token != undefined) {
                     this.client.setToken(this, token)
-                    this.eventEmitter.emit(AuthEvent.TOKEN_SET, token)
                     this.assets.filter(f => f.secured == true).forEach(x => x.callOptions.setAuthHeader(token))
                 } else {
                     console.warn(`Received ${token}`)
@@ -174,7 +178,7 @@ export class RestConnection<RESPONSE extends ResponseBase<any>> {
     }
 
     private registerIncident(author: RestCommonAsset<any>, incident: AuthIncident) {
-        this.eventEmitter.emit(AuthEvent.PRE_FAILED_CALL)
+       // this.eventEmitter.emit(AuthEvent.PRE_FAILED_CALL)
         this.incidentTracker.registerIncident(author.method, author.endpoint, incident)
     }
 
@@ -223,7 +227,7 @@ export class RestConnection<RESPONSE extends ResponseBase<any>> {
     }
 
     subscribeToTokenUpdates(subscriberName: string): Observable<string | undefined> {
-        this.eventEmitter.emit(AuthEvent.NEW_TOKEN_SUBSCRIBER, subscriberName)
+       // this.eventEmitter.emit(AuthEvent.NEW_TOKEN_SUBSCRIBER, subscriberName)
         return this.tokenSubject.asObservable()
     }
 

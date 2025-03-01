@@ -5,9 +5,6 @@ import { AssetType, RestMethod } from "./rest-asset.enums"
 import { RestCommonAsset } from "./rest-common.asset"
 import { HttpErrorResponse } from "@angular/common/http"
 
-
-
-
 export interface AuthRequestInterface {
     login: string,
     password: string
@@ -24,8 +21,6 @@ export class LoginRequest {
 
 export class RestServiceAsset<DATA> extends RestCommonAsset<DATA> {
 
-    private currentToken: DATA | undefined = undefined
-
     constructor(
         endpoint: string,
         method: RestMethod,
@@ -37,11 +32,12 @@ export class RestServiceAsset<DATA> extends RestCommonAsset<DATA> {
     }
 
 
-    private login<DATA>(login: string, password: string) {
+    getToken(login: string, password: string) {
 
-        console.log(`call Post to ${this.apiUrl}`)
+        const request = {login: login, password: password }
+        console.log(`Token requested body : ${request} `)
 
-        this.callPost<string | undefined>(JSON.stringify({ login: login, password: password }))
+        this.callPost<{login: string, password: string}>(request)
 
         this.responseSubject.subscribe({
             next: (token) => {
@@ -59,16 +55,7 @@ export class RestServiceAsset<DATA> extends RestCommonAsset<DATA> {
                 this.tokenSubject.next(undefined)
             }
         })
-    }
 
-    getToken(login: string, password: string) {
-        console.log(`token requested for login : ${login}`)
-        if (!this.currentToken) {
-            this.login(login, password)
-        } else {
-            console.log(`supplying existent ${login}`)
-            this.tokenSubject.next(this.currentToken as string)
-        }
     }
 
 }
