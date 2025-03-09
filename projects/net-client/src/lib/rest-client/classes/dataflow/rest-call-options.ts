@@ -25,7 +25,11 @@ export class RestCallOptions {
                        reason, empty toke received  `)
                 }
             } else {
-                headers = headers.append(header.key, "")
+                if(header.value){
+                    headers = headers.set(header.key, header.value)
+                }else{
+                    console.warn(`RestHeader ${header.key} with empty value on method  ${header.methodType}`)
+                }
             }
         })
         const options = { headers: headers, withCredentials: withCredentials }

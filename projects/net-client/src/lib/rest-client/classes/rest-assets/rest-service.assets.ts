@@ -4,6 +4,7 @@ import { RestConnection } from "../connection/rest-client-connection"
 import { AssetType, RestMethod } from "./rest-asset.enums"
 import { RestCommonAsset } from "./rest-common.asset"
 import { HttpErrorResponse } from "@angular/common/http"
+import { AssetParams } from "./rest-assets.model"
 
 export interface AuthRequestInterface {
     login: string,
@@ -28,7 +29,7 @@ export class RestServiceAsset<DATA> extends RestCommonAsset<DATA> {
         public type: AssetType,
         private tokenSubject: BehaviorSubject<string | undefined>
     ) {
-        super({ endpoint: endpoint, method: method, secured: false }, connection)
+        super({ endpoint: endpoint, method: method, secured: false }, new AssetParams(), connection)
     }
 
 

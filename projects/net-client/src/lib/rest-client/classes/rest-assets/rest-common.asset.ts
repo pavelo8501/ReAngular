@@ -181,7 +181,7 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
         this.preCallRoutine()
         const requestDataJson = JSON.stringify(requestData)
         if(this.params.notifyDataSent){
-            console.log(`Making Post request with request data ${requestData}`)
+            console.log(`Making Post request with request data ${requestDataJson}`)
         }
 
         this.httpHandler = this.http.post<ResponseBase<DATA>>(

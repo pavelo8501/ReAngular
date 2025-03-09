@@ -276,13 +276,13 @@ export class RestConnection<RESPONSE extends ResponseBase<any>> {
 
     }
 
-    createPutAsset<DATA>(src: RestTypedAssetInterface): RestPutAsset<DATA> {
+    createPutAsset<DATA>(src: RestTypedAssetInterface,  params: AssetParams = new AssetParams()): RestPutAsset<DATA> {
         const asset = new RestPutAsset<DATA>(src.endpoint, src.secured, this)
         this.registerAsset(asset)
         return asset
     }
 
-    createGetAsset<DATA>(src: RestTypedAssetInterface): RestGetAsset<DATA> {
+    createGetAsset<DATA>(src: RestTypedAssetInterface, params: AssetParams = new AssetParams()): RestGetAsset<DATA> {
         const asset = new RestGetAsset<DATA>(src.endpoint, src.secured, this)
         this.registerAsset(asset)
         return asset
