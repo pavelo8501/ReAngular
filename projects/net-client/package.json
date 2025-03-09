@@ -1,6 +1,6 @@
 {
   "name": "@pavelo8501/net-client",
-  "version": "0.2.9",
+  "version": "0.2.13",
   "description": "Connectivity services library for ReAngular",
   "devDependencies": {
     "@angular/core": "^19.1.7",
@@ -12,7 +12,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "build net-client",
-    "release": "npm version patch && ng build net-client && cd C:/Projects_IT/ReAngular/dist/net-client && npm publish --access public",
+    "release": "npm version patch && ng build net-client && cd C:/Projects_IT/ReAngular/dist/net-client && npm publish --registry=https://npm.pkg.github.com --access public",
     "postinstall": "rimraf dist"
   },
   "repository": {

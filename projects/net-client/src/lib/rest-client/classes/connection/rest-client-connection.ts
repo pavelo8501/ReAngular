@@ -16,6 +16,7 @@ import { RestExceptionCode, TokenSubjectException } from "../security/token-subj
 import { TokenPayloadInterface } from "../security/token-payload.interface";
 import { RestConnectionConfig } from "../config";
 import { RestCommand } from "../dataflow";
+import { AssetParams } from "../rest-assets";
 
 
 // RESTClientConnection.prototype.registerAsset = function<T>(
@@ -268,20 +269,20 @@ export class RestConnection<RESPONSE extends ResponseBase<any>> {
         )
     }
 
-    createPostAsset<DATA>(src: RestTypedAssetInterface): RestPostAsset<DATA> {
-        const asset = new RestPostAsset<DATA>(src.endpoint, src.secured, this)
+    createPostAsset<DATA>(src: RestTypedAssetInterface, params: AssetParams = new AssetParams()) {
+        const asset = new RestPostAsset<DATA>(src.endpoint, src.secured, this, params)
         this.registerAsset(asset)
         return asset
 
     }
 
-    createPutAsset<DATA>(src: RestTypedAssetInterface, type: AssetType = AssetType.NON_SERVICE): RestPutAsset<DATA> {
+    createPutAsset<DATA>(src: RestTypedAssetInterface): RestPutAsset<DATA> {
         const asset = new RestPutAsset<DATA>(src.endpoint, src.secured, this)
         this.registerAsset(asset)
         return asset
     }
 
-    createGetAsset<DATA>(src: RestTypedAssetInterface, type: AssetType = AssetType.NON_SERVICE): RestGetAsset<DATA> {
+    createGetAsset<DATA>(src: RestTypedAssetInterface): RestGetAsset<DATA> {
         const asset = new RestGetAsset<DATA>(src.endpoint, src.secured, this)
         this.registerAsset(asset)
         return asset

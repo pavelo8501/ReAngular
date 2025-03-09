@@ -9,6 +9,7 @@ import { CallParamInterface, RestCommand } from "../dataflow"
 import { TokenSubjectException } from "../security"
 import { EventEmitterService, RequestError } from "../events"
 import { RequestEvent } from "../events/models/request-event.class"
+import { AssetParams } from "./rest-assets.model"
 
 
 export interface RestAssetInterface {
@@ -85,6 +86,7 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
 
     protected constructor(
         config: RestAssetInterface,
+        protected params: AssetParams,
         connection: RestConnection<ResponseBase<DATA>>
     ) {
         this._connection = connection
@@ -177,9 +179,14 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
     protected callPost<REQUEST>(requestData: REQUEST) {
 
         this.preCallRoutine()
+        const requestDataJson = JSON.stringify(requestData)
+        if(this.params.notifyDataSent){
+            console.log(`Making Post request with request data ${requestData}`)
+        }
+
         this.httpHandler = this.http.post<ResponseBase<DATA>>(
             this.apiUrl,
-            JSON.stringify(requestData),
+            requestDataJson,
             this.callOptions.toOptions()
         ).subscribe({
             next: (response) => {
@@ -204,6 +211,11 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
             params.forEach(x => paramStr += `${x.key}=${x.value}&`)
             paramStr = RestCommonAsset.truncateTrailingChar(paramStr, '&')
         }
+
+        if(this.params.notifyDataSent){
+            console.log(`Making Post request with request data ${paramStr}`)
+        }
+
         const requestUrl = this.apiUrl + paramStr
         this.preCallRoutine()
         this.http.get<ResponseBase<DATA>>(
@@ -230,6 +242,9 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
         console.log(`Put request Url ${this.apiUrl} with body : ${requestBodyStr}`)
         this.preCallRoutine()
 
+        if(this.params.notifyDataSent){
+            console.log(`Making Post request with request data ${requestBodyStr}`)
+        }
         this.http.put<ResponseBase<DATA>>(
             this.apiUrl,
             requestBodyStr,
