@@ -4,8 +4,9 @@ import { ControlState } from '../classes/enums/control-state';
 import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule ,ValidationErrors, FormControl } from '@angular/forms';
 import { ActivationState } from '../classes/enums/activation-state';
-import { Subject, takeUntil } from 'rxjs';
+
 import { InputType } from '../classes/enums/input-type';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'floating-input',

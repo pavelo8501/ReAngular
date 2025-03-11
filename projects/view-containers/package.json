@@ -1,17 +1,23 @@
 {
   "name": "@pavelo8501/view-containers",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "description": "View container set library for ReAngular", 
+
+  "dependencies": {
+    "@angular/common": "^19.2.0",
+    "@angular/core": "^19.2.0",
+    "tslib": "^2.8.1"
+  },
+
   "devDependencies": {
     "@angular/common": "^19.2.0",
     "@angular/core": "^19.2.0"
   },
-  "dependencies": {
-    "tslib": "^2.3.0"
-  },
+
   "scripts": {
     "build": "ng build view-containers",
     "watch": "ng build view-containers --watch", 
-    "release": "npm version patch && ng build view-continers"
-  },
-  "sideEffects": false
+    "release": "npm version patch && ng build view-continers",
+    "poststart": "rimraf dist"
+  }
 }
