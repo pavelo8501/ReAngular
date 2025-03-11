@@ -12,6 +12,9 @@
       ],
       "net-client": [
         "./dist/net-client"
+      ],
+      "view-containers": [
+        "./dist/view-containers"
       ]
     },
     "noImplicitOverride": true,

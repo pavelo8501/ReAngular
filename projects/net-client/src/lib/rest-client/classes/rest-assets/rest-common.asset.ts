@@ -116,11 +116,9 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
     private preCallRoutine() {
         if (this.secured) {
             if (this.callOptions.hasJwtToken) {
-                console.log(`preCallRoutine has token`)
-            } else {
-                console.log(`preCallRoutine has no token, requesting`)
-                const token = this.connection.getJWTToken(this)
 
+            } else {
+                const token = this.connection.getJWTToken(this)
                 this.callOptions.setAuthHeader(token)
             }
         }
@@ -129,9 +127,7 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
     private processResponse(response: ResponseBase<DATA>|undefined) {
         try {
             if(response){
-                console.log(`processResponse received response`,response)
                 const deserializeResult = this.contentNegotiations.deserialize<DATA>(response)
-                console.log(`processResponse response data  ${deserializeResult} `)
                 this.responseSubject.next(deserializeResult)
             }else{
                 this.eventEmitter.emitRequestEvent(`Undefined response at ${this.toString()}`,RequestError.DATA_RESPONSE_UNDEFINED)
@@ -154,7 +150,6 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
                 `Unauthorized request on ${this.toString()}`, 
                 RequestError.SERVER_UNAUTHORIZED
             )
-            console.log(`Processing Unauthorized`)
             if (this.fallbackEnabled) {
                 const token = this.connection.getJWTToken(this)
                 if (token) {
@@ -250,8 +245,6 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
             requestBodyStr,
             this.callOptions.toOptions()).subscribe({
                 next: (response) => {
-                    console.log("raw response")
-                    console.log(response)
                     this.processResponse(response)
                 },
                 error: (err: HttpErrorResponse) => {
