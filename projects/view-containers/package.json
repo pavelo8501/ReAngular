@@ -1,9 +1,9 @@
 {
   "name": "@pavelo8501/view-containers",
   "version": "0.0.1",
-  "peerDependencies": {
-    "@angular/common": "^19.1.0",
-    "@angular/core": "^19.1.0"
+  "devDependencies": {
+    "@angular/common": "^19.2.0",
+    "@angular/core": "^19.2.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"
@@ -11,9 +11,7 @@
   "scripts": {
     "build": "ng build view-containers",
     "watch": "ng build view-containers --watch", 
-    "release": "npm version patch && ng build view-continers",
-    "postinstall": "rimraf dist",
-    "postpublish": "rimraf dist"
+    "release": "npm version patch && ng build view-continers"
   },
   "sideEffects": false
 }

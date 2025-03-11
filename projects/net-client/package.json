@@ -3,11 +3,15 @@
   "version": "0.2.18",
   "description": "Connectivity services library for ReAngular",
   "devDependencies": {
-    "@angular/core": "^19.1.7",
-    "@angular/common": "^19.1.7",
-    "@angular/forms": "^19.1.7",
+    "@angular/common": "^19.2.0",
+    "@angular/core": "^19.2.0",
+    "@angular/forms": "^19.1.0",
     "rxjs": "^7.8.0",
     "ngx-cookie-service": "^19.1.2"
+  },
+
+  "dependencies": {
+    "tslib": "^2.3.0"
   },
   "scripts": {
     "prebuild": "rimraf dist",

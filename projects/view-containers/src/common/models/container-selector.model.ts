@@ -5,7 +5,7 @@ export type ContainerSelector = {
     id: string;
   };
 
- export const singletonSelectors = new Map<string, ContainerSelector>();
+ const singletonSelectors = new Map<string, ContainerSelector>();
 
  export function createContainerSelector(tag: HtmlTag, id: string): ContainerSelector {
     const key = `${tag}-${id}`;
