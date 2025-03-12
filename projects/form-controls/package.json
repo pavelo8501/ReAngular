@@ -1,26 +1,25 @@
 {
   "name": "@pavelo8501/form-controls",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "Form controls library for ReAngular",
   "main": "dist/libs/form-controls/index.js",
   "module": "dist/libs/form-controls/index.mjs",
   "types": "dist/libs/form-controls/index.d.ts",
-
-  "dependencies": {
+  "peerDependencies": {
     "@angular/forms": "^19.2.0",
-    "tslib": "^2.8.1",
+    "@angular/core": "^19.2.0",
+    "@angular/common": "^19.2.0",
     "rxjs": "^7.8.0"
   },
-
   "devDependencies": {
-    "@angular/core": "^19.2.0",
-    "@angular/common": "^19.2.0"
+    "tslib": "^2.8.1"
   },
-
-
   "scripts": {
-    "build": "nx build form-controls",
-    "publish": "npm publish --access public"
+    "prebuild": "rimraf dist",
+    "build": "build form-controls",
+    "release": "npm version patch && ng build form-controls && cd C:/Projects_IT/ReAngular/dist/form-controls && npm publish --registry=https://npm.pkg.github.com --access public",
+    "postinstall": "rimraf dist",
+    "postpublish": "rimraf dist"
   },
   "repository": {
     "type": "git",
