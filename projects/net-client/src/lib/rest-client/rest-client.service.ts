@@ -25,8 +25,8 @@ export class RestClient {
 
     private connections: RestConnection<any>[] = []
 
-    private onInitialized?: () => void
-    initialized = (callback: () => void) => {
+    private onInitialized?: (connections : RestConnection<any>[]) => void
+    initialized = (callback: (connections : RestConnection<any>[]) => void) => {
         console.log("RestClient initialized callback set.");
         this.onInitialized = callback
     }
@@ -49,6 +49,12 @@ export class RestClient {
         newConnection.initialize(this.eventEmitter, token)
 
         if (config.withJwtAuth) {
+            let apiUrl : string
+            if(config.withJwtAuth.authUrl){
+                apiUrl = config.withJwtAuth.authUrl
+            }else{
+                apiUrl = config.baseUrl
+            }
             const authEndpoint = config.withJwtAuth.getTokenEndpoint
             const refreshEndpoint = config.withJwtAuth.refreshTokenEndpoint
             const method = config.withJwtAuth.method
@@ -56,12 +62,14 @@ export class RestClient {
             newConnection.createServiceAsset<string | undefined>(
                 authEndpoint,
                 method,
-                AssetType.ATHENTICATE
+                AssetType.ATHENTICATE,
+                apiUrl
             )
             newConnection.createServiceAsset<string | undefined>(
                 refreshEndpoint,
                 method,
-                AssetType.REFRESH
+                AssetType.REFRESH,
+                apiUrl
             )
         }
         this.connections.push(newConnection)
@@ -88,7 +96,7 @@ export class RestClient {
 
     configComplete() {
         if (this.onInitialized) {
-            this.onInitialized();
+            this.onInitialized(this.connections);
         }
 
         if (!this.production) {

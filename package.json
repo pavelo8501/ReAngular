@@ -1,13 +1,12 @@
 {
   "name": "re-angular",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "serve:ssr:playground": "node dist/playground/server/server.mjs"
+    "test": "ng test"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -24,10 +23,8 @@
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/platform-server": "^19.1.0",
     "@angular/router": "^19.2.0",
-    "@angular/ssr": "^19.2.0",
     "@auth0/angular-jwt": "^5.2.0",
     "angular-jwt": "github:auth0/angular-jwt",
-    "express": "^4.18.2",
     "jwt-decode": "^4.0.0",
     "ngx-cookie-service": "^19.1.2",
     "ngx-editor": "^18.0.0",

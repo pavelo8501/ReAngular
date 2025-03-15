@@ -25,7 +25,6 @@ export class ViewContainerComponent implements OnInit,  AfterViewInit {
   dataModel = signal<DataInterface|undefined>(undefined)
   
   content = computed<string | undefined>( () =>  { return this.dataModel()?.content })
-  
 
   showAttachedContent = input<boolean>(false)
 

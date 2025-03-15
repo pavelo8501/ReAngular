@@ -2,7 +2,7 @@
   "name": "@pavelo8501/form-controls",
   "version": "0.0.7",
   "description": "Form controls library for ReAngular",
-  "main": "dist/libs/form-controls/index.js",
+  "main": "dist/libs/form-controls/index.d.ts",
   "module": "dist/libs/form-controls/index.mjs",
   "types": "dist/libs/form-controls/index.d.ts",
   "peerDependencies": {

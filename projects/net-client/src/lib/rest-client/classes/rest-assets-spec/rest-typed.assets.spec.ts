@@ -9,13 +9,13 @@ import {
   RestMethod, HeaderKey
 } from "./../../"
 
-
-import { ConnectionID, BackendResponse } from './../../../../../../playground';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { RequestError } from '../events';
 import { RequestEvent } from '../events/models/request-event.class';
 import { MockRecord } from './models/mock-record.class';
+import { MockedResponse } from '../../test-setup/mocked-response.model';
+import { ConnectionID } from '../../test-setup/mocked-connection.enum';
 
 fdescribe('RestClient', () => {
   let service: RestClient
@@ -32,15 +32,15 @@ fdescribe('RestClient', () => {
         provideRestClient(
           { production: false },
           new RestConnectionConfig(
-            ConnectionID.BACKEND_API,
+            ConnectionID.MOCKED,
             "",
-            new BackendResponse<any>(),
+            new MockedResponse<any>(),
             { getTokenEndpoint: "auth/login", refreshTokenEndpoint: "auth/refresh", method: RestMethod.POST }))
       ]
     })
 
     service = TestBed.inject(REST_CLIENT);
-    connection = service.getConnection(ConnectionID.BACKEND_API)
+    connection = service.getConnection(ConnectionID.MOCKED)
     putAsset = connection.createPutAsset<string>({ endpoint: "api/put", secured: true })
     getAsset = connection.createGetAsset<MockRecord[]>({ endpoint: "api/get", secured: true })
     httpMock = TestBed.inject(HttpTestingController);
@@ -80,7 +80,7 @@ fdescribe('RestClient', () => {
     assertTokenHeader('/api/get', 'mock-token');
     tick()
 
-    putAsset.makeCall(1, "SomeInput")
+    putAsset.makeCall("SomeInput")
     assertTokenHeader('/api/put?id=1', 'mock-token');
     tick()
     expect(tokenFetchCount).toBe(1);
@@ -126,7 +126,7 @@ fdescribe('RestClient', () => {
     let recordsReceived = 0
     let responseCount = 0
     let receivedRecords: Array<MockRecord> = []
-    const getAssetHandler = getAsset.makeCall<MockRecord[]>([]).subscribe({
+    const getAssetHandler = getAsset.makeCall([]).subscribe({
       next: (records) => {
         console.log(`INTEST RECORDS RECEIVED`)
         console.log(records)
@@ -151,10 +151,10 @@ fdescribe('RestClient', () => {
     getAssetHandler.unsubscribe()
   }))
 
-  function mockResponse(): BackendResponse<MockRecord[]> {
+  function mockResponse(): MockedResponse<MockRecord[]> {
 
     const payload = Array<MockRecord>(new MockRecord(1, "mock_1", 1), new MockRecord(2, "mock_2", 2))
-    const response = new BackendResponse<MockRecord[]>()
+    const response = new MockedResponse<MockRecord[]>()
     response.errorCode = 0
     response.msg = "ok"
     response.ok = true

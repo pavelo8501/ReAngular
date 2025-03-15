@@ -1,13 +1,12 @@
 import { fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { RestClient } from './rest-client.service';
 import { RestConnectionConfig, REST_CLIENT } from './classes/config';
-import { ConnectionID, BackendResponse } from './../../../../playground';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
-import { HeaderKey } from './enums';
 import { RestMethod } from './classes/rest-assets';
 import { provideRestClient } from "./classes/config/index"
-import { TokenSubjectException } from './classes/security/token-subject.exception';
+import { MockedResponse } from './test-setup/mocked-response.model';
+import { ConnectionID } from './test-setup/mocked-connection.enum';
 
 describe('RestClient', () => {
   let service: RestClient;
@@ -21,9 +20,9 @@ describe('RestClient', () => {
         provideRestClient(
           { production: false },
           new RestConnectionConfig(
-            ConnectionID.BACKEND_API,
+            ConnectionID.MOCKED,
             "",
-            new BackendResponse<any>(),
+            new MockedResponse<any>(),
             { getTokenEndpoint: "auth/login", refreshTokenEndpoint: "auth/refresh", method: RestMethod.POST }))
       ]
     });
@@ -33,7 +32,7 @@ describe('RestClient', () => {
 
   afterEach(() => {
     httpMock.verify(); // ensures no outstanding requests
-    service.getConnection(ConnectionID.BACKEND_API).closeConnections(true)
+    service.getConnection(ConnectionID.MOCKED).closeConnections(true)
 
   });
 

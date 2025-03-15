@@ -26,7 +26,8 @@ export class RestClientOptions implements RestClientOptionsInterface {
 export interface JwtConfigInterface {
     getTokenEndpoint: string
     refreshTokenEndpoint: string
-    method: RestMethod
+    method: RestMethod,
+    authUrl?:string
 }
 
 
@@ -35,7 +36,8 @@ export class RestConnectionConfig<T extends ResponseBase<any>> {
         public id: number,
         public baseUrl: string,
         public responseTemplate: T,
-        public withJwtAuth?: JwtConfigInterface) { }
+        public withJwtAuth?: JwtConfigInterface,
+    ) { }
 }
 
 

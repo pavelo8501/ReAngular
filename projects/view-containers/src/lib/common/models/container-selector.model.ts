@@ -1,15 +1,12 @@
 import { HtmlTag } from "./../enums/html-tag.enum";
 
 
-
 export type ContainerSelector  = {
-
   tag: HtmlTag;
   id: string;
-
   };
 
-  export interface SelectorInterface{
+ export interface SelectorInterface{
     selector : ContainerSelector
  }
  

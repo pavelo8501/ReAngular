@@ -2,7 +2,7 @@ import { Subject, Observable } from 'rxjs';
 import { RequestEvent } from './models/request-event.class';
 import { IncidentEvent } from './models/incident-event.class';
 import { IncidentCode } from './enums/incident-code.enum';
-import { RequestError } from './enums/request-error.enum';
+import { HttpErrorResponse } from '@angular/common/http';
 
 
 export class EventEmitterService {
@@ -36,10 +36,18 @@ export class EventEmitterService {
   }
 
   /** Emit request response events */
-  emitRequestEvent(msg:string, errCode:RequestError, ){
-    this.notityConsole(msg, errCode)
-    this.requestEventSubject.next(new RequestEvent(msg, errCode))
+  emitRequestError(error: HttpErrorResponse){
+    const requestEvent  = new RequestEvent(error)
+    this.notityConsole(requestEvent.toString(), error.status)
+    this.requestEventSubject.next(new RequestEvent(error))
   }
+
+  emitError(message: string, errCode:IncidentCode){
+    this.notityConsole(`${message} ${errCode}`)
+    this.incidentEventSubject.next(new IncidentEvent(errCode, message));
+  }
+
+
 
   /** Emit an incident registration events */
   emitIncidentEvent(incidentCode: IncidentCode, payload?: any): void {

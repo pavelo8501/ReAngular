@@ -11,7 +11,7 @@ import { RestServiceAsset } from "../rest-assets/rest-service.assets";
 import { AssetType, RestMethod } from "../rest-assets/rest-asset.enums";
 import { BehaviorSubject, distinctUntilChanged, filter, Observable } from "rxjs";
 import { AuthIncidentTracker, AuthIncident, } from "../security";
-import {EventEmitterService} from "./../events"
+import {EventEmitterService, RequestEvent} from "./../events"
 import { RestExceptionCode, TokenSubjectException } from "../security/token-subject.exception";
 import { TokenPayloadInterface } from "../security/token-payload.interface";
 import { RestConnectionConfig } from "../config";
@@ -93,6 +93,10 @@ export class RestConnection<RESPONSE extends ResponseBase<any>> {
         if (token) {
             this.tokenSubject.next(token)
         }
+    }
+
+    subscribeRequestErrors():Observable<RequestEvent>{
+        return this.eventEmitter.requestEvents$
     }
 
     private compare(str1: string, str2: string): boolean {
@@ -204,7 +208,7 @@ export class RestConnection<RESPONSE extends ResponseBase<any>> {
     }
 
     getJWTToken(asset: RestCommonAsset<any>): string | undefined {
-        console.log(`asset ${asset.endpoint} requesting token through getJWTToken`)
+
         const jwtToken = this.tokenSubject.getValue()
         if (jwtToken) {
             return jwtToken
@@ -263,9 +267,9 @@ export class RestConnection<RESPONSE extends ResponseBase<any>> {
         }
     }
 
-    createServiceAsset<DATA>(endpoint: string, method: RestMethod, type: AssetType): RestServiceAsset<DATA> {
+    createServiceAsset<DATA>(endpoint: string, method: RestMethod, type: AssetType, authUrl: string): RestServiceAsset<DATA> {
         return this.registerServiceAsset(
-            new RestServiceAsset<DATA>(endpoint, method, this, type, this.tokenSubject)
+            new RestServiceAsset<DATA>( authUrl, endpoint, method, this, type, this.tokenSubject)
         )
     }
 
@@ -277,13 +281,13 @@ export class RestConnection<RESPONSE extends ResponseBase<any>> {
     }
 
     createPutAsset<DATA>(src: RestTypedAssetInterface,  params: AssetParams = new AssetParams()): RestPutAsset<DATA> {
-        const asset = new RestPutAsset<DATA>(src.endpoint, src.secured, this)
+        const asset = new RestPutAsset<DATA>(src.endpoint, src.secured, this, params)
         this.registerAsset(asset)
         return asset
     }
 
     createGetAsset<DATA>(src: RestTypedAssetInterface, params: AssetParams = new AssetParams()): RestGetAsset<DATA> {
-        const asset = new RestGetAsset<DATA>(src.endpoint, src.secured, this)
+        const asset = new RestGetAsset<DATA>(src.endpoint, src.secured, this, params)
         this.registerAsset(asset)
         return asset
     }
