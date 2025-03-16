@@ -1,39 +1,38 @@
 import { Observable, Subject } from "rxjs";
 import { DataWithCallback } from "../../common/classes/two-way.observable";
 import { ViewContainerRef } from "@angular/core";
-import { RendererSelector } from "../types/rendering-container.types";
+import { RendererSelector } from "../classes/renderer-selector.class";
 
 
 
-export class ObserverPayload{
-    message:string = "Outgoind"
-    refference:ViewContainerRef
+export class ObserverPayload {
+    message: string = "Outgoind"
+    refference: ViewContainerRef
 
-    create(refference: ViewContainerRef){
-        this.refference =refference
+    create(refference: ViewContainerRef) {
+        this.refference = refference
     }
 
-    constructor(refference: ViewContainerRef, message : string | undefined){
-        this.refference =refference
-        if(message){
+    constructor(refference: ViewContainerRef, message: string | undefined) {
+        this.refference = refference
+        if (message) {
             this.message = message
-        }else{
+        } else {
             this.message = "Outgoind default"
         }
     }
 }
 
+export class ObserverCallback {
 
-export class ObserverCallback{
-
-    message:string
+    message: string
     child: RendererSelector[] = []
 
-    constructor(child: RendererSelector[],  message: string|undefined = undefined){
-        this.child  = child
-        if(message){
+    constructor(child: RendererSelector[], message: string | undefined = undefined) {
+        this.child = child
+        if (message) {
             this.message = message
-        }else{
+        } else {
             this.message = "Default messae"
         }
     }
@@ -42,16 +41,16 @@ export class ObserverCallback{
 export class ObserverData implements DataWithCallback<ObserverPayload, ObserverCallback> {
 
     data: ObserverPayload
-    callback : (response: ObserverCallback) => void
+    callback: (response: ObserverCallback) => void
 
-    constructor(data : ObserverPayload, callback: (response: ObserverCallback) => void){
+    constructor(data: ObserverPayload, callback: (response: ObserverCallback) => void) {
         this.data = data
-        this.callback =callback
+        this.callback = callback
     }
 }
 
-export class SendReplyObserver{
-    
+export class SendReplyObserver {
+
     private subject = new Subject<DataWithCallback<ObserverPayload, ObserverCallback>>();
 
     sendData(data: ObserverPayload): Promise<ObserverCallback> {

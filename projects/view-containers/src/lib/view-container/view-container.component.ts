@@ -14,7 +14,7 @@ import { DataInterface, DataServiceInterface } from "../common/data-handling/dat
   templateUrl: './view-container.component.html',
   styleUrl: './view-container.component.css',
 })
-export class ViewContainerComponent implements OnInit,  AfterViewInit { 
+export class ViewContainerComponent implements  AfterViewInit { 
 
   HtmlTag = HtmlTag
   selector = input.required<ContainerSelector>()
@@ -34,11 +34,6 @@ export class ViewContainerComponent implements OnInit,  AfterViewInit {
       this.dataModel.set(model)
   }
 
-  ngOnInit(): void {
-    console.log(`ViewContainerComponent:ngOnInit() selector id : ${this.selector().id}  selector tag ${this.selector().tag}}`)
-  }
-
-
   ngAfterViewInit(): void {
     console.log(`ViewContainerComponent:ngAfterViewInit() selector id : ${this.selector().id}  selector tag ${this.selector().tag}}`)
 
@@ -49,7 +44,6 @@ export class ViewContainerComponent implements OnInit,  AfterViewInit {
         if(dataService){
            dataService.getDataForContainer(this.selector()).then((dataRecord)=>{
             this.dataModel.set(dataRecord)
-           
           })
         }else{
             console.warn(`No data source ingected for selector ${this.selector().tag} `);

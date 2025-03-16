@@ -1,11 +1,24 @@
 
 
-<div id="internal" name="intermal tree" >
-    {{ selector().angularSelector }}
+
+<div   class="scrollable-container" [ngClass]="containerClass()"  [style.height]="(height() | numToStr:'px')">
+
+   
+        <ng-container #rootNode>
+            
+        </ng-container>
+
+
+   <!-- <ng-template #rootNode>
+    <p>This is inside ng-template!</p>
+  </ng-template> -->
+    
+    <!-- @for(rootContainer of rootContainers();  track $index ){
+    <div> -->
+        <!-- <lib-container-node [rendererSource]="rootContainer" > 
+            <p> Da estj no ja pidor poetomu ne delaju nihija </p>
+        </lib-container-node> -->
+    <!-- </div> -->
+        <!-- <lib-rendering-container [selector]="container.selector" [rendererSource]="container"  >  </lib-rendering-container>   -->
+    <!-- } -->
 </div>
-
-
-
-
-
-

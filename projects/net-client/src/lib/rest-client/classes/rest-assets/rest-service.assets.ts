@@ -40,8 +40,6 @@ export class RestServiceAsset<DATA> extends RestCommonAsset<DATA> {
         this.callPost<{login: string, password: string}>(request)
         this.responseSubject.subscribe({
             next: (token) => {
-                console.warn(`token received in TokenAuthenticator`)
-                console.log(token)
                 if (token != undefined) {
                     this.tokenSubject.next(token as string)
                 } else {

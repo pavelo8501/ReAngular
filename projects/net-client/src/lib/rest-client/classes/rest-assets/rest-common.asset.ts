@@ -159,7 +159,11 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
         try {
             if(response){
                 const deserializeResult = this.contentNegotiations.deserialize<DATA>(response)
-                this.responseSubject.next(deserializeResult)
+                if(deserializeResult){
+                    this.responseSubject.next(deserializeResult)
+                }else{
+                    console.warn(`Deserialization error`)
+                }
             }else{
                 console.warn(`Undefined response`)
                 this.eventEmitter.emitError(`Undefined response`, IncidentCode.RESPONSE_UNDEFINED)

@@ -11,7 +11,6 @@ export enum HtmlTag{
     IMAGE = "IMG"
 }
 
-
 export const HtmlTagByName = (tagName: string): HtmlTag | undefined => {
-    return Object.keys(HtmlTag).find(key => HtmlTag[key as keyof typeof HtmlTag].toLowerCase() === tagName.toLowerCase()) as HtmlTag;
+    return Object.values(HtmlTag).find(tag => tag.toLowerCase() === tagName.toLowerCase());
 };
