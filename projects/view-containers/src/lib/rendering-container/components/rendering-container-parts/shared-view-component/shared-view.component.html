@@ -1,0 +1,15 @@
+
+<ng-container>
+
+    
+    <h2 #nodeContianer [id]="rendererSource().selector.selector.key"  name="header-component-outer-ng-template"  [ngClass]="classList()" > 
+        <ng-container *ngIf="innerHtml() as content"  name="header-innerhtml-ng-container">
+            <div [innerHTML]="content" name="header-innerhtml-div">  </div>
+        </ng-container>
+
+        <ng-container  #nodeInnerContainer name="header-component-node-inner-container" >
+        </ng-container>
+      </h2>
+
+
+</ng-container>

@@ -5,7 +5,7 @@ import { RendererSelector } from "./renderer-selector.class"
 import { RenderingFactory } from "./rendering-factory.class"
 
 
-export class RenderingContainer {
+export class RenderingContainer<T> {
 
     get name():string{
         return `${this.selector.selector.key}`
@@ -18,16 +18,16 @@ export class RenderingContainer {
     }
 
     selector: RendererSelector
-    classList:string[]
+    classList:{key:number, value:string}[]
     private html: string = ""
-    private assets: ContainerComponentAsset<ContainerNodeComponent>[] = []
-    private thisComponentsRefference : ComponentRef<ContainerNodeComponent> | undefined
+    private assets: ContainerComponentAsset<ContainerNodeComponent<T>>[] = []
+    private thisComponentsRefference : ComponentRef<ContainerNodeComponent<T>> | undefined
     private parentViewRef : ViewContainerRef | undefined
     private subscriptions: {
         onHtmlUpdated: (html: string) => void;
         onChildUpdated: (selectors: RendererSelector[]) => void;
     }
-    private factory: RenderingFactory
+    private factory: RenderingFactory<T>
 
     constructor(source: RendererSelector) {
         this.selector = source
@@ -52,7 +52,7 @@ export class RenderingContainer {
         }
     }
 
-    getComponentRefference():ComponentRef<ContainerNodeComponent>|undefined{
+    getComponentRefference():ComponentRef<ContainerNodeComponent<T>>|undefined{
         if(this.thisComponentsRefference){
             return  this.thisComponentsRefference
         }else{
@@ -61,17 +61,18 @@ export class RenderingContainer {
         }
     }
 
-    setComponentRefference(refference : ComponentRef<ContainerNodeComponent>):RenderingContainer{
+    setComponentRefference(refference : ComponentRef<ContainerNodeComponent<T>>, parentViewRef : ViewContainerRef ):RenderingContainer<T>{
         this.thisComponentsRefference = refference
+        this.parentViewRef = parentViewRef
         return this
     }
 
-    setAssets(assets: ContainerComponentAsset<ContainerNodeComponent>[]): RenderingContainer {
+    setAssets(assets: ContainerComponentAsset<ContainerNodeComponent<T>>[]): RenderingContainer<T> {
         this.assets = assets
         this.factory
         return this
     }
-    getAssets():ContainerComponentAsset<ContainerNodeComponent>[]{
+    getAssets():ContainerComponentAsset<ContainerNodeComponent<T>>[]{
         if(this.assets.length == 0){
             console.warn(`${this.personalName} Assets were requeste but have none`)
         }
@@ -82,7 +83,7 @@ export class RenderingContainer {
         return this.parentViewRef
     }
 
-    setSourceHtml(html: string): RenderingContainer {
+    setSourceHtml(html: string): RenderingContainer<T> {
         if (this.html != html) {
             this.html = html
             this.subscriptions.onHtmlUpdated(html)
@@ -94,7 +95,7 @@ export class RenderingContainer {
         return this.html
     }
 
-    withFactory():RenderingFactory{
+    withFactory():RenderingFactory<T>{
         return this.factory
     }
 

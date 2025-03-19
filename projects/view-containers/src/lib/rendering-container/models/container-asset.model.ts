@@ -1,22 +1,22 @@
 import { Type } from "@angular/core";
-import { InjectableI } from "../interfaces/injectable.interface";
-import { RendererSelector } from "../classes/renderer-selector.class"
-import { ContainerNodeComponent, HtmlTag } from "../../../public-api";
+import { ContainerNodeComponent} from "./../components/rendering-container-parts/container-node/container-node.component";
+import {RendererSelector} from "./../classes/renderer-selector.class"
+import{HtmlTag}from "./../../common/enums/html-tag.enum"
 
-export type ContainerComponentAsset<T extends ContainerNodeComponent> = {
+export type ContainerComponentAsset<T extends ContainerNodeComponent<any>> = {
   componentType: Type<T>
   htmlTag: HtmlTag
 }
 
-export interface ComponentAssetInterface<T extends ContainerNodeComponent> {
+export interface ComponentAssetInterface<T extends ContainerNodeComponent<any>> {
   componentAsset: ContainerComponentAsset<T>
 }
 
-const singletonComponentAssrets = new Map<string, ContainerComponentAsset<ContainerNodeComponent>>();
+const singletonComponentAssrets = new Map<string, ContainerComponentAsset<ContainerNodeComponent<any>>>();
 
-export function createComponentAsset<T extends ContainerNodeComponent>(
-  assets: ContainerComponentAsset<T>[]
-): Map<string, ContainerComponentAsset<ContainerNodeComponent>> {
+export function createComponentAsset<T>(
+  assets: ContainerComponentAsset<ContainerNodeComponent<any>>[]
+): Map<string, ContainerComponentAsset<ContainerNodeComponent<any>>> {
   assets.forEach(x => {
     const key = x.htmlTag
     singletonComponentAssrets.set(key, x);

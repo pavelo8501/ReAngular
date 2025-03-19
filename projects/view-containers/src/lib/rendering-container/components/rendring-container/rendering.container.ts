@@ -2,26 +2,17 @@ import {
   ChangeDetectionStrategy,
   Component,
   effect,
-  model,
   signal,
   ViewContainerRef,
-  OnInit,
-  ComponentRef,
   input,
-  viewChild,
   AfterViewInit,
-  TemplateRef,
   ViewChild,
   Injector
 } from '@angular/core';
-import { CommonModule, NgTemplateOutlet } from "@angular/common"
-import { InjectableI } from '../../interfaces/injectable.interface';
-import { ObserverPayload, SendReplyObserver } from '../../models/observer-message.model';
+import { CommonModule} from "@angular/common"
 import { RendererSelector } from '../../classes/renderer-selector.class';
 import { RenderingContainer } from '../../classes/rendering-container.class';
-import { ContainerComponentAsset } from '../../models';
-import { HtmlTag } from '../../../common/enums';
-import { TagPrinter } from '../rendering-container-parts/html-tag-renderer/html-tag-printer';
+import { ContainerComponentAsset} from '../../models';
 import { NumToStrPipe } from '../../../common/pipes/num-to-str.pipe';
 import { ContainerNodeComponent } from '../rendering-container-parts/container-node/container-node.component';
 
@@ -36,114 +27,81 @@ import { ContainerNodeComponent } from '../rendering-container-parts/container-n
 export class RenderingContainerComponent implements AfterViewInit {
   @ViewChild('rootNode', {read: ViewContainerRef }) rootNode!: ViewContainerRef
 
-  componetAssets = input<Map<string, ContainerComponentAsset<ContainerNodeComponent>>>()
-  selector = input.required<RendererSelector>()
-  sourceHtml = input<string>()
-
+  componetAssets = input<Map<string, ContainerComponentAsset<ContainerNodeComponent<any>>>>()
   opennedHeight = input<number>(100)
   height = signal<number>(100)
-
-
   containerClass = signal<string>("")
 
+  rendererSource = input<RenderingContainer<any> | undefined>(undefined)
 
-  renderedTemplate = input<string | undefined>(undefined)
+  rootContainers : RenderingContainer<any>[] = []
 
-  childRenderingContainers = signal<RenderingContainerComponent[] | undefined>(undefined)
-
-  rendererSource = input<RenderingContainer | undefined>(undefined)
-
-
-  observer: SendReplyObserver | undefined
-  renderingContainer: RenderingContainer | undefined
-
-
-  rootContainers = signal<RenderingContainer[]>([])
+  selectors = input<RendererSelector[]>([])
 
   constructor() {
     effect(() => {
 
       this.height.set(this.opennedHeight())
-
-      const hostSelector = this.selector()
-
-      if (this.renderingContainer == undefined) {
-        this.renderingContainer = new RenderingContainer(hostSelector)
-        let childSelectors: RendererSelector[] = []
-        let byCallback: boolean = false
-        childSelectors = hostSelector.getChild((selectors) => {
-          byCallback = true
-          this.renderContent(selectors)
-        })
+      const selectors =  this.selectors()
+      if(selectors.length > 0){
+        console.warn(`selectors list is updated ${selectors.length}`)
+        this.renderContent(selectors)
       }
     })
   }
 
-
-  private renderAssetsOnly(selectors: RendererSelector[], assets: ContainerComponentAsset<ContainerNodeComponent>[]) {
-    console.log("RenderAssetsOnly call")
-    let containers: RenderingContainer[] = []
-    if(this.rootNode){
-    selectors.forEach(selector => {
-        const foundAsset = assets.find(x=>x.htmlTag  == selector.selector.tag)
-        if(foundAsset){
-            const newContainer = new RenderingContainer(selector)
-
-            const injector = Injector.create({
-            providers: [{ provide: RenderingContainer, useValue: newContainer }],
-            parent: this.rootNode.injector, // Maintain existing dependencies
-          });
-            newContainer.setAssets(assets).setSourceHtml(selector.html)
-
-            let newComponent  = this.rootNode.createComponent<ContainerNodeComponent>(foundAsset.componentType, {injector})
-            newContainer.setAssets(assets).setSourceHtml(selector.html).setComponentRefference(newComponent)
-            newComponent.instance.rendererSource.set(newContainer) 
-            containers.push(newContainer)
-        }else{
-            console.warn(`Unable to find asset for selector ${selector.name}`)
-        }
-      })
-    }
-    console.log(`${containers.length} prepared for rootContainers signal`)
-    this.rootContainers.set(containers)
-  }
-
-  private renderAllHtml(assets: ContainerComponentAsset<ContainerNodeComponent>[]) {
-
-  }
-
   private renderContent(selectors: RendererSelector[]) {
     const assetMap = this.componetAssets()
-
     if (assetMap) {
-      let assets: ContainerComponentAsset<ContainerNodeComponent>[] = []
+      let assets: ContainerComponentAsset<ContainerNodeComponent<any>>[] = []
       assetMap.forEach((value, key) => assets.push(value))
       if (assets.length == 0) {
         console.warn(`Assets list is empty`)
       }
-      if (this.selector().selector.tag == HtmlTag.BODY) {
-        this.renderAssetsOnly(selectors, assets)
-      } else {
-        this.renderAllHtml(assets)
-      }
+      selectors.forEach(selector => {
+        const foundAsset = assets.find(x=>x.htmlTag  == selector.selector.tag)
+        if(foundAsset){
+            const newContainer = new RenderingContainer(selector)
+            const injector = Injector.create({
+            providers: [{ provide: RenderingContainer, useValue: newContainer }],
+            parent: this.rootNode.injector,
+          });
+            newContainer.setAssets(assets).setSourceHtml(selector.html)
+            let newComponent  = this.rootNode.createComponent<ContainerNodeComponent<any>>(foundAsset.componentType, {injector})
+            newContainer.setComponentRefference(newComponent, this.rootNode)
+            newComponent.instance.dataModel.set(selector.getDataModel())
+            newComponent.instance.rendererSource.set(newContainer) 
+            this.rootContainers.push(newContainer)
+        }else{
+            console.warn(`Unable to find asset for selector ${selector.name}`)
+        }
+      })
+      console.log(`RenderingContainer created ${this.rootContainers.length}`)
     } else {
       console.warn(`Assets assetMap undefined ${assetMap}`)
     }
   }
 
   ngAfterViewInit(): void {
-    const hostSelector = this.selector()
-    if (hostSelector) {
-      if (this.renderingContainer == undefined) {
-          this.renderingContainer = new RenderingContainer(hostSelector)
-          let childSelectors: RendererSelector[] = []
-          let byCallback: boolean = false
-          childSelectors = hostSelector.getChild((selectors) => {
-              byCallback = true
-              this.renderContent(selectors)
-          })
+
+      const selectors = this.selectors()
+      if(selectors){
+        this.renderContent(selectors)
       }
-    }
+     
+      // if (this.renderingContainer == undefined) {
+      //     this.renderingContainer = new RenderingContainer(hostSelector)
+      //     let childSelectors: RendererSelector[] = []
+      //     let byCallback: boolean = false
+      //     childSelectors = hostSelector.getChild((selectors) => {
+      //         byCallback = true
+      //         this.renderContent(selectors)
+      //     })
+      //     if(!byCallback && childSelectors.length > 0){
+      //         this.renderContent(childSelectors)
+      //     }
+      // }
+    //}
   }
 
 }

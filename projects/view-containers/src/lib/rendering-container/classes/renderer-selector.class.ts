@@ -1,11 +1,61 @@
 import { HtmlTag } from "../../common/enums";
-import { ContainerSelector } from "../../common/models";
+import { ContainerSelector, createContainerSelector } from "../../common/models";
 
 
-export class RendererSelector {
+export type  GroupedSelectorEntry = {
+   entries: {lang: string, selectorEntries: SelectorEntry[] }
+}
 
-    private childSelectors: RendererSelector[] = []
+export type  SelectorEntry = {
+
+    selector : ContainerSelector, 
+    id:number,
+    classes: {key:number, value:string}[], 
+        html:string,
+    data:any,
+    childEntries: SelectorEntry[] 
+}
+
+export class SelectorGroup{
+    constructor(
+        public lang:string,
+        public selectors: RendererSelector[]
+    ){
+
+    }
+}
+
+
+export interface SelectableI{
+
+    selector: ContainerSelector,
+    angularSelector: string,
+    classList: {key:number, value:string}[]
+    childSelectors: RendererSelector[]
+}
+
+export class RendererSelector implements SelectableI {
+
+
+    static createSelector(
+        selector: ContainerSelector, 
+        angularSelector: string, 
+        classList:{key:number,value:string}[],
+        html: string, 
+        dataModel: any,
+        ):RendererSelector{
+        return new RendererSelector(selector, angularSelector, classList, html, dataModel)
+    }
+
+
+    public originalData:any
+
+    public id: number =0
+    public lang:string ="lv"
+
+    childSelectors: RendererSelector[] = []
     public html: string = ""
+    public classList:{key:number, value: string}[] = []
 
     get name():string{
         return `${this.selector.tag}|${this.selector.id}`
@@ -13,28 +63,40 @@ export class RendererSelector {
     get personalName():string{
         return `RendererSelector[${this.name}]`
     }
-    get classList():string[]{
-        return this.classes.map(x=>x.value)
-    }
+
+    private dataModel: any
+  
 
     private subscriptions: { onSelectors: ((childSelectors: RendererSelector[]) => void) | undefined}
     constructor(
         public selector: ContainerSelector,
         public angularSelector: string,
-        private classes: {key:number, value:string}[],
-        html: string | undefined = undefined
+        classList: {key:number, value:string}[],
+        content: string,
+        dataModel: any
     ) {
+        this.classList = classList
+        this.dataModel = dataModel
+
+
         this.subscriptions = {
             onSelectors:  undefined 
         };
-        if (html) {
-            this.html = html
+        if (content) {
+            this.html = content
         }
+    }
+
+    getDataModel():any{
+        return this.dataModel
     }
 
     addChildSelectors(selectors: RendererSelector[]) {
         let existentUpdated = 0
         let newEntries = 0
+        console.log(`Receiving selectors  ${selectors.length} `) 
+        console.log(selectors)
+        console.log("----------------")
         selectors.forEach(x => {
             const existingSelector = this.childSelectors.find(f => f.selector == x.selector)
             if (existingSelector) {
@@ -64,5 +126,4 @@ export class RendererSelector {
         }
         return this.childSelectors
     }
-
 }
