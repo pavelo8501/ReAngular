@@ -10,7 +10,7 @@ import { Component,
   ChangeDetectionStrategy} from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { RenderingContainer, RenderingContainerHost, RendererSelector} from './../../classes';
+import { RenderingContainer2, RenderingContainerHost, RendererSelector} from './../../classes';
 import { ContainerComponentAsset }  from './../../models';
 import { ContainerState, EventType } from '../../../common/enums';
 import { InjectableI } from './../../interfaces';
@@ -31,7 +31,7 @@ export abstract class ContainerNodeComponent<T extends InjectableI> implements A
   @ViewChild('nodeContianer', {read: ViewContainerRef }) nodeContianer!: ViewContainerRef
   @ViewChild('nodeInnerContainer', {read: ViewContainerRef }) nodeInnerContainer!: ViewContainerRef
 
- renderingContainer = inject(RenderingContainer);
+ renderingContainer = inject(RenderingContainer2);
 
  get dataModel() :T{
     return this.renderingContainer.dataModel
@@ -55,7 +55,7 @@ export abstract class ContainerNodeComponent<T extends InjectableI> implements A
  
  abstract classes : Signal<string[]>
 
- nodeContainers = signal<RenderingContainer<T>[]>([])
+ nodeContainers = signal<RenderingContainer2<T>[]>([])
 
  protected suppressNoHtmlWarning: boolean = false
 
@@ -153,7 +153,7 @@ export abstract class ContainerNodeComponent<T extends InjectableI> implements A
 
  private renderChildNodes(selectors: RendererSelector<any>[]){
 
-  let  containers: RenderingContainer<T>[] = []
+  let  containers: RenderingContainer2<T>[] = []
   let selectorsProcessed = 0
   //If on start parent view present than should be used
   console.log(`${this.personalName}  Rendering child  selectors count ${selectors.length}`)
@@ -170,7 +170,7 @@ export abstract class ContainerNodeComponent<T extends InjectableI> implements A
     if(parentRef!= undefined &&  foundAsset != undefined){
         const renderingContainer = this.renderingContainer.createNewContainer(selector)
         const injector = Injector.create({
-          providers: [{ provide: RenderingContainer, useValue: renderingContainer }],
+          providers: [{ provide: RenderingContainer2, useValue: renderingContainer }],
           parent: parentRef.injector, // Maintain existing dependencies
         });
         renderingContainer.setAssets(this.assets).setSourceHtml(selector.html)

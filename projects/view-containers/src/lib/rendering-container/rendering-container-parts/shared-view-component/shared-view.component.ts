@@ -58,7 +58,7 @@ export class SharedViewComponentComponent<T extends   InjectableI>  extends Cont
   override ngAfterViewInit(): void {
 
     this.renderingContainer.listen().subscribe((event: EventSubject)=>{
-        switch(event.type){
+        switch(event.eventType){
           case EventType.ON_LOST_FOCUS:
             if(this.canSelect){
               this.containerState.set(ContainerState.IDLE)

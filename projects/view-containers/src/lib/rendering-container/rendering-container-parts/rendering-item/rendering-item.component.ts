@@ -4,20 +4,21 @@ import { RenderingContainerItem } from './../../classes';
 
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+
 import { ContainerState } from '../../../common/enums';
-import { RenderingBlock } from '../../classes/rendering-block.class';
 import { RenderingBlockComponent } from './../rendering-block/rendering-block.component';
+import { RenderingBlock } from "./../../classes"
 
 @Component({
-  selector: 'lib-rendering-container-item',
+  selector: 'lib-rendering-item',
   imports: [
     CommonModule, FormsModule,
   ],
-  templateUrl: "./rendering-container-item.component.html",
-  styleUrl: './rendering-container-item.component.css',
+  templateUrl: "./rendering-item.component.html",
+  styleUrl: './rendering-item.component.css',
   changeDetection: ChangeDetectionStrategy.Default,
 })
-export class RenderingContainerItemComponent implements AfterViewInit {
+export class RenderingItemComponent implements AfterViewInit {
   
   @ViewChild('blockContainer', { read: ViewContainerRef }) containerRef!: ViewContainerRef;
   
@@ -31,15 +32,22 @@ export class RenderingContainerItemComponent implements AfterViewInit {
 
   sourceItem = input.required<RenderingContainerItem<RenderModelInterface>>()
 
-  private addRenderingBlockComponent<SOURCE extends RenderBlockInterface>(dataSource : SOURCE){
+
+  private addRenderingBlockComponent<SOURCE extends RenderBlockInterface>(dataSource : SOURCE):RenderingBlock<SOURCE>{
 
 
     const componentRef = this.containerRef.createComponent(RenderingBlockComponent);
-    componentRef.instance.dataSource.set(dataSource)
+
+    const newSourceItem = new RenderingBlock<SOURCE>(dataSource, this)
+    componentRef.instance.sourceItem.set(newSourceItem)
     this.renderingBlocks.push(componentRef.instance);
     this.childComponents.set(this.renderingBlocks);
-
+    return newSourceItem
   }
+
+  setRenderingBlock<SOURCE extends RenderBlockInterface>(renderingBlock : SOURCE): RenderingBlock<SOURCE>{
+    return this.addRenderingBlockComponent(renderingBlock)
+}
   
   ngAfterViewInit(): void {
       console.log("RenderingContainerItemComponent::ngAfterViewInit hit")

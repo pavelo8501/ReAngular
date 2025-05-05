@@ -1,11 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, model, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ContainerState, EventType } from '../../../common/enums';
-import { RenderingContainerHost } from '../../classes';
-import { RenderingContainerProvider } from '../../classes/rendering-container-provider.class';
+import { ContainerState, EventType } from './../../../common/enums';
+import { RenderingBlock} from '../../classes';
+import { RendererContainerEvent } from "./../../models"
 import { RenderBlockInterface } from '../../interfaces';
 
+import { ContainerProviderService, TypedCallbackProvider } from "./../../../common/services"
 
 @Component({
   selector: 'lib-rendering-block',
@@ -16,12 +17,43 @@ import { RenderBlockInterface } from '../../interfaces';
 })
 export class RenderingBlockComponent<SOURCE extends RenderBlockInterface> {
 
+  ContainerState = ContainerState
 
-  
-  dataSource = model.required<SOURCE>()
+  private  personalName: string = "RenderingBlockComponent"
+  sourceItem  = model.required<RenderingBlock<SOURCE>>()
+
+
+  private _provider? :  TypedCallbackProvider<RendererContainerEvent<SOURCE, string>, boolean> = undefined
+  get provider ():  TypedCallbackProvider<RendererContainerEvent<SOURCE, string>, boolean>{
+    if(!this._provider){
+      throw Error(`RenderingContainerProvider uninitialized in ${this.personalName}`)
+    }
+    return this._provider
+  }
+
+  private _dataSource? : SOURCE = undefined
+  get dataSource (): SOURCE{
+    if(!this._dataSource){
+      throw Error(`SOURCE uninitialized in ${this.personalName}`)
+    }
+    return this._dataSource
+  }
+
+  constructor(private service : ContainerProviderService<RendererContainerEvent<SOURCE, string>, boolean>){
+
+    this._provider =  service.provider
+
+
+    effect(()=>{
+
+      const sourceItem = this.sourceItem()
+      this._dataSource = sourceItem.dataSource
+
+    })
+  }
 
   content = computed<string>(()=>{
-    const source =  this.dataSource()
+    const source =  this._dataSource
     if(source != undefined){
       return source.content
     }else{
@@ -30,34 +62,12 @@ export class RenderingBlockComponent<SOURCE extends RenderBlockInterface> {
   })
 
   componentKey = computed<string>(()=>{
-    const source =  this.dataSource()
-
-    return `${source.htmlTag}|${source.elementId}`
-
-  })
-
-
- personalName: string = "RenderingBlockComponent"
-
- private callbacks = {
-  onNode: <T>(type: EventType, object: T) => {
-    switch (type) {
-      case EventType.ON_EDIT:
-       // this.onEdit.emit(object)
-        break
-      case EventType.SAVE:
-       // this.onSave.emit(object);
-        console.log(`Rendering Container Received Save event with object `)
-        console.log(object)
-
-        break
+    const source =  this._dataSource
+    if(source){
+      return `${source.htmlTag}|${source.elementId}`
     }
-  }
- }
-
-  private provider : RenderingContainerProvider = new RenderingContainerProvider(this.callbacks)
-
-  ContainerState = ContainerState
+    return `HtmlTag|ElementId`
+  })
 
   containerState = signal<ContainerState>(ContainerState.IDLE)
   classListEdit = model<{key:number, value:string}[]>([])
@@ -71,13 +81,22 @@ export class RenderingBlockComponent<SOURCE extends RenderBlockInterface> {
 
   onClicked(){
 
+
+    console.log("Click event registred")
+
+
+    this.provider.send( new RendererContainerEvent<SOURCE, string>(this, this.sourceItem().hostingItem, "Message") ).then(result => {
+      console.log('Parent acknowledged:', result);
+    });
+    
+
     if(!this.canSelect){
       return
     }
 
-    this.provider.emmitEvent(EventType.ON_LOST_FOCUS)
-    this.containerState.set(ContainerState.ACTIVE)
-    console.log(`${this.personalName} clicked`)
+   // this.provider.emmitEvent(EventType.ON_LOST_FOCUS)
+   // this.containerState.set(ContainerState.ACTIVE)
+   // console.log(`${this.personalName} clicked`)
  }
 
  editBtnClick(){

@@ -1,19 +1,21 @@
 import { HtmlTag } from "../../common/enums";
-import { RenderBlockInterface } from "../interfaces/render-block.interface";
-import { RenderModelInterface } from "../interfaces/render-model.interface";
+import { RenderBlockInterface } from "./../interfaces";
+import { RenderingItemComponent } from "../rendering-container-parts";
 
 export class RenderingBlock<SOURCE extends RenderBlockInterface>{
 
-
-
-    private dataSource? : SOURCE = undefined
-
-
+    get htmlTag (): HtmlTag{
+       return this.dataSource.htmlTag
+    }
+    get elementId (): string{
+        return this.elementId
+    }
+    
     constructor(
-        public htmlTag : HtmlTag,
-        public elementId : string
+        public dataSource : SOURCE,
+        public hostingItem : RenderingItemComponent,
     ){
-
+        
     }
 
     setDataSource(source: SOURCE){

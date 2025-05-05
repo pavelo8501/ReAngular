@@ -9,18 +9,23 @@ import {
   Injector,
   output,
   ChangeDetectionStrategy,
-  viewChild
+  viewChild,
+  viewChildren
 } from '@angular/core';
 import { CommonModule } from "@angular/common"
 import { RendererSelector } from './classes/renderer-selector.class';
-import { RenderingContainer, RenderingContainerHost } from './classes/rendering-container.class';
+import { RenderingContainerClass, RenderingContainer2, RenderingContainerHost } from './classes';
 import { ContainerComponentAsset } from './models';
 import { NumToStrPipe } from '../common/pipes/num-to-str.pipe';
-import { ContainerNodeComponent, RenderingContainerItemComponent, EditorToolsComponent } from './rendering-container-parts';
+import { ContainerNodeComponent, RenderingItemComponent, EditorToolsComponent } from './rendering-container-parts';
 import { EventType } from '../common/enums/event-type.enum';
 
-import { RendererHandlerInterface, RenderModelInterface } from "./interfaces"
+import { RendererHandlerInterface, RenderModelInterface, RenderBlockInterface } from "./interfaces"
 import { RenderingContainerItem } from './classes';
+import {RendererContainerEvent} from "./models"
+
+import {ContainerProviderService} from "./../common/services"
+
 
 
 @Component({
@@ -29,7 +34,7 @@ import { RenderingContainerItem } from './classes';
     CommonModule,
     NumToStrPipe,
     EditorToolsComponent,
-    RenderingContainerItemComponent
+    RenderingItemComponent
   ],
   templateUrl: `./rendering.container.html`,
   styleUrl: './rendering.container.css',
@@ -39,18 +44,19 @@ import { RenderingContainerItem } from './classes';
 export class RenderingContainerComponent implements RendererHandlerInterface, AfterViewInit {
   @ViewChild('rootNode', { read: ViewContainerRef }) rootNode!: ViewContainerRef
 
+  renderingItemComponents = viewChildren<RenderingItemComponent>(RenderingItemComponent)
+
+
   containerTools = viewChild(EditorToolsComponent)
 
-  //@Output() handlerReady = new EventEmitter<RendererHandlerInterface>();
 
-
+  source = new RenderingContainerClass()
   getHandler = output<RendererHandlerInterface>()
+  containerItems = input<RenderingContainerItem<RenderModelInterface>[]>([])
 
   onEdit = output<any>()
 
   componetAssets = input<Map<string, ContainerComponentAsset<ContainerNodeComponent<any>>>>()
-  containerItems = input<RenderingContainerItem<RenderModelInterface>[]>([])
-
 
   opennedHeight = input<number>(100)
   height = signal<number>(100)
@@ -78,13 +84,14 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
 
   private host: RenderingContainerHost = new RenderingContainerHost(this.callbacks)
 
-  rendererSource = input<RenderingContainer<any> | undefined>(undefined)
+  rendererSource = input<RenderingContainer2<any> | undefined>(undefined)
 
-  rootContainers: RenderingContainer<any>[] = []
+  rootContainers: RenderingContainer2<any>[] = []
 
   selectors = input<RendererSelector<any>[]>([])
 
-  constructor() {
+  constructor(private service : ContainerProviderService<RendererContainerEvent<RenderBlockInterface, string>, boolean>) {
+
     effect(() => {
 
       const editor = this.withEditor()
@@ -105,13 +112,19 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
     })
   }
 
-  injectDataModel(model: RenderModelInterface): RenderingContainerItem<RenderModelInterface> {
-    const found = this.containerItems().find(x=>x.htmlTag == model.htmlTag && x.elementId == model.elementId)
-    if(!found){
+  injectDataModel(model: RenderModelInterface): RenderingItemComponent {
+
+    const foundItem  = this.renderingItemComponents().find(x=>x.sourceItem().htmlTag == model.htmlTag && x.sourceItem().elementId == model.elementId)
+    if(!foundItem){
       throw Error(`ContainerItem not found for htmlTag ${model.htmlTag} and elementId ${model.elementId}`)
     }
-    found.setDataSource(model)
-    return found
+    // const found = this.containerItems().find(x=>x.htmlTag == model.htmlTag && x.elementId == model.elementId)
+    // if(!found){
+    //   throw Error(`ContainerItem not found for htmlTag ${model.htmlTag} and elementId ${model.elementId}`)
+    // }
+    const foundSourceItem = foundItem.sourceItem()
+    foundSourceItem.setDataSource(model)
+    return foundItem
   }
 
 
@@ -137,9 +150,9 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
       selectors.forEach(selector => {
         const foundAsset = assets.find(x => x.htmlTag == selector.selector.tag)
         if (foundAsset) {
-          const newContainer = new RenderingContainer(selector, this.host)
+          const newContainer = new RenderingContainer2(selector, this.host)
           const injector = Injector.create({
-            providers: [{ provide: RenderingContainer, useValue: newContainer }],
+            providers: [{ provide: RenderingContainer2, useValue: newContainer }],
             parent: this.rootNode.injector,
           });
           newContainer.setAssets(assets).setSourceHtml(selector.html)
@@ -163,25 +176,17 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
 
     this.getHandler.emit(this as RendererHandlerInterface)
 
+
+   this.service.provider.subscribe().subscribe(({ data, callback }) => {
+      console.log('Received event:', data);
+      callback(true); // respond to sender
+    });
+
     const selectors = this.selectors()
     if (selectors) {
       this.renderContent(selectors)
       this.extract()
     }
-
-    // if (this.renderingContainer == undefined) {
-    //     this.renderingContainer = new RenderingContainer(hostSelector)
-    //     let childSelectors: RendererSelector[] = []
-    //     let byCallback: boolean = false
-    //     childSelectors = hostSelector.getChild((selectors) => {
-    //         byCallback = true
-    //         this.renderContent(selectors)
-    //     })
-    //     if(!byCallback && childSelectors.length > 0){
-    //         this.renderContent(childSelectors)
-    //     }
-    // }
-    //}
   }
 
 }

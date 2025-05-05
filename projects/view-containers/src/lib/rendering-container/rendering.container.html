@@ -4,9 +4,9 @@
 
     <div class="hierarchy-container scrollable-container">
         @for (containerItem of containerItems(); track $index) {
-            <lib-rendering-container-item [sourceItem] = "containerItem">
+            <lib-rendering-item [sourceItem] = "containerItem">
                 
-            </lib-rendering-container-item>
+            </lib-rendering-item>
         }
 
         <ng-container #rootNode>

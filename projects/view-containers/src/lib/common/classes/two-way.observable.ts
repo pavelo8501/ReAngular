@@ -1,9 +1,7 @@
 import { Observable, Subject } from 'rxjs';
 
-export interface DataWithCallback<T, R> {
-    data: T | undefined;
-    callback: (response: R) => void;
-}
+import { DataWithCallback } from "./../interfaces/data-with-callback.interface"
+
 
 export class TwoWayObservable<T, R> {
     private subject = new Subject<DataWithCallback<T, R>>();

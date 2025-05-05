@@ -1,1 +1,1 @@
-export * from "./data-service.interface"
+export * from "../interfaces/data-service.interface"

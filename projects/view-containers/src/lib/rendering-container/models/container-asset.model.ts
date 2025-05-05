@@ -1,5 +1,5 @@
 import { Type } from "@angular/core";
-import { ContainerNodeComponent, RenderingContainerItemComponent} from "./../rendering-container-parts"
+import { ContainerNodeComponent} from "./../rendering-container-parts"
 import{HtmlTag}from "./../../common/enums/html-tag.enum"
 import { } from "../interfaces";
 

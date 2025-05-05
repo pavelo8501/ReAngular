@@ -1,6 +1,6 @@
 import { ContainerComponentAsset} from "./../models";
 import {ContainerNodeComponent} from "./../rendering-container-parts"
-import { RenderingContainer } from "./rendering-container.class";
+import { RenderingContainer2 } from "./rendering-container.class2";
 import { HtmlTag } from "./../../common/enums";
 import { InjectableI } from "../interfaces/injectable.interface";
 
@@ -14,7 +14,7 @@ export class RenderingFactory<T extends InjectableI>{
     }
 
     private assets :  ContainerComponentAsset<ContainerNodeComponent<T>>[]=[]
-    constructor(private container : RenderingContainer<T>){
+    constructor(private container : RenderingContainer2<T>){
 
     }
 

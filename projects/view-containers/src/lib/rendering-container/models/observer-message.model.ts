@@ -1,5 +1,5 @@
 import { Observable, Subject } from "rxjs";
-import { DataWithCallback } from "../../common/classes/two-way.observable";
+import { DataWithCallback } from "./../../common/interfaces";
 import { ViewContainerRef } from "@angular/core";
 import { RendererSelector } from "../classes/renderer-selector.class";
 import { InjectableI } from "../interfaces/injectable.interface";
@@ -66,7 +66,4 @@ export class SendReplyObserver {
     getObservable() {
         return this.subject.asObservable();
     }
-
-
-
 }
