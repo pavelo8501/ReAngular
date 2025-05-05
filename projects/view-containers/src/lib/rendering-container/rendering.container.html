@@ -1,0 +1,27 @@
+
+
+<div class="template-viewer" [ngClass]="containerClass()"  [style.height]="(height() | numToStr:'px')">
+
+    <div class="hierarchy-container scrollable-container">
+        @for (containerItem of containerItems(); track $index) {
+            <lib-rendering-container-item [sourceItem] = "containerItem">
+                
+            </lib-rendering-container-item>
+        }
+
+        <ng-container #rootNode>
+            
+        </ng-container>
+    </div>
+
+
+    @if(withEditor()){
+        <h1>Showing Editor</h1>
+        <lib-editor-tools>
+
+            <h1>Showing Editor</h1>
+
+            <ng-content> </ng-content>
+        </lib-editor-tools>
+    }
+</div>

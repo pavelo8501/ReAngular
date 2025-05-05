@@ -14,3 +14,12 @@ export enum HtmlTag{
 export const HtmlTagByName = (tagName: string): HtmlTag | undefined => {
     return Object.values(HtmlTag).find(tag => tag.toLowerCase() === tagName.toLowerCase());
 };
+
+
+export function htmlTagByName(tagName: string):HtmlTag{
+    const found = Object.values(HtmlTag).find(tag => tag.toLowerCase() === tagName.toLowerCase());
+    if(!found){
+        throw Error(`HtmlTage for name: ${tagName} not found`)
+    }
+    return found
+}

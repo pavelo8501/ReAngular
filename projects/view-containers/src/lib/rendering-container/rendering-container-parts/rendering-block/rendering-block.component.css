@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+
+.sw-header{
+  font-size: small;
+}
+
+
+.active{
+  border :green 1px solid;
+}

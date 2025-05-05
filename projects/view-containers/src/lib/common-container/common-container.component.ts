@@ -5,6 +5,6 @@ import { CommonModule } from '@angular/common';
   selector: 'lib-common-container',
   imports: [CommonModule],
   templateUrl: './common-container.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.Default
 })
 export abstract class BaseContainer { }

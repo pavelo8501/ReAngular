@@ -1,11 +1,10 @@
 import { ContainerComponentAsset} from "./../models";
-import {ContainerNodeComponent} from "./../components/rendering-container-parts"
-import { RendererSelector } from "./renderer-selector.class";
+import {ContainerNodeComponent} from "./../rendering-container-parts"
 import { RenderingContainer } from "./rendering-container.class";
 import { HtmlTag } from "./../../common/enums";
-import { ComponentRef, Injector, ViewContainerRef } from "@angular/core";
+import { InjectableI } from "../interfaces/injectable.interface";
 
-export class RenderingFactory<T>{
+export class RenderingFactory<T extends InjectableI>{
 
     get name():string{
         return `${this.container.name}` 

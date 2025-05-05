@@ -1,0 +1,50 @@
+
+
+<div #nodeContianer  
+    [id]="componentId()"  
+    [ngClass]="classes()"
+    [class.active]="containerState() != ContainerState.IDLE"
+>
+
+<div (click)="onClicked()" >
+
+    <div class="sw-class-editor" *ngIf="containerState() == ContainerState.EDIT">
+        <div class="class-editor-group">
+            <label>Class: </label>
+            @for (classItem of classListEdit(); track $index) {
+                <div> {{classItem.value}} </div>
+            }
+        </div>
+
+    </div>
+
+    <div class="sw-header"> 
+        {{componentKey()}}
+    </div>
+    <div class = "sw-content">
+        <ng-content>
+
+        </ng-content>
+    </div>
+</div>
+
+
+<div class="idle-state-template" (click)="onClicked()"  >
+    
+</div> @if(containerState() != ContainerState.IDLE){
+
+
+<div class="sw-controls" *ngIf="containerState() != ContainerState.IDLE">
+    @if (containerState() == ContainerState.ACTIVE) {
+        <button type="button"class="edit-btn"  name="edit-btn" (click)="editBtnClick()">Edit</button>
+    }
+    @if(containerState() == ContainerState.EDIT){
+        <button type="button"class="save-btn"  name="save-btn" b (click)="saveBtnClick()">Save</button>
+        <button type="button"class="cancel-btn" name="save-btn" b (click)="cancelBtnClick()">Cancel</button>
+    }
+</div>
+}
+<ng-container  #nodeInnerContainer>
+</ng-container>
+    
+</div>

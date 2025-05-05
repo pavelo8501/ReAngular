@@ -1,6 +1,6 @@
 {
   "name": "@pavelo8501/net-client",
-  "version": "0.2.23",
+  "version": "0.2.25",
   "description": "Connectivity services library for ReAngular",
   "devDependencies": {
     "@angular/common": "^19.2.0",

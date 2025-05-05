@@ -1,9 +1,9 @@
-import { RestConnection } from "../connection/rest-client-connection";
+
 import { InjectionToken } from '@angular/core';
 import { ResponseBase } from "./../dataflow/rest-response"
 import { RestClient } from "./../../rest-client.service"
 import { HeaderKey } from "./../../enums"
-import { RestMethod } from "../rest-assets";
+import { AssetParams, RestMethod } from "../rest-assets";
 
 
 export const REST_CLIENT = new InjectionToken<RestClient>('RestClient');
@@ -16,10 +16,19 @@ export const ENUMS = {
 
 export interface RestClientOptionsInterface {
     production: boolean
+    assetParams: AssetParams
 }
 
 export class RestClientOptions implements RestClientOptionsInterface {
     production: boolean = false
+
+    constructor(
+       public assetParams: AssetParams
+    ){
+
+    }
+
+
 }
 
 

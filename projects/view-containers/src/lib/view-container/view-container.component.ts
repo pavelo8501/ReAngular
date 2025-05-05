@@ -1,4 +1,4 @@
-import { Component, input, AfterViewInit, OnInit, computed, signal } from "@angular/core";
+import { Component, input, AfterViewInit, OnInit, computed, signal, ChangeDetectionStrategy } from "@angular/core";
 import { CommonModule } from '@angular/common';
 import { ContainerSelector, SelectorInterface } from './../common/models/container-selector.model';
 import {HtmlTag} from './../common/enums'
@@ -13,6 +13,7 @@ import { DataInterface, DataServiceInterface } from "../common/data-handling/dat
   ],
   templateUrl: './view-container.component.html',
   styleUrl: './view-container.component.css',
+  changeDetection: ChangeDetectionStrategy.Default
 })
 export class ViewContainerComponent implements  AfterViewInit { 
 

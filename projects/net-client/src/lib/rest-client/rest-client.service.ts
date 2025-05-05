@@ -5,7 +5,7 @@ import { ErrorCode } from './classes/exceptions/error-code';
 import { RestConnection } from './classes/connection/rest-client-connection';
 import { RestConnectionConfig } from './classes/config';
 import {EventEmitterService} from "./classes/events"
-import {ResponseBase, RestExceptionCode, TokenSubjectException } from '../../public-api';
+import {AssetParams, ResponseBase, RestExceptionCode, TokenSubjectException } from '../../public-api';
 import { AssetType } from './classes/rest-assets/rest-asset.enums';
 import { CookieService } from 'ngx-cookie-service';
 
@@ -40,7 +40,10 @@ export class RestClient {
         if (!this.production) { console.log("Starting config") }
     }
 
-    createConnection<T extends ResponseBase<any>>(config: RestConnectionConfig<T>) {
+    createConnection<T extends ResponseBase<any>>(
+        config: RestConnectionConfig<T>,
+        restCallParams: AssetParams
+    ) {
         const newConnection = new RestConnection<T>(config, this.http, this)
 
         const token = this.cookieService.get(this.tokenKey(newConnection)) || undefined;
@@ -63,13 +66,15 @@ export class RestClient {
                 authEndpoint,
                 method,
                 AssetType.ATHENTICATE,
-                apiUrl
+                apiUrl,
+                restCallParams
             )
             newConnection.createServiceAsset<string | undefined>(
                 refreshEndpoint,
                 method,
                 AssetType.REFRESH,
-                apiUrl
+                apiUrl,
+                restCallParams
             )
         }
         this.connections.push(newConnection)

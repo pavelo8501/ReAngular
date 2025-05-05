@@ -267,7 +267,13 @@ export class RestConnection<RESPONSE extends ResponseBase<any>> {
         }
     }
 
-    createServiceAsset<DATA>(endpoint: string, method: RestMethod, type: AssetType, authUrl: string): RestServiceAsset<DATA> {
+    createServiceAsset<DATA>(
+        endpoint: string, 
+        method: RestMethod, 
+        type: AssetType, 
+        authUrl: string,  
+        params: AssetParams
+    ): RestServiceAsset<DATA> {
         return this.registerServiceAsset(
             new RestServiceAsset<DATA>( authUrl, endpoint, method, this, type, this.tokenSubject)
         )

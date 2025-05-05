@@ -1,24 +1,45 @@
-import { ChangeDetectionStrategy, Component, effect, input, signal, ViewContainerRef, AfterViewInit, ViewChild, Injector, Inject, inject, Input, HostBinding, Signal } from '@angular/core';
-import { RenderingContainer } from '../../../classes/rendering-container.class';
-import { RendererSelector } from '../../../classes/renderer-selector.class';
-import { ContainerComponentAsset } from '../../../models';
+import { Component, 
+  signal, 
+  ViewContainerRef, 
+  AfterViewInit, 
+  ViewChild, 
+  Injector, 
+  inject, 
+  HostBinding, 
+  Signal, 
+  ChangeDetectionStrategy} from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+import { RenderingContainer, RenderingContainerHost, RendererSelector} from './../../classes';
+import { ContainerComponentAsset }  from './../../models';
+import { ContainerState, EventType } from '../../../common/enums';
+import { InjectableI } from './../../interfaces';
 
 @Component({
+  standalone:true,
   selector: 'lib-container-node',
-  imports: [],
+  imports: [
+    CommonModule
+  ],
   template: `<ng-container #nodeContianer> </ng-container>`,
   styleUrl: './container-node.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.Default
 })
-export abstract class ContainerNodeComponent<T> implements AfterViewInit{ 
+
+export abstract class ContainerNodeComponent<T extends InjectableI> implements AfterViewInit{ 
 
   @ViewChild('nodeContianer', {read: ViewContainerRef }) nodeContianer!: ViewContainerRef
   @ViewChild('nodeInnerContainer', {read: ViewContainerRef }) nodeInnerContainer!: ViewContainerRef
 
-
  renderingContainer = inject(RenderingContainer);
 
- dataModel = signal<T|undefined>(undefined)
+ get dataModel() :T{
+    return this.renderingContainer.dataModel
+ }
+
+ content = signal<string>(this.dataModel.content)
+
+ private host : RenderingContainerHost = this.renderingContainer.getHost()
 
  get personalName():string{
     return `NodeComponent[${this.renderingContainer.selector.name}]`
@@ -32,21 +53,83 @@ export abstract class ContainerNodeComponent<T> implements AfterViewInit{
   return []
  }
  
- abstract classList : Signal<{key:number, value:string}[]>
- innerHtml = signal<string|undefined>(undefined)
+ abstract classes : Signal<string[]>
 
- rendererSource = signal<RenderingContainer<T>>(this.renderingContainer)
  nodeContainers = signal<RenderingContainer<T>[]>([])
 
  protected suppressNoHtmlWarning: boolean = false
 
+ canSelect:boolean = true
+
   @HostBinding('class') get  hostClassList(){
-    return this.rendererSource()?.classList || '';
+    return this.renderingContainer.classes || '';
+  }
+  protected containerState = signal<ContainerState>(ContainerState.IDLE)
+
+  abstract updateView : ()=> void
+
+  constructor() {
+    
   }
 
- constructor() {
-
+ onClicked(){
+    if(!this.canSelect){
+      return
+    }
+    this.host.emmitEvent(EventType.ON_LOST_FOCUS)
+    this.containerState.set(ContainerState.ACTIVE)
+    console.log(`${this.personalName} clicked`)
  }
+
+ editBtnClick(){
+      if(!this.canSelect){
+        return
+      }
+      this.containerState.update((state)=>state)
+      const send  =  (event: EventType, dataModel :T )  => {
+      this.host.propagateToParent(event, dataModel)
+      sent = true
+      
+    }
+    
+    let  sent:boolean = false
+ 
+    if(this.dataModel){
+      send(EventType.ON_EDIT, this.dataModel)
+    }else{
+        console.warn("modelFromContainer Tozhe mimo")
+    }
+
+    if(sent){
+      console.log(`SettingEdit ${this.personalName}`)
+      this.containerState.set(ContainerState.EDIT)
+      this.canSelect = false
+      this.host.emmitEvent(EventType.CAN_SELECT, this.canSelect)
+    }
+ }
+
+ saveBtnClick(){
+
+   if(this.dataModel){
+
+      console.log("Saving")
+      this.host.propagateToParent(EventType.SAVE,  this.dataModel)
+      this.canSelect = true
+      this.host.emmitEvent(EventType.CAN_SELECT, this.canSelect)
+      this.containerState.set(ContainerState.IDLE)
+      this.host.emmitEvent(EventType.UPDATE_VIEW, true)
+     
+     // this.renderingContainer.getComponentRefference()?.instance.updateView()
+   }else{
+      console.warn(`Save Failed`) 
+   }
+ }
+
+ cancelBtnClick(){
+  this.host.propagateToParent(EventType.CANCEL_SAVE,  this.dataModel)
+  console.log(`cancelClick on ${this.personalName}`)
+ }
+
 
  getNodeOuterContianer():ViewContainerRef|undefined{
     const viewRef =  this.nodeContianer
@@ -68,10 +151,7 @@ export abstract class ContainerNodeComponent<T> implements AfterViewInit{
       }
 }
 
-
-
-
- private renderChildNodes(selectors: RendererSelector[]){
+ private renderChildNodes(selectors: RendererSelector<any>[]){
 
   let  containers: RenderingContainer<T>[] = []
   let selectorsProcessed = 0
@@ -88,14 +168,14 @@ export abstract class ContainerNodeComponent<T> implements AfterViewInit{
     const foundAsset =  this.assets.find(x=>x.htmlTag  == selector.selector.tag)
 
     if(parentRef!= undefined &&  foundAsset != undefined){
-        const renderingContainer = new RenderingContainer(selector)
-
+        const renderingContainer = this.renderingContainer.createNewContainer(selector)
         const injector = Injector.create({
           providers: [{ provide: RenderingContainer, useValue: renderingContainer }],
           parent: parentRef.injector, // Maintain existing dependencies
         });
         renderingContainer.setAssets(this.assets).setSourceHtml(selector.html)
         const newComponent = parentRef.createComponent<ContainerNodeComponent<T>>(foundAsset.componentType,{injector})
+        newComponent.changeDetectorRef.detectChanges()
         renderingContainer.setComponentRefference(newComponent, parentRef)
         selectorsProcessed++
     }else{
@@ -116,12 +196,12 @@ export abstract class ContainerNodeComponent<T> implements AfterViewInit{
 }
 
  ngAfterViewInit(): void {
-    const renderer = this.rendererSource()
+    const renderer = this.renderingContainer
     if(renderer){
       const html = renderer.gethtml()
       if(html.length){
         if(!this.suppressNoHtmlWarning){
-          this.innerHtml.set(html)
+          this.content.set(html)
         }
       }else{
         if(!this.suppressNoHtmlWarning){
@@ -130,7 +210,7 @@ export abstract class ContainerNodeComponent<T> implements AfterViewInit{
       }
      // this.classList.set(renderer.classList)
       let byCallback = false
-      const selectors =renderer.selector.getChild((childSelectors)=>{
+      const selectors =renderer.selector.getChild((childSelectors :RendererSelector<any>[])=>{
         byCallback = true
         this.renderChildNodes(childSelectors)
       })
@@ -141,4 +221,5 @@ export abstract class ContainerNodeComponent<T> implements AfterViewInit{
       console.warn(`${this.personalName} has no RenderingContainer class`)
     }
  }
+
 }

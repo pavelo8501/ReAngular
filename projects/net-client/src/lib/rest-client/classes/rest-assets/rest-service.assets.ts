@@ -29,13 +29,13 @@ export class RestServiceAsset<DATA> extends RestCommonAsset<DATA> {
         connection: RestConnection<ResponseBase<DATA>>,
         public type: AssetType,
         private tokenSubject: BehaviorSubject<string | undefined>
+
     ) {
         super({ endpoint: endpoint, method: method, secured: false}, new AssetParams(), connection, baseUrl)
     }
 
 
     getToken(login: string, password: string) {
-
         const request = {login: login, password: password }
         this.callPost<{login: string, password: string}>(request)
         this.responseSubject.subscribe({

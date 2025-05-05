@@ -2,24 +2,18 @@
 
 export class AssetParams{
 
-    notifyRequestParams:boolean = false
-    notifyResponseAsJson:boolean = false
-    notifyDataSent:boolean = false
-    httpErrorVerbouse:boolean = false
+    public notifyRequestParams : boolean = true
+    public notifyResponseAsJson: boolean = true
+    public notifyDataSent: boolean = true
+    public httpErrorVerbouse: boolean = true
 
-    constructor(conf : {
-            notifyRequestParams : boolean, 
-            notifyResponseAsJson : boolean,  
-            notifyDataSent: boolean,  
-            httpErrorVerbouse:boolean
-            } | undefined = undefined ){
-        if(conf){
-            this.notifyRequestParams = conf.notifyRequestParams
-            this.notifyResponseAsJson = conf.notifyResponseAsJson
-            this.notifyDataSent = conf.notifyDataSent
-            this.httpErrorVerbouse = conf.httpErrorVerbouse
 
+    constructor(private source? : AssetParams){
+        if(source){
+            this.notifyRequestParams = source.notifyRequestParams
+            this.notifyResponseAsJson = source.notifyResponseAsJson
+            this.notifyDataSent = source.notifyDataSent
+            this.httpErrorVerbouse = source.httpErrorVerbouse
         }
     }
-
 }

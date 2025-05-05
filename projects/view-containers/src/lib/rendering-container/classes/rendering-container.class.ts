@@ -1,11 +1,15 @@
 import { ComponentRef, ViewContainerRef } from "@angular/core"
-import { ContainerNodeComponent } from "../../../public-api"
+import { InjectableI } from "./../interfaces"
+import { ContainerNodeComponent } from "./../rendering-container-parts"
 import { ContainerComponentAsset } from "../models"
 import { RendererSelector } from "./renderer-selector.class"
 import { RenderingFactory } from "./rendering-factory.class"
+import { EventSubject } from "../models/event-subject.model"
+import { Observable, Subject } from "rxjs"
+import { EventType } from "../../common/enums/event-type.enum"
 
 
-export class RenderingContainer<T> {
+export class RenderingContainer<T  extends InjectableI> {
 
     get name():string{
         return `${this.selector.selector.key}`
@@ -17,31 +21,45 @@ export class RenderingContainer<T> {
         return this.selector.angularSelector
     }
 
-    selector: RendererSelector
-    classList:{key:number, value:string}[]
+    selector: RendererSelector<T>
+    classes:{key:number, value:string}[]
     private html: string = ""
     private assets: ContainerComponentAsset<ContainerNodeComponent<T>>[] = []
+   
     private thisComponentsRefference : ComponentRef<ContainerNodeComponent<T>> | undefined
     private parentViewRef : ViewContainerRef | undefined
     private subscriptions: {
         onHtmlUpdated: (html: string) => void;
-        onChildUpdated: (selectors: RendererSelector[]) => void;
+        onChildUpdated: (selectors: RendererSelector<any>[]) => void;
     }
     private factory: RenderingFactory<T>
 
-    constructor(source: RendererSelector) {
+    get dataModel():T{
+        return this.selector.dataModel
+    }
+
+    constructor(source: RendererSelector<T>, private host: RenderingContainerHost) {
         this.selector = source
-        this.classList = source.classList
+        this.classes = source.classList
         this.subscriptions = {
             onHtmlUpdated: (html: string) => { },
-            onChildUpdated: (selectors: RendererSelector[]) => { }
+            onChildUpdated: (selectors: RendererSelector<any>[]) => { }
         }
+
         this.html = source.html
         const existenChildren = this.selector.getChild(this.subscriptions.onChildUpdated)
         if(existenChildren.length > 0){
             console.log(`Child selectors already present in RenderingContainer constructor`)
         }
         this.factory = new RenderingFactory(this)
+    }
+
+    createNewContainer(source: RendererSelector<T>):RenderingContainer<T> {
+        return new RenderingContainer(source, this.host)
+    }
+
+    listen():Observable<EventSubject>{
+        return this.host.subscribe()
     }
 
     init(subscribe: { onHtmlUpdated: (html: string) => void }) {
@@ -99,4 +117,34 @@ export class RenderingContainer<T> {
         return this.factory
     }
 
+    getHost():RenderingContainerHost{
+        return this.host
+    }
+
+}
+
+export class RenderingContainerHost{
+    private eventSubject = new Subject<EventSubject>()
+    private callbacks:{
+        onNode: <T>(type:EventType, object: T)=>void
+    }
+
+    constructor(
+        callbacks:{ 
+            onNode: <T>(type:EventType, object: T)=>void 
+        }){
+        this.callbacks = callbacks
+    }
+
+    subscribe(): Observable<EventSubject>{
+        return this.eventSubject.asObservable()
+    }
+
+    emmitEvent(type : EventType, value:any |undefined = undefined){
+        this.eventSubject.next(new EventSubject(type, value))
+    }
+
+    propagateToParent<T>(type : EventType, object: T){
+        this.callbacks.onNode(type, object)
+    }
 }

@@ -12,6 +12,7 @@ import { RequestEvent } from "../events/models/request-event.class"
 import { AssetParams } from "./rest-assets.model"
 import { RestPostAsset, RestPutAsset } from "./rest-typed.assets"
 import {  } from "./../../extensions/client.extensions"
+import { partsToUrl } from "../../extensions/call-helpers"
 
 
 
@@ -35,7 +36,7 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
 
 
     notify( message : {url: string, params: string, secured:boolean}, callback?: (caller: RestCommonAsset<DATA>) => void){
-        console.warn(`Executong notify as RestCommonAsset`)
+
         const assetName = `Asset ${this.method} to endpint ${this.endpoint}`
         if(this.params.notifyRequestParams){
             console.log(`${assetName} makeing  ${message.secured? "secured":"unsecured"} api call to ${message.url} with data params ${message.params}`)
@@ -91,7 +92,7 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
 
     protected baseUrl: string
     get apiUrl(): string {
-        return `${this.baseUrl}/${this.endpoint}`
+        return partsToUrl([this.baseUrl, this.endpoint])
     }
 
     private contentNegotiations: ContentNegotiationsInterface<ResponseBase<DATA>>
@@ -112,10 +113,6 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
         connection: RestConnection<ResponseBase<DATA>>,
         altBaseUrl?: string
     ) {
-
-        console.log(`Params `)
-        console.log(params)
-
         this._connection = connection
         this.connection = connection
 
@@ -145,6 +142,8 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
     }
 
     private preCallRoutine() {
+        
+        
         if (this.secured) {
             if (this.callOptions.hasJwtToken) {
 
@@ -152,6 +151,9 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
                 const token = this.connection.getJWTToken(this)
                 this.callOptions.setAuthHeader(token)
             }
+        }
+        if(this.params.notifyRequestParams){
+            console.log(toString())
         }
     }
 
@@ -182,6 +184,12 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
     private handleError(err: HttpErrorResponse, requestFn: () => void) {
 
         console.warn(err.message)
+        if(this.params.httpErrorVerbouse){
+
+            console.warn(`Status text: ${err.statusText}`)
+            console.warn(`Status error: ${err.error}`)
+        }
+
 
         switch(err.status){
             case 401:

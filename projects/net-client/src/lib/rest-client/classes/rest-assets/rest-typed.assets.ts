@@ -46,14 +46,14 @@ export class RestPutAsset<DATA> extends RestCommonAsset<DATA> {
         super({ endpoint: endpoint, method: RestMethod.PUT, secured: secured },params, connection)
     }
 
-    makeCall(data: DATA): Observable<DATA> {
+    makeCall(data: DATA): Observable<DATA>{
         this.callPut(data)
         return this.responseSubject.asObservable()
     }
 
     callAsync = (data: DATA) => this.asyncCallPut(data);
 
-    callWith<T>(subject:T, data:DATA,  fn: (this:DATA, subject :T)=> T|undefined) {
+    callWith<T>(subject:T, data:DATA,  fn: (this:DATA, subject :T)=> T | undefined) {
         this.callAsync(data).then((result)=>{
             if(result){
                 fn.call(result, subject)
