@@ -6,64 +6,64 @@ import { InjectableI } from "../interfaces/injectable.interface";
 
 
 
-export class ObserverPayload {
-    message: string = "Outgoind"
-    refference: ViewContainerRef
+// export class ObserverPayload {
+//     message: string = "Outgoind"
+//     refference: ViewContainerRef
 
-    create(refference: ViewContainerRef) {
-        this.refference = refference
-    }
+//     create(refference: ViewContainerRef) {
+//         this.refference = refference
+//     }
 
-    constructor(refference: ViewContainerRef, message: string | undefined) {
-        this.refference = refference
-        if (message) {
-            this.message = message
-        } else {
-            this.message = "Outgoind default"
-        }
-    }
-}
+//     constructor(refference: ViewContainerRef, message: string | undefined) {
+//         this.refference = refference
+//         if (message) {
+//             this.message = message
+//         } else {
+//             this.message = "Outgoind default"
+//         }
+//     }
+// }
 
-export class ObserverCallback<T extends InjectableI> {
+// export class ObserverCallback<T extends InjectableI> {
 
-    message: string
-    child: RendererSelector<T>[] = []
+//     message: string
+//     child: RendererSelector<T>[] = []
 
-    constructor(child: RendererSelector<T>[], message: string | undefined = undefined) {
-        this.child = child
-        if (message) {
-            this.message = message
-        } else {
-            this.message = "Default messae"
-        }
-    }
-}
+//     constructor(child: RendererSelector<T>[], message: string | undefined = undefined) {
+//         this.child = child
+//         if (message) {
+//             this.message = message
+//         } else {
+//             this.message = "Default messae"
+//         }
+//     }
+// }
 
-export class ObserverData implements DataWithCallback<ObserverPayload, ObserverCallback<any>> {
+// export class ObserverData implements DataWithCallback<ObserverPayload, ObserverCallback<any>> {
 
-    data: ObserverPayload
-    callback: (response: ObserverCallback<any>) => void
+//     data: ObserverPayload
+//     callback: (response: ObserverCallback<any>) => void
 
-    constructor(data: ObserverPayload, callback: (response: ObserverCallback<any>) => void) {
-        this.data = data
-        this.callback = callback
-    }
-}
+//     constructor(data: ObserverPayload, callback: (response: ObserverCallback<any>) => void) {
+//         this.data = data
+//         this.callback = callback
+//     }
+// }
 
-export class SendReplyObserver {
+// export class SendReplyObserver {
 
-    private subject = new Subject<DataWithCallback<ObserverPayload, ObserverCallback<any>>>();
+//     private subject = new Subject<DataWithCallback<ObserverPayload, ObserverCallback<any>>>();
 
-    sendData(data: ObserverPayload): Promise<ObserverCallback<any>> {
-        return new Promise((resolve) => {
-            this.subject.next({
-                data,
-                callback: resolve
-            });
-        });
-    }
+//     sendData(data: ObserverPayload): Promise<ObserverCallback<any>> {
+//         return new Promise((resolve) => {
+//             this.subject.next({
+//                 data,
+//                 callback: resolve
+//             });
+//         });
+//     }
 
-    getObservable() {
-        return this.subject.asObservable();
-    }
-}
+//     getObservable() {
+//         return this.subject.asObservable();
+//     }
+// }

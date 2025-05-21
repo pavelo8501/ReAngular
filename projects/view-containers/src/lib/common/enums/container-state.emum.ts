@@ -1,6 +1,6 @@
 export enum ContainerState{
     IDLE = "Idle",
-    ACTIVE = "Active",
+    SELECTED = "Selected",
     EDIT = "Edit"
 
 }

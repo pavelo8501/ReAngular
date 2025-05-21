@@ -1,21 +1,19 @@
 import { HtmlTag } from "../../common/enums";
-import { RenderBlockInterface } from "../interfaces/render-block.interface";
-import { RenderModelInterface } from "../interfaces/render-model.interface";
+
+import { RenderModelInterface, RenderComponentInterface } from "../interfaces";
 import { RenderingItemComponent } from "../rendering-container-parts";
 import { RenderingBlock } from "./rendering-block.class";
 
-export class RenderingContainerItem<SOURCE extends RenderModelInterface>{
+export class RenderingContainerItem<T extends RenderModelInterface>{
 
-    private dataSource? : SOURCE = undefined
-    private renderingBlocks : RenderingBlock<RenderBlockInterface>[] = []
+    private dataSource? : T = undefined
+    private renderingBlocks : RenderingBlock<RenderModelInterface>[] = []
 
     private hostingComponent? : RenderingItemComponent
 
 
-    onBlocksUpdated? : (blocks: RenderingBlock<RenderBlockInterface>[]) => void;
-    onNewBlock? : (block: RenderBlockInterface) => void;
-
-
+    onBlocksUpdated? : (blocks: RenderingBlock<RenderModelInterface>[]) => void;
+    onNewBlock? : (block: RenderModelInterface) => void;
 
     constructor(
         public htmlTag : HtmlTag,
@@ -24,7 +22,7 @@ export class RenderingContainerItem<SOURCE extends RenderModelInterface>{
 
     }
 
-    setDataSource(source: SOURCE):SOURCE{
+    setDataSource(source: T):T{
         this.dataSource = source
         console.log("Data source set")
         return this.dataSource!!

@@ -1,6 +1,4 @@
 export *  from "./renderer-selector.class"
-export * from "./rendering-container.class2"
 export * from "./rendering-factory.class"
 export * from "./rendering-block.class"
 export * from "./rendering-container-item.class"
-export * from "./rendering-container.class"

@@ -1,8 +1,8 @@
 import { HtmlTag } from "../../common/enums";
-import { RenderBlockInterface } from "./../interfaces";
+import { RenderModelInterface } from "./../interfaces";
 import { RenderingItemComponent } from "../rendering-container-parts";
 
-export class RenderingBlock<SOURCE extends RenderBlockInterface>{
+export class RenderingBlock<SOURCE extends RenderModelInterface>{
 
     get htmlTag (): HtmlTag{
        return this.dataSource.htmlTag

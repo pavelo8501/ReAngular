@@ -1,41 +1,40 @@
 import { ContainerComponentAsset} from "./../models";
 import {ContainerNodeComponent} from "./../rendering-container-parts"
-import { RenderingContainer2 } from "./rendering-container.class2";
 import { HtmlTag } from "./../../common/enums";
 import { InjectableI } from "../interfaces/injectable.interface";
 
 export class RenderingFactory<T extends InjectableI>{
 
-    get name():string{
-        return `${this.container.name}` 
-    }
-    get personalName():string{
-       return `RenderingFactory[${this.name}]`
-    }
+    // get name():string{
+    //    // return `${this.container.name}` 
+    // }
+    // get personalName():string{
+    //    return `RenderingFactory[${this.name}]`
+    // }
 
-    private assets :  ContainerComponentAsset<ContainerNodeComponent<T>>[]=[]
-    constructor(private container : RenderingContainer2<T>){
+    // private assets :  ContainerComponentAsset<ContainerNodeComponent<T>>[]=[]
+    // constructor(){
 
-    }
+    // }
 
-    setAssets(assets: ContainerComponentAsset<ContainerNodeComponent<T>>[]){
-        this.assets = assets
-    }
+    // setAssets(assets: ContainerComponentAsset<ContainerNodeComponent<T>>[]){
+    //     this.assets = assets
+    // }
 
-    asset(htmlTag: HtmlTag):ContainerComponentAsset<ContainerNodeComponent<T>>|undefined{
-        const found = this.assets.find(x=>x.htmlTag == htmlTag)
-        if(found){
-            return found
-        }else{
-            console.warn(`${this.personalName} no asset found for selector ${htmlTag}, total assets provided ${this.assets.length}`)
-            console.log(`Selector Tag ${htmlTag}`)
-            console.log("AssetList")
-            this.assets.forEach(x=>console.log(x))
-            console.warn(`nodeContianer not found for ${this.personalName}`)
-            console.warn(`Asset not found`)
-            return undefined
-        }
-    }
+    // asset(htmlTag: HtmlTag):ContainerComponentAsset<ContainerNodeComponent<T>>|undefined{
+    //     const found = this.assets.find(x=>x.htmlTag == htmlTag)
+    //     if(found){
+    //         return found
+    //     }else{
+    //         console.warn(`${this.personalName} no asset found for selector ${htmlTag}, total assets provided ${this.assets.length}`)
+    //         console.log(`Selector Tag ${htmlTag}`)
+    //         console.log("AssetList")
+    //         this.assets.forEach(x=>console.log(x))
+    //         console.warn(`nodeContianer not found for ${this.personalName}`)
+    //         console.warn(`Asset not found`)
+    //         return undefined
+    //     }
+    // }
 
     // createComponent(parentContainerRef: ViewContainerRef,   selector:  RendererSelector, callback : (newContainer : RenderingContainer | undefined ) => void){
        

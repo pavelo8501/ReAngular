@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, inject, Inject, input, model, signal, ViewChild, ViewContainerRef } from '@angular/core';
-import {RenderBlockInterface, RenderModelInterface} from "./../../interfaces"
+import {RenderComponentInterface, RenderModelInterface} from "./../../interfaces"
 import { RenderingContainerItem } from './../../classes';
 
 import { FormsModule } from '@angular/forms';
@@ -27,17 +27,14 @@ export class RenderingItemComponent implements AfterViewInit {
   activeClass = "idle-class"
   containerState = ContainerState.IDLE
 
-  renderingBlocks : RenderingBlockComponent<RenderBlockInterface>[] = []
-  childComponents = model<RenderingBlockComponent<RenderBlockInterface>[]>([])
+  renderingBlocks : RenderingBlockComponent<RenderModelInterface>[] = []
+  childComponents = model<RenderingBlockComponent<RenderModelInterface>[]>([])
 
   sourceItem = input.required<RenderingContainerItem<RenderModelInterface>>()
 
 
-  private addRenderingBlockComponent<SOURCE extends RenderBlockInterface>(dataSource : SOURCE):RenderingBlock<SOURCE>{
-
-
+  private addRenderingBlockComponent<SOURCE extends RenderModelInterface>(dataSource : SOURCE):RenderingBlock<SOURCE>{
     const componentRef = this.containerRef.createComponent(RenderingBlockComponent);
-
     const newSourceItem = new RenderingBlock<SOURCE>(dataSource, this)
     componentRef.instance.sourceItem.set(newSourceItem)
     this.renderingBlocks.push(componentRef.instance);
@@ -45,7 +42,7 @@ export class RenderingItemComponent implements AfterViewInit {
     return newSourceItem
   }
 
-  setRenderingBlock<SOURCE extends RenderBlockInterface>(renderingBlock : SOURCE): RenderingBlock<SOURCE>{
+  setRenderingBlock<SOURCE extends RenderModelInterface>(renderingBlock : SOURCE): RenderingBlock<SOURCE>{
     return this.addRenderingBlockComponent(renderingBlock)
 }
   

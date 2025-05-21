@@ -14,17 +14,16 @@ import {
 } from '@angular/core';
 import { CommonModule } from "@angular/common"
 import { RendererSelector } from './classes/renderer-selector.class';
-import { RenderingContainerClass, RenderingContainer2, RenderingContainerHost } from './classes';
 import { ContainerComponentAsset } from './models';
 import { NumToStrPipe } from '../common/pipes/num-to-str.pipe';
 import { ContainerNodeComponent, RenderingItemComponent, EditorToolsComponent } from './rendering-container-parts';
-import { EventType } from '../common/enums/event-type.enum';
+import { ContainerEventType} from '../common/enums/container-event-type.enum';
 
-import { RendererHandlerInterface, RenderModelInterface, RenderBlockInterface } from "./interfaces"
+import { RendererHandlerInterface, RenderModelInterface, RenderComponentInterface} from "./interfaces"
 import { RenderingContainerItem } from './classes';
-import {RendererContainerEvent} from "./models"
+import { ContainerEvent } from "./models"
 
-import {ContainerProviderService} from "./../common/services"
+import { ContainerProviderService } from "./../common/services"
 
 
 
@@ -49,14 +48,12 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
 
   containerTools = viewChild(EditorToolsComponent)
 
-
-  source = new RenderingContainerClass()
   getHandler = output<RendererHandlerInterface>()
   containerItems = input<RenderingContainerItem<RenderModelInterface>[]>([])
 
   onEdit = output<any>()
 
-  componetAssets = input<Map<string, ContainerComponentAsset<ContainerNodeComponent<any>>>>()
+  //componetAssets = input<Map<string, ContainerComponentAsset<ContainerNodeComponent<any>>>>()
 
   opennedHeight = input<number>(100)
   height = signal<number>(100)
@@ -66,13 +63,15 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
 
 
   onSave = output<any>()
+
+
   private callbacks = {
-    onNode: <T>(type: EventType, object: T) => {
+    onNode: <T>(type: ContainerEventType, object: T) => {
       switch (type) {
-        case EventType.ON_EDIT:
+        case ContainerEventType.ON_EDIT:
           this.onEdit.emit(object)
           break
-        case EventType.SAVE:
+        case ContainerEventType.SAVE:
           this.onSave.emit(object);
           console.log(`Rendering Container Received Save event with object `)
           console.log(object)
@@ -81,16 +80,9 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
       }
     }
   }
-
-  private host: RenderingContainerHost = new RenderingContainerHost(this.callbacks)
-
-  rendererSource = input<RenderingContainer2<any> | undefined>(undefined)
-
-  rootContainers: RenderingContainer2<any>[] = []
-
   selectors = input<RendererSelector<any>[]>([])
 
-  constructor(private service : ContainerProviderService<RendererContainerEvent<RenderBlockInterface, string>, boolean>) {
+  constructor(private service: ContainerProviderService<ContainerEvent<RenderModelInterface, any>, boolean>) {
 
     effect(() => {
 
@@ -107,15 +99,15 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
         this.extract()
 
         console.warn(`selectors list is updated ${selectors.length}`)
-        this.renderContent(selectors)
+        //  this.renderContent(selectors)
       }
     })
   }
 
   injectDataModel(model: RenderModelInterface): RenderingItemComponent {
 
-    const foundItem  = this.renderingItemComponents().find(x=>x.sourceItem().htmlTag == model.htmlTag && x.sourceItem().elementId == model.elementId)
-    if(!foundItem){
+    const foundItem = this.renderingItemComponents().find(x => x.sourceItem().htmlTag == model.htmlTag && x.sourceItem().elementId == model.elementId)
+    if (!foundItem) {
       throw Error(`ContainerItem not found for htmlTag ${model.htmlTag} and elementId ${model.elementId}`)
     }
     // const found = this.containerItems().find(x=>x.htmlTag == model.htmlTag && x.elementId == model.elementId)
@@ -139,36 +131,36 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
   }
 
 
-  private renderContent(selectors: RendererSelector<any>[]) {
-    const assetMap = this.componetAssets()
-    if (assetMap) {
-      let assets: ContainerComponentAsset<ContainerNodeComponent<any>>[] = []
-      assetMap.forEach((value, _key) => assets.push(value))
-      if (assets.length == 0) {
-        console.warn(`Assets list is empty`)
-      }
-      selectors.forEach(selector => {
-        const foundAsset = assets.find(x => x.htmlTag == selector.selector.tag)
-        if (foundAsset) {
-          const newContainer = new RenderingContainer2(selector, this.host)
-          const injector = Injector.create({
-            providers: [{ provide: RenderingContainer2, useValue: newContainer }],
-            parent: this.rootNode.injector,
-          });
-          newContainer.setAssets(assets).setSourceHtml(selector.html)
-          let newComponent = this.rootNode.createComponent<ContainerNodeComponent<any>>(foundAsset.componentType, { injector })
-          newComponent.changeDetectorRef.detectChanges()
-          newContainer.setComponentRefference(newComponent, this.rootNode)
-          this.rootContainers.push(newContainer)
-        } else {
-          console.warn(`Unable to find asset for selector ${selector.name}`)
-        }
-      })
-      console.log(`RenderingContainer created ${this.rootContainers.length}`)
-    } else {
-      console.warn(`Assets assetMap undefined ${assetMap}`)
-    }
-  }
+  // private renderContent(selectors: RendererSelector<any>[]) {
+  //   //const assetMap = this.componetAssets()
+  //   if (assetMap) {
+  //     let assets: ContainerComponentAsset<ContainerNodeComponent<any>>[] = []
+  //     assetMap.forEach((value, _key) => assets.push(value))
+  //     if (assets.length == 0) {
+  //       console.warn(`Assets list is empty`)
+  //     }
+  //     selectors.forEach(selector => {
+  //       const foundAsset = assets.find(x => x.htmlTag == selector.selector.tag)
+  //       if (foundAsset) {
+  //         const newContainer = new RenderingContainer2(selector, this.host)
+  //         const injector = Injector.create({
+  //           providers: [{ provide: RenderingContainer2, useValue: newContainer }],
+  //           parent: this.rootNode.injector,
+  //         });
+  //         newContainer.setAssets(assets).setSourceHtml(selector.html)
+  //         let newComponent = this.rootNode.createComponent<ContainerNodeComponent<any>>(foundAsset.componentType, { injector })
+  //         newComponent.changeDetectorRef.detectChanges()
+  //         newContainer.setComponentRefference(newComponent, this.rootNode)
+  //         this.rootContainers.push(newContainer)
+  //       } else {
+  //         console.warn(`Unable to find asset for selector ${selector.name}`)
+  //       }
+  //     })
+  //     console.log(`RenderingContainer created ${this.rootContainers.length}`)
+  //   } else {
+  //     console.warn(`Assets assetMap undefined ${assetMap}`)
+  //   }
+  // }
 
 
 
@@ -177,14 +169,15 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
     this.getHandler.emit(this as RendererHandlerInterface)
 
 
-   this.service.provider.subscribe().subscribe(({ data, callback }) => {
+    this.service.provider.receive().subscribe(({ data, callback }) => {
       console.log('Received event:', data);
+      this.onSave.emit(data.caller.dataSource)
       callback(true); // respond to sender
     });
 
     const selectors = this.selectors()
     if (selectors) {
-      this.renderContent(selectors)
+      // this.renderContent(selectors)
       this.extract()
     }
   }

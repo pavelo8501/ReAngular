@@ -2,10 +2,9 @@ import { ChangeDetectionStrategy, Component, input, signal, AfterViewInit, effec
 import { ChangeDetectorRef } from '@angular/core'
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ContainerNodeComponent } from './../container-node/container-node.component';
-import { ContainerState, EventType } from "./../../../common/enums"
 
-import { EventSubject } from './../../models';
+import { ContainerNodeComponent } from './../container-node/container-node.component';
+import { ContainerState, ContainerEventType } from "./../../../common/enums"
 
 import {InjectableI} from "./../../interfaces"
 
@@ -46,10 +45,10 @@ export class SharedViewComponentComponent<T extends   InjectableI>  extends Cont
         switch(state){
           case ContainerState.IDLE:
 
-            console.log(this.dataModel.class_list)
+           // console.log(this.dataModel.class_list)
           break
           case ContainerState.EDIT:
-            this.classListEdit.set(this.dataModel.class_list)
+          //  this.classListEdit.set(this.dataModel.class_list)
           break
         }
       }})
@@ -57,26 +56,27 @@ export class SharedViewComponentComponent<T extends   InjectableI>  extends Cont
 
   override ngAfterViewInit(): void {
 
-    this.renderingContainer.listen().subscribe((event: EventSubject)=>{
-        switch(event.eventType){
-          case EventType.ON_LOST_FOCUS:
-            if(this.canSelect){
-              this.containerState.set(ContainerState.IDLE)
-            }
-          break;
-          case EventType.CAN_SELECT:
-            const val =  event.value as boolean
-            this.canSelect = val
-          break
-          case EventType.UPDATE_VIEW:
-            console.log(`Updating`)
+  //   this.renderingContainer.listen().subscribe((event: EventSubject)=>{
+  //       switch(event.eventType){
+  //         case ContainerEventType.ON_LOST_FOCUS:
+  //           if(this.canSelect){
+  //             this.containerState.set(ContainerState.IDLE)
+  //           }
+  //         break;
+  //         case ContainerEventType.CAN_SELECT:
+  //           const val =  event.value as boolean
+  //           this.canSelect = val
+  //         break
+  //         case ContainerEventType.UPDATE_VIEW:
+  //           console.log(`Updating`)
             
             
-           // this.updateView()
+  //          // this.updateView()
 
-            break
+  //           break
 
-        }
-    })
+  //       }
+  //   })
+  // }
   }
 }

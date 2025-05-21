@@ -47,7 +47,7 @@
 
 
 <div class="sw-controls" *ngIf="containerState() != ContainerState.IDLE">
-    @if (containerState() == ContainerState.ACTIVE) {
+    @if (containerState() == ContainerState.SELECTED) {
         <button type="button"class="edit-btn"  name="edit-btn" (click)="editBtnClick()">Edit</button>
     }
     @if(containerState() == ContainerState.EDIT){
