@@ -64,22 +64,6 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
 
   onSave = output<any>()
 
-
-  private callbacks = {
-    onNode: <T>(type: ContainerEventType, object: T) => {
-      switch (type) {
-        case ContainerEventType.ON_EDIT:
-          this.onEdit.emit(object)
-          break
-        case ContainerEventType.SAVE:
-          this.onSave.emit(object);
-          console.log(`Rendering Container Received Save event with object `)
-          console.log(object)
-
-          break
-      }
-    }
-  }
   selectors = input<RendererSelector<any>[]>([])
 
   constructor(private service: ContainerProviderService<ContainerEvent<RenderModelInterface, any>, boolean>) {
@@ -171,7 +155,9 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
 
     this.service.provider.receive().subscribe(({ data, callback }) => {
       console.log('Received event:', data);
-      this.onSave.emit(data.caller.dataSource)
+      this.onSave.emit(data.hostingItem.dataModel())
+      console.log("data.hostingItem.sourceItem")
+       console.log(data.hostingItem.dataModel())
       callback(true); // respond to sender
     });
 

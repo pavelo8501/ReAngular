@@ -9,11 +9,17 @@
     "strict": true,
     "alwaysStrict": true,
     "paths": {
+      "data-helpers": [
+        "./dist/data-helpers"
+      ],
       "form-controls": [
         "./dist/form-controls"
       ],
       "net-client": [
         "./dist/net-client"
+      ],
+      "reflective-data": [
+        "./dist/reflective-data"
       ],
       "view-containers": [
         "./dist/view-containers"

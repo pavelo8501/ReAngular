@@ -8,7 +8,6 @@ export class RenderingContainerItem<T extends RenderModelInterface>{
 
     private dataSource? : T = undefined
     private renderingBlocks : RenderingBlock<RenderModelInterface>[] = []
-
     private hostingComponent? : RenderingItemComponent
 
 
@@ -20,6 +19,15 @@ export class RenderingContainerItem<T extends RenderModelInterface>{
         public elementId : string
     ){
 
+    }
+
+    getDataSource():T{
+        const dataSource = this.dataSource
+        if(dataSource != null){
+             return dataSource
+        }else{
+            throw Error("dataSource unavailable in RenderingContainerItem")
+        }
     }
 
     setDataSource(source: T):T{

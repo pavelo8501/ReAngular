@@ -1,0 +1,30 @@
+{
+  "name": "@pavelo8501/data-helpers",
+  "version": "0.0.1",
+  "description": "General use TS data helpers",
+  "main": "dist/libs/form-controls/index.d.ts",
+  "peerDependencies": {
+    "@angular/common": "^19.2.0",
+    "@angular/core": "^19.2.0"
+  },
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "ng build data-helpers",
+    "release": "npm version patch && ng build data-helpers && cd C:/Projects_IT/ReAngular/dist/data-helpers && npm publish --registry=https://npm.pkg.github.com --access public",
+    "postinstall": "rimraf dist",
+    "postpublish": "rimraf dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pavelo8501/ReAngular"
+  },
+  "author": "Pavel",
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}

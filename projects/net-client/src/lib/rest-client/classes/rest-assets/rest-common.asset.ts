@@ -1,5 +1,5 @@
 import { lastValueFrom, Observable, Subject, Subscription} from "rxjs"
-import { HttpClient, HttpErrorResponse } from "@angular/common/http"
+import { HttpClient, HttpErrorResponse, HttpParams } from "@angular/common/http"
 import { ContentNegotiationsInterface } from "../plugins/content/content-negotiations.plugin"
 import { RestConnection } from "../connection/rest-client-connection"
 import { ResponseBase } from "../dataflow/rest-response"
@@ -209,15 +209,20 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
     }
 
 
-    protected callPost(requestData: DATA): void;
-    protected callPost<REQUEST>(requestData: REQUEST): void;
-    protected callPost<REQUEST>(requestData: REQUEST) {
+    protected callPost(requestData: DATA, queryParams?: Record<string, string | number>): void;
+    protected callPost<REQUEST>(requestData: REQUEST, queryParams?: Record<string, string | number>): void;
+    protected callPost<REQUEST>(requestData: REQUEST, queryParams?: Record<string, string | number>) {
 
         this.preCallRoutine()
         const requestDataJson = JSON.stringify(requestData)
-        const callOptions =  this.callOptions.toOptions()
+
+        const callOptions =  this.callOptions.toOptions(queryParams)
+
         if(this.params.notifyDataSent){
             console.log(`Making Post request with request data ${requestDataJson}`)
+            if(queryParams){
+                 console.log(`And query parameters: ${queryParams}`)
+            }
         }
        
         this.notify({url: this.apiUrl, secured : this.secured, params: requestDataJson})

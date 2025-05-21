@@ -38,7 +38,7 @@ export class RenderingBlockComponent<T extends RenderModelInterface> implements 
     return this._dataSource
   }
 
-  createEvent = configureCaller(this, this.sourceItem().hostingItem)
+  //createEvent = configureCaller(this, this.sourceItem().hostingItem)
 
   constructor(private service : ContainerProviderService<ContainerEvent<T, string>, boolean>){
 
@@ -84,7 +84,9 @@ export class RenderingBlockComponent<T extends RenderModelInterface> implements 
   onClicked(){
     console.log("Click event registred")
 
-    this.provider.send(this.createEvent(ContainerEventType.ON_CLICK, "")).then(result => {
+    const createEvent = configureCaller(this, this.sourceItem().hostingItem)
+
+    this.provider.send(createEvent(ContainerEventType.ON_CLICK, "")).then(result => {
       if(result == true){
         this.containerState.set(ContainerState.SELECTED)
         console.log("SELECTING")

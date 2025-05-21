@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, inject, Inject, input, model, signal, ViewChild, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, inject, Inject, input, model, signal, ViewChild, ViewContainerRef } from '@angular/core';
 import {RenderComponentInterface, RenderModelInterface} from "./../../interfaces"
 import { RenderingContainerItem } from './../../classes';
 
@@ -29,9 +29,12 @@ export class RenderingItemComponent implements AfterViewInit {
 
   renderingBlocks : RenderingBlockComponent<RenderModelInterface>[] = []
   childComponents = model<RenderingBlockComponent<RenderModelInterface>[]>([])
-
   sourceItem = input.required<RenderingContainerItem<RenderModelInterface>>()
-
+  dataModel = computed<RenderModelInterface>(
+    ()=>{
+      return this.sourceItem().getDataSource()
+    }
+  )
 
   private addRenderingBlockComponent<SOURCE extends RenderModelInterface>(dataSource : SOURCE):RenderingBlock<SOURCE>{
     const componentRef = this.containerRef.createComponent(RenderingBlockComponent);
