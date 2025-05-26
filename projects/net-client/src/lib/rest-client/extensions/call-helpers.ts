@@ -15,3 +15,16 @@ export function toHttpParams(params: Record<string, string | number>): HttpParam
   });
   return httpParams;
 }
+
+export function toQueryString(url:string, params? : Record<string, string | number | boolean | undefined | null>): string {
+  
+  let query = ""
+  if(params){
+    const queryParts = Object.entries(params)
+    .filter(([, value]) => value !== undefined && value !== null)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+     query = queryParts.length ? `?${queryParts.join('&')}` : ''
+     url = url + query
+  }
+  return url
+}

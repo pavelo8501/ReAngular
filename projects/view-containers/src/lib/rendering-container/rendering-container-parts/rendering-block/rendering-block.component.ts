@@ -6,6 +6,8 @@ import { RenderingBlock} from '../../classes';
 import { ContainerEvent, configureCaller } from "./../../models"
 import { RenderComponentInterface, RenderModelInterface} from '../../interfaces';
 import { ContainerProviderService, TypedCallbackProvider } from "./../../../common/services"
+import { RenderingItemComponent } from '../rendering-item/rendering-item.component';
+import {guard} from "../../../../../../data-helpers/src/public-api"
 
 
 @Component({
@@ -19,7 +21,7 @@ export class RenderingBlockComponent<T extends RenderModelInterface> implements 
 
   ContainerState = ContainerState
   private  personalName: string = "RenderingBlockComponent"
-  sourceItem  = model.required<RenderingBlock<T>>()
+  classController  = model.required<RenderingBlock<T>>()
 
 
   private _provider? :  TypedCallbackProvider<ContainerEvent<T, string>, boolean> = undefined
@@ -38,16 +40,30 @@ export class RenderingBlockComponent<T extends RenderModelInterface> implements 
     return this._dataSource
   }
 
+  get parentContainer (): RenderingItemComponent{
+    return this.classController().parentContainer
+  }
+
   //createEvent = configureCaller(this, this.sourceItem().hostingItem)
+
+  createEventParameter? : <P>(eventType: ContainerEventType, payload: P) => ContainerEvent<T, P>
+  get createEvent(): <P>(eventType: ContainerEventType, payload: P) => ContainerEvent<T, P>{
+    if(this.createEventParameter){
+      return this.createEventParameter
+    }else{
+      throw Error("createEventParameter not yet ready")
+    }
+    
+  }
+
 
   constructor(private service : ContainerProviderService<ContainerEvent<T, string>, boolean>){
 
     this._provider =  service.provider
-
     effect(()=>{
-      const sourceItem = this.sourceItem()
+      const sourceItem = this.classController()
       this._dataSource = sourceItem.dataSource
-
+      this.createEventParameter = configureCaller(this,  this.parentContainer)
     })
   }
 
@@ -75,63 +91,79 @@ export class RenderingBlockComponent<T extends RenderModelInterface> implements 
   classList = input<string[]>([])
 
   canSelect:boolean = true
+  
 
   // private createEvent(eventType : ContainerEventType, message:string = ""):ContainerEvent<T,string>{
   //   return  new ContainerEvent(this, eventType, this.sourceItem().hostingItem, message)
   // }
 
+  setContinerState(state :ContainerState){
+      this.containerState.set(state)
+  }
 
-  onClicked(){
+  onClicked = guard(
+    (event: MouseEvent)=> {
+        event.preventDefault()
+        event.stopPropagation()
+        const state = this.containerState()
+      if(state !=  ContainerState.IDLE){
+        return false
+      }else{
+        return true
+      }
+    },
+    ()=>{
     console.log("Click event registred")
 
-    const createEvent = configureCaller(this, this.sourceItem().hostingItem)
-
-    this.provider.send(createEvent(ContainerEventType.ON_CLICK, "")).then(result => {
+    this.provider.send(this.createEvent(ContainerEventType.ON_CLICK, "")).then(result => {
       if(result == true){
-        this.containerState.set(ContainerState.SELECTED)
+        this.parentContainer.setContinerState(ContainerState.SELECTED)
+        this.setContinerState(ContainerState.SELECTED)
         console.log("SELECTING")
       }
       console.log('Parent acknowledged in rendering block:', result);
-    });
-    
+    })
+ })
 
-    if(!this.canSelect){
-      return
-    }
+ editBtnClick = guard(
+    (event: MouseEvent)=> {
+      event.preventDefault()
+      event.stopPropagation()
+      if(this.containerState()  != ContainerState.EDIT){
+        return  true
+      }else{
+        return false
+      }
+    },
+    ()=>{
+     console.log("Click event editBtnClick registred")
+      this.provider.send(this.createEvent(ContainerEventType.ON_EDIT, "")).then(result => {
+      if(result){
+        this.parentContainer.setContinerState(ContainerState.EDIT)
+        this.setContinerState(ContainerState.EDIT)
 
-   // this.provider.emmitEvent(EventType.ON_LOST_FOCUS)
-   // this.containerState.set(ContainerState.ACTIVE)
-   // console.log(`${this.personalName} clicked`)
- }
+      }
+  })
+})
 
- editBtnClick(){
-    //   if(!this.canSelect){
-    //     return
-    //   }
-    //   this.containerState.update((state)=>state)
-    //   const send  =  (event: EventType, dataModel :T )  => {
-    //   this.host.propagateToParent(event, dataModel)
-    //   sent = true
-      
-    // }
-    
-    // let  sent:boolean = false
- 
-    // if(this.dataModel){
-    //   send(EventType.ON_EDIT, this.dataModel)
-    // }else{
-    //     console.warn("modelFromContainer Tozhe mimo")
-    // }
-
-    // if(sent){
-    //   console.log(`SettingEdit ${this.personalName}`)
-    //   this.containerState.set(ContainerState.EDIT)
-    //   this.canSelect = false
-    //   this.host.emmitEvent(EventType.CAN_SELECT, this.canSelect)
-    // }
- }
-
- saveBtnClick(){
+ saveBtnClick = guard(
+    (event: MouseEvent)=> {
+      event.preventDefault()
+      event.stopPropagation()
+      if(this.containerState()  != ContainerState.EDIT){
+        return  false
+      }else{
+        return true
+      }
+    },
+    ()=>{
+     console.log("Click event editBtnClick registred")
+      this.provider.send(this.createEvent(ContainerEventType.SAVE, "")).then(result => {
+      if(result){
+        this.parentContainer.setContinerState(ContainerState.IDLE)
+      }
+  })
+})
 
   //  if(this.dataModel){
 
@@ -141,11 +173,10 @@ export class RenderingBlockComponent<T extends RenderModelInterface> implements 
   //  }else{
   //     console.warn(`Save Failed`) 
   //  }
- }
+ 
 
- cancelBtnClick(){
+ cancelBtnClick(event: MouseEvent){
   
  }
 
-
- }
+}

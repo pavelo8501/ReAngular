@@ -5,6 +5,6 @@ export enum ContainerEventType{
     ON_EDIT = 3,
     CAN_SELECT = 4,
     SAVE = 5,
-    CANCEL_SAVE = 6,
+    CANCEL = 6,
     UPDATE_VIEW = 7
 }

@@ -25,7 +25,7 @@ export class RenderingItemComponent implements AfterViewInit {
   ContainerState =  ContainerState
 
   activeClass = "idle-class"
-  containerState = ContainerState.IDLE
+  containerState = signal<ContainerState>(ContainerState.IDLE)
 
   renderingBlocks : RenderingBlockComponent<RenderModelInterface>[] = []
   childComponents = model<RenderingBlockComponent<RenderModelInterface>[]>([])
@@ -37,12 +37,26 @@ export class RenderingItemComponent implements AfterViewInit {
   )
 
   private addRenderingBlockComponent<SOURCE extends RenderModelInterface>(dataSource : SOURCE):RenderingBlock<SOURCE>{
+
     const componentRef = this.containerRef.createComponent(RenderingBlockComponent);
+
     const newSourceItem = new RenderingBlock<SOURCE>(dataSource, this)
-    componentRef.instance.sourceItem.set(newSourceItem)
+
+    componentRef.instance.classController.set(newSourceItem)
+
     this.renderingBlocks.push(componentRef.instance);
     this.childComponents.set(this.renderingBlocks);
     return newSourceItem
+  }
+
+  setContinerState(state: ContainerState){
+      this.containerState.set(state)
+      switch(state){
+        case ContainerState.IDLE:
+          this.childComponents().forEach(c=>c.setContinerState(state))
+        break;
+      }
+    
   }
 
   setRenderingBlock<SOURCE extends RenderModelInterface>(renderingBlock : SOURCE): RenderingBlock<SOURCE>{

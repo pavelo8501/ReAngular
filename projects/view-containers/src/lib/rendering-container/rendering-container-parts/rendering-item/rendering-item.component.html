@@ -1,16 +1,12 @@
 
 
-<div  [ngClass]="activeClass">
+<div  [ngClass]="activeClass" [class.active]="containerState() != ContainerState.IDLE">
     <p>{{sourceItem().elementId}} </p>
-
 
     <ng-template #blockContainer></ng-template>
 
     @for(renderingBlock of childComponents(); track $index){
 
-
-
     }
-
 
 </div>

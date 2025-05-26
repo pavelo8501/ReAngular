@@ -64,7 +64,8 @@ export class RendererSelector<T extends InjectableI> implements SelectableI<T> {
     }
 
     get classList(): {key:number, value:string}[]{
-        return this.dataModel.class_list
+       // return this.dataModel.class_list
+       return []
     }
 
     get content():string{

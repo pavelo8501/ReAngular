@@ -4,7 +4,7 @@ export interface InjectableI{
 
     selector: ContainerSelector
     content: string
-    class_list:{key:number, value:string}[]
-    onContentUpdated? : (content:string)=>void
+    //class_list:ClassItem []
+   // onContentUpdated? : (content:string)=>void
     
 }

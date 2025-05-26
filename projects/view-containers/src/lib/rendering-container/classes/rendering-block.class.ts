@@ -13,7 +13,7 @@ export class RenderingBlock<SOURCE extends RenderModelInterface>{
     
     constructor(
         public dataSource : SOURCE,
-        public hostingItem : RenderingItemComponent,
+        public parentContainer : RenderingItemComponent,
     ){
         
     }

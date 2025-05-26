@@ -11,3 +11,38 @@
 .active{
   border :green 1px solid;
 }
+
+.header-content{
+  display: flex;
+}
+
+.controls{
+  width: 100px;
+}
+
+.edit-btn{
+  background: green;
+  padding: 3px;
+  border: white 1px solid;
+  width: 80px;
+  height : 35px;
+}
+
+
+.save-btn{
+  background: blue;
+  color: azure;
+  padding: 3px;
+  border: white 1px solid;
+  width: 80px;
+  height : 35px;
+}
+
+.cancel-btn{
+  background: rgb(122, 61, 61);
+  color: azure;
+  padding: 3px;
+  border: white 1px solid;
+  width: 80px;
+  height : 35px;
+}

@@ -14,8 +14,9 @@
 
 
 .active{
-  border :green 1px solid;
+  border :blue 1px solid;
 }
+
 
 .edit-btn{
   background: green;

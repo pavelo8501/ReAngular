@@ -10,10 +10,8 @@ import { TokenSubjectException } from "../security"
 import { EventEmitterService, IncidentCode, RequestError } from "../events"
 import { RequestEvent } from "../events/models/request-event.class"
 import { AssetParams } from "./rest-assets.model"
-import { RestPostAsset, RestPutAsset } from "./rest-typed.assets"
-import {  } from "./../../extensions/client.extensions"
 import { partsToUrl } from "../../extensions/call-helpers"
-
+import { toQueryString } from "../../extensions/call-helpers"
 
 
 
@@ -214,21 +212,17 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
     protected callPost<REQUEST>(requestData: REQUEST, queryParams?: Record<string, string | number>) {
 
         this.preCallRoutine()
-        const requestDataJson = JSON.stringify(requestData)
-
-        const callOptions =  this.callOptions.toOptions(queryParams)
-
+        const callOptions =  this.callOptions.toOptions()
+        const requestUrl = toQueryString(this.apiUrl, queryParams)
         if(this.params.notifyDataSent){
-            console.log(`Making Post request with request data ${requestDataJson}`)
+            console.log(`Request string ${requestUrl}`)
             if(queryParams){
                  console.log(`And query parameters: ${queryParams}`)
             }
         }
-       
-        this.notify({url: this.apiUrl, secured : this.secured, params: requestDataJson})
         this.httpHandler = this.http.post<ResponseBase<DATA>>(
-            this.apiUrl,
-            requestDataJson,
+            requestUrl,
+            requestData,
             callOptions
         ).subscribe({
             next: (response) => {

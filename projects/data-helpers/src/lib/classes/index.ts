@@ -1,1 +1,0 @@
-export * from './object-registry-base.class'

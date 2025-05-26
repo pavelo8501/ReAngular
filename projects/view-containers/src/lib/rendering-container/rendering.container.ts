@@ -24,6 +24,7 @@ import { RenderingContainerItem } from './classes';
 import { ContainerEvent } from "./models"
 
 import { ContainerProviderService } from "./../common/services"
+import { ContainerState } from '../common/enums';
 
 
 
@@ -45,13 +46,14 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
 
   renderingItemComponents = viewChildren<RenderingItemComponent>(RenderingItemComponent)
 
-
   containerTools = viewChild(EditorToolsComponent)
 
   getHandler = output<RendererHandlerInterface>()
   containerItems = input<RenderingContainerItem<RenderModelInterface>[]>([])
 
+
   onEdit = output<any>()
+  onSave = output<any>()
 
   //componetAssets = input<Map<string, ContainerComponentAsset<ContainerNodeComponent<any>>>>()
 
@@ -60,9 +62,7 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
   containerClass = signal<string>("")
 
   withEditor = input<EditorToolsComponent>()
-
-
-  onSave = output<any>()
+  
 
   selectors = input<RendererSelector<any>[]>([])
 
@@ -115,56 +115,48 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
   }
 
 
-  // private renderContent(selectors: RendererSelector<any>[]) {
-  //   //const assetMap = this.componetAssets()
-  //   if (assetMap) {
-  //     let assets: ContainerComponentAsset<ContainerNodeComponent<any>>[] = []
-  //     assetMap.forEach((value, _key) => assets.push(value))
-  //     if (assets.length == 0) {
-  //       console.warn(`Assets list is empty`)
-  //     }
-  //     selectors.forEach(selector => {
-  //       const foundAsset = assets.find(x => x.htmlTag == selector.selector.tag)
-  //       if (foundAsset) {
-  //         const newContainer = new RenderingContainer2(selector, this.host)
-  //         const injector = Injector.create({
-  //           providers: [{ provide: RenderingContainer2, useValue: newContainer }],
-  //           parent: this.rootNode.injector,
-  //         });
-  //         newContainer.setAssets(assets).setSourceHtml(selector.html)
-  //         let newComponent = this.rootNode.createComponent<ContainerNodeComponent<any>>(foundAsset.componentType, { injector })
-  //         newComponent.changeDetectorRef.detectChanges()
-  //         newContainer.setComponentRefference(newComponent, this.rootNode)
-  //         this.rootContainers.push(newContainer)
-  //       } else {
-  //         console.warn(`Unable to find asset for selector ${selector.name}`)
-  //       }
-  //     })
-  //     console.log(`RenderingContainer created ${this.rootContainers.length}`)
-  //   } else {
-  //     console.warn(`Assets assetMap undefined ${assetMap}`)
-  //   }
-  // }
-
-
+  private deselect(components: readonly  RenderingItemComponent[]):boolean{
+    if(components.find(f=>f.containerState() == ContainerState.EDIT)){
+      return false
+    }else{
+       components.forEach(x=>{x.setContinerState(ContainerState.IDLE)})
+       return true
+    }
+  }
 
   ngAfterViewInit(): void {
 
     this.getHandler.emit(this as RendererHandlerInterface)
-
-
     this.service.provider.receive().subscribe(({ data, callback }) => {
-      console.log('Received event:', data);
-      this.onSave.emit(data.hostingItem.dataModel())
-      console.log("data.hostingItem.sourceItem")
-       console.log(data.hostingItem.dataModel())
-      callback(true); // respond to sender
+      const components = this.renderingItemComponents()  
+      console.log(data.eventType)
+      switch(data.eventType){
+        case ContainerEventType.ON_CLICK:
+           callback(this.deselect(components))
+        break
+        case ContainerEventType.ON_EDIT:
+          const found = components.find(x=>x.containerState() == ContainerState.EDIT)
+          if(found == null){
+            this.onEdit.emit(data.caller.dataSource)
+            callback(true)
+          }else{
+            callback(false) 
+          }
+        break
+        case ContainerEventType.SAVE:
+          this.onSave.emit(data.hostingItem.dataModel())
+          callback(true)
+        break
+        case ContainerEventType.CANCEL:
+          callback(true)
+        break
+      }
     });
 
     const selectors = this.selectors()
     if (selectors) {
       // this.renderContent(selectors)
-      this.extract()
+    //  this.extract()
     }
   }
 

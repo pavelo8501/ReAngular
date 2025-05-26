@@ -1,25 +1,27 @@
 
 
-<div (click)="onClicked()"  [class.active]="containerState() != ContainerState.IDLE">
-    <div class="sw-header">
+<div (click)="onClicked($event)"  [class.active]="containerState() != ContainerState.IDLE">
+    <div class="header-content">
         {{componentKey()}}
+        @if(containerState() == ContainerState.SELECTED){
+        <div class="sw-controls">
+            <button type="button"class="edit-btn"  name="edit-btn" (click)="editBtnClick($event)">Edit</button>
+        </div>
+        }
+        @if(containerState() == ContainerState.EDIT){
+        <div class="sw-controls">
+            <button type="button"class="save-btn"  name="save-btn"  (click)="saveBtnClick($event)">Save</button>
+            <button type="button"class="cancel-btn" name="save-btn"  (click)="cancelBtnClick($event)">Cancel</button>
+        </div>
+        }
     </div>
-
     <div class = "sw-content" [innerHTML]="content()">
-        
+       
     </div>
 </div>
 
 
-
-<div #renderingBlockContainer  
-    [id]="componentId()"  
-    [ngClass]="classList()"
-    [class.active]="containerState() != ContainerState.IDLE"
->
-
-<div (click)="onClicked()" >
-
+<!-- <div (click)="onClicked($event)" >
     <div class="sw-class-editor" *ngIf="containerState() == ContainerState.EDIT">
         <div class="class-editor-group">
             <label>Class: </label>
@@ -27,36 +29,5 @@
                 <div> {{classItem.value}} </div>
             }
         </div>
-
     </div>
-
-    <div class="sw-header"> 
-        {{componentKey()}}
-    </div>
-    <div class = "sw-content">
-        <ng-content>
-
-        </ng-content>
-    </div>
-</div>
-
-
-<div class="idle-state-template" (click)="onClicked()"  >
-    
-</div> @if(containerState() != ContainerState.IDLE){
-
-
-<div class="sw-controls" *ngIf="containerState() != ContainerState.IDLE">
-    @if (containerState() == ContainerState.SELECTED) {
-        <button type="button"class="edit-btn"  name="edit-btn" (click)="editBtnClick()">Edit</button>
-    }
-    @if(containerState() == ContainerState.EDIT){
-        <button type="button"class="save-btn"  name="save-btn" b (click)="saveBtnClick()">Save</button>
-        <button type="button"class="cancel-btn" name="save-btn" b (click)="cancelBtnClick()">Cancel</button>
-    }
-</div>
-}
-<ng-container  #nodeInnerContainer>
-</ng-container>
-    
-</div>
+</div> -->
