@@ -17,72 +17,48 @@ import {guard} from "../../../../../../data-helpers/src/public-api"
   styleUrl: './rendering-block.component.css',
   changeDetection: ChangeDetectionStrategy.Default,
 })
-export class RenderingBlockComponent<T extends RenderModelInterface> implements RenderComponentInterface<T> {
+export class RenderingBlockComponent{
 
   ContainerState = ContainerState
-  private  personalName: string = "RenderingBlockComponent"
-  classController  = model.required<RenderingBlock<T>>()
 
+  renderingBlock  = model.required<RenderingBlock<RenderModelInterface>>()
+ 
 
-  private _provider? :  TypedCallbackProvider<ContainerEvent<T, string>, boolean> = undefined
-  get provider ():  TypedCallbackProvider<ContainerEvent<T, string>, boolean>{
-    if(!this._provider){
-      throw Error(`RenderingContainerProvider uninitialized in ${this.personalName}`)
-    }
-    return this._provider
-  }
-
-  private _dataSource? : T = undefined
-  get dataSource (): T{
-    if(!this._dataSource){
-      throw Error(`SOURCE uninitialized in ${this.personalName}`)
-    }
-    return this._dataSource
-  }
+  provider : TypedCallbackProvider<ContainerEvent<RenderModelInterface, string>, boolean>
 
   get parentContainer (): RenderingItemComponent{
-    return this.classController().parentContainer
+    return this.renderingBlock().parentContainer
   }
 
   //createEvent = configureCaller(this, this.sourceItem().hostingItem)
 
-  createEventParameter? : <P>(eventType: ContainerEventType, payload: P) => ContainerEvent<T, P>
-  get createEvent(): <P>(eventType: ContainerEventType, payload: P) => ContainerEvent<T, P>{
-    if(this.createEventParameter){
-      return this.createEventParameter
-    }else{
-      throw Error("createEventParameter not yet ready")
-    }
+  constructor(
+    service : ContainerProviderService<ContainerEvent<RenderModelInterface, string>, boolean>
+  ){
+    this.provider = service.provider
     
-  }
-
-
-  constructor(private service : ContainerProviderService<ContainerEvent<T, string>, boolean>){
-
-    this._provider =  service.provider
     effect(()=>{
-      const sourceItem = this.classController()
-      this._dataSource = sourceItem.dataSource
-      this.createEventParameter = configureCaller(this,  this.parentContainer)
+        this.createEventParameter = configureCaller(this.renderingBlock(),  this.parentContainer)
     })
+     
   }
 
-  content = computed<string>(()=>{
-    const source =  this._dataSource
-    if(source != undefined){
-      return source.content
-    }else{
-      return ""
-    }
-  })
+  // content = computed<string>(()=>{
+  //   const source =  this._dataSource
+  //   if(source != undefined){
+  //     return source.content
+  //   }else{
+  //     return ""
+  //   }
+  // })
 
-  componentKey = computed<string>(()=>{
-    const source =  this._dataSource
-    if(source){
-      return `${source.htmlTag}|${source.elementId}`
-    }
-    return `HtmlTag|ElementId`
-  })
+  //componentKey = computed<string>(()=>{
+    // const source =  this._dataSource
+    // if(source){
+    //   return `${source.htmlTag}|${source.elementId}`
+    // }
+    // return `HtmlTag|ElementId`
+  //})
 
   containerState = signal<ContainerState>(ContainerState.IDLE)
   classListEdit = model<{key:number, value:string}[]>([])
@@ -96,6 +72,17 @@ export class RenderingBlockComponent<T extends RenderModelInterface> implements 
   // private createEvent(eventType : ContainerEventType, message:string = ""):ContainerEvent<T,string>{
   //   return  new ContainerEvent(this, eventType, this.sourceItem().hostingItem, message)
   // }
+
+
+   createEventParameter? : <P>(eventType: ContainerEventType, payload: P) => ContainerEvent<RenderModelInterface, P>
+    get createEvent(): <P>(eventType: ContainerEventType, payload: P) => ContainerEvent<RenderModelInterface, P>{
+        if(this.createEventParameter){
+        return this.createEventParameter
+        }else{
+        throw Error("createEventParameter not yet ready")
+        }
+    }
+
 
   setContinerState(state :ContainerState){
       this.containerState.set(state)
@@ -165,18 +152,14 @@ export class RenderingBlockComponent<T extends RenderModelInterface> implements 
   })
 })
 
-  //  if(this.dataModel){
 
-  //     console.log("Saving")
-     
-  //    // this.renderingContainer.getComponentRefference()?.instance.updateView()
-  //  }else{
-  //     console.warn(`Save Failed`) 
-  //  }
- 
-
- cancelBtnClick(event: MouseEvent){
-  
- }
-
+  cancelBtnClick(event: MouseEvent){
+    event.preventDefault()
+    event.stopPropagation()
+    this.provider.send(this.createEvent(ContainerEventType.CANCEL, "")).then(result => {
+      if(result){
+        this.parentContainer.setContinerState(ContainerState.IDLE)
+      }
+    })
+  }
 }

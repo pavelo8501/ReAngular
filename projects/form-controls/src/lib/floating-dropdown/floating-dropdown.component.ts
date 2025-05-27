@@ -1,17 +1,17 @@
 import { Component, OnInit, OnDestroy, signal, output, input, computed, model } from '@angular/core';
-import { ReactiveFormsModule,FormsModule, FormControl } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormControl } from '@angular/forms';
 import { DropdownOption } from './classes/dropdown-option';
-import { ActivationState } from '../classes/enums/activation-state';
+import { ActivationState } from '../common/enums/activation-state';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-    selector: 'floating-dropdown',
-    imports: [
-        FormsModule,
-        ReactiveFormsModule
-    ],
-    templateUrl: './floating-dropdown.component.html',
-    styleUrl: './floating-dropdown.component.css'
+  selector: 'floating-dropdown',
+  imports: [
+    FormsModule,
+    ReactiveFormsModule
+  ],
+  templateUrl: './floating-dropdown.component.html',
+  styleUrl: './floating-dropdown.component.css'
 })
 export class FloatingDropdownComponent implements OnInit, OnDestroy {
 
@@ -26,37 +26,37 @@ export class FloatingDropdownComponent implements OnInit, OnDestroy {
   control = input<FormControl>()
 
   isFocused = signal<boolean>(false);
-  isActive =  computed<boolean>(()=>{
-    if(this.selectedValue() !=  undefined ){
+  isActive = computed<boolean>(() => {
+    if (this.selectedValue() != undefined) {
       return true
-    }else{
+    } else {
       return false
     }
   })
 
-  private get effectiveValue():string{
+  private get effectiveValue(): string {
     const ctrl = this.control()
-    if(ctrl != undefined){
+    if (ctrl != undefined) {
       return ctrl.value
-    }else{
-      return this.selectedValue()?? ""
+    } else {
+      return this.selectedValue() ?? ""
     }
   }
 
-  state = computed<ActivationState>(()=>{
-      console.log(`Effective Value ${this.effectiveValue}`)
-      if(this.effectiveValue.length > 0){
-        return ActivationState.COMPLETE
-      }else{
-        if(this.isFocused() == true){
-          return ActivationState.ACTIVE
-        }else{
-          return ActivationState.INACTIVE
-        }
+  state = computed<ActivationState>(() => {
+    console.log(`Effective Value ${this.effectiveValue}`)
+    if (this.effectiveValue.length > 0) {
+      return ActivationState.COMPLETE
+    } else {
+      if (this.isFocused() == true) {
+        return ActivationState.ACTIVE
+      } else {
+        return ActivationState.INACTIVE
       }
-    })
+    }
+  })
 
-  
+
 
   showEmptyOption = input<boolean>()
   options = input<DropdownOption[]>([])
@@ -71,27 +71,27 @@ export class FloatingDropdownComponent implements OnInit, OnDestroy {
   errorMessage = input<string>()
 
 
-   onSubmitValues = input<Subject<boolean>>()
-   private unsubscribe$ = new Subject<void>();
+  onSubmitValues = input<Subject<boolean>>()
+  private unsubscribe$ = new Subject<void>();
 
-  onChange(event:any){
+  onChange(event: any) {
     console.log(event)
     console.log(this.selectedValue())
-  
+
   }
 
   ngOnInit(): void {
     const emptyOption = this.options().find(option => option.value == "")
-    if(emptyOption != undefined){
-      emptyOption.label = this.placeholder()?? "-"
+    if (emptyOption != undefined) {
+      emptyOption.label = this.placeholder() ?? "-"
       this.selectedValue.set("")
     }
 
     this.onSubmitValues()?.pipe(takeUntil(this.unsubscribe$)).subscribe(event => {
-          if(event == true){
-            this.submitValue();
-          }
-        });
+      if (event == true) {
+        this.submitValue();
+      }
+    });
 
   }
 
@@ -100,7 +100,7 @@ export class FloatingDropdownComponent implements OnInit, OnDestroy {
     this.unsubscribe$.complete();
   }
 
-  submitValue(){
+  submitValue() {
     console.log("SUBMITTING VALUE")
     console.log(`Setting ${this.effectiveValue}  to ${this.value()}`)
     this.value.set(this.effectiveValue)

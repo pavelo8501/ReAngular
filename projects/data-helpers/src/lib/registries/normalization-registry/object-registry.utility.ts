@@ -1,30 +1,39 @@
 import { ObjectRegistryBase } from "./object-registry.class"
 import { RegistryFieldBase, RegistryFieldType} from "./registry-key.model"
-import { registryHub} from "./registry-hub.class"
 
 function isPrimitiveKey(val: any): val is RegistryFieldBase<any> {
     return val instanceof RegistryFieldBase;
 }
 
-export function normalizeWithRegistry<T>(source: any, registry: any): T {
-    const result: any = {};
 
-    for (const key in registry) {
-        const regValue = registry[key];
-        const srcValue = source[key];
+export function normalizeWithRegistry<T>(
+  source: any,
+  registry: ObjectRegistryBase<T>
+): T {
+  const result: any = {};
 
-        if (typeof regValue === 'object' && regValue instanceof ObjectRegistryBase) {
-            if (Array.isArray(srcValue)) {
-                result[key] = srcValue.map(item => normalizeWithRegistry(item, regValue));
-            } else if (srcValue !== undefined && srcValue !== null) {
-                result[key] = normalizeWithRegistry(srcValue, regValue);
-            }
-        } else {
-            result[key] = srcValue;
-        }
+  for (const key in registry) {
+    if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+    const regValue = (registry as any)[key];
+    const srcValue = source?.[key];
+    if (srcValue === undefined || srcValue === null) continue;
+
+    if (isPrimitiveKey(regValue)) {
+      result[key] = srcValue;
     }
 
-    return result;
+    else if (regValue instanceof ObjectRegistryBase) {
+      if (Array.isArray(srcValue)) {
+        result[key] = srcValue.map(item =>
+          normalizeWithRegistry(item, regValue)
+        );
+      } else {
+        result[key] = normalizeWithRegistry(srcValue, regValue);
+      }
+    }
+  }
+  //delete result.constructorType;
+  return result;
 }
 
 export function  hydrateFromRegistry<T, R extends ObjectRegistryBase<T>>(

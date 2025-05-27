@@ -1,12 +1,19 @@
 
 
-<div  [ngClass]="activeClass" [class.active]="containerState() != ContainerState.IDLE">
-    <p>{{sourceItem().elementId}} </p>
 
-    <ng-template #blockContainer></ng-template>
 
-    @for(renderingBlock of childComponents(); track $index){
+    <div *ngIf="renderingItem() as item;  noContent"  name="section-inner-container" [class.active]="containerState() != ContainerState.IDLE" >
+    <p>{{item.elementId}} </p>
+    <div name="section-inner-container" [ngClass]="item.classes">
+    @for(renderingBlock of renderingBlocks(); track $index){
+        <lib-rendering-block [ngClass]="renderingBlock.classes" [renderingBlock] = "renderingBlock" >
 
+        </lib-rendering-block>        
     }
+    </div>
+    </div>
 
-</div>
+ <ng-template #noContent>
+    <h1>No Content Provided</h1>
+</ng-template>
+

@@ -1,6 +1,6 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, inject, Inject, input, model, signal, ViewChild, ViewContainerRef } from '@angular/core';
-import {RenderComponentInterface, RenderModelInterface} from "./../../interfaces"
-import { RenderingContainerItem } from './../../classes';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, effect, model, signal, viewChildren } from '@angular/core';
+import {RenderModelInterface} from "./../../interfaces"
+import { RenderingItem } from './../../classes';
 
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -12,60 +12,82 @@ import { RenderingBlock } from "./../../classes"
 @Component({
   selector: 'lib-rendering-item',
   imports: [
-    CommonModule, FormsModule,
-  ],
+    CommonModule, 
+    FormsModule,
+    RenderingBlockComponent
+],
   templateUrl: "./rendering-item.component.html",
   styleUrl: './rendering-item.component.css',
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class RenderingItemComponent implements AfterViewInit {
   
-  @ViewChild('blockContainer', { read: ViewContainerRef }) containerRef!: ViewContainerRef;
+  //@ViewChild('blockContainer', { read: ViewContainerRef }) containerRef!: ViewContainerRef;
   
   ContainerState =  ContainerState
 
-  activeClass = "idle-class"
+  renderBlockComponents = viewChildren(RenderingBlockComponent)
+  renderingItem =  model.required<RenderingItem<RenderModelInterface, RenderModelInterface>>()
+
+  renderingBlocks = signal<RenderingBlock<RenderModelInterface>[]>([])
+  
+  //activeClass = "idle-class"
   containerState = signal<ContainerState>(ContainerState.IDLE)
 
-  renderingBlocks : RenderingBlockComponent<RenderModelInterface>[] = []
-  childComponents = model<RenderingBlockComponent<RenderModelInterface>[]>([])
-  sourceItem = input.required<RenderingContainerItem<RenderModelInterface>>()
-  dataModel = computed<RenderModelInterface>(
-    ()=>{
-      return this.sourceItem().getDataSource()
-    }
-  )
+  //childComponents = model<RenderingBlockComponent[]>([])
 
-  private addRenderingBlockComponent<SOURCE extends RenderModelInterface>(dataSource : SOURCE):RenderingBlock<SOURCE>{
 
-    const componentRef = this.containerRef.createComponent(RenderingBlockComponent);
+  // dataModel = computed<RenderModelInterface>(
+  //   ()=>{
+  //     const sourceItem = this.renderingItem()
+  //     if(sourceItem){
+  //        sourceItem.hostingComponent = this  
+  //        sourceItem.onUpdated = (dataSource: any)=>{
+  //         console.log("After update setting mode idle")
+  //         this.setContinerState(ContainerState.IDLE)
+  //       }
+  //       return sourceItem.getDataSource()
+  //     }
+  //      throw Error("sourceItem undefined")
+  //   }
+  // )
 
-    const newSourceItem = new RenderingBlock<SOURCE>(dataSource, this)
-
-    componentRef.instance.classController.set(newSourceItem)
-
-    this.renderingBlocks.push(componentRef.instance);
-    this.childComponents.set(this.renderingBlocks);
-    return newSourceItem
+  constructor(){
+    effect(() =>{
+        const renderingItem = this.renderingItem()
+        renderingItem.hostingComponent = this
+        renderingItem.onUpdated = (dataSource: any)=>{
+          console.log("After update setting mode idle")
+          this.setContinerState(ContainerState.IDLE)
+        }
+    })
   }
 
   setContinerState(state: ContainerState){
       this.containerState.set(state)
       switch(state){
         case ContainerState.IDLE:
-          this.childComponents().forEach(c=>c.setContinerState(state))
+          this.renderBlockComponents().forEach(x=>x.setContinerState(state))
         break;
       }
-    
   }
 
-  setRenderingBlock<SOURCE extends RenderModelInterface>(renderingBlock : SOURCE): RenderingBlock<SOURCE>{
-    return this.addRenderingBlockComponent(renderingBlock)
-}
+  clearRenderingBlocks(){
+    this.renderingBlocks.set([])
+  }
+
+  createRenderingBlock(dataSource : RenderModelInterface): RenderingBlock<RenderModelInterface>{
+
+    const renderingBlock = new RenderingBlock<RenderModelInterface>(dataSource, this)
+    const renderingBlocks = this.renderingBlocks()
+    renderingBlocks.push(renderingBlock)
+    this.renderingBlocks.set(renderingBlocks)
+
+    return renderingBlock
+  }
   
   ngAfterViewInit(): void {
       console.log("RenderingContainerItemComponent::ngAfterViewInit hit")
-      this.sourceItem().onNewBlock = this.addRenderingBlockComponent.bind(this)
   }
 
  }

@@ -2,6 +2,8 @@ import { HtmlTag } from "./../../common/enums"
 
 
 export interface RenderModelInterface{
+
+    
     elementId : string
     htmlTag: HtmlTag
 

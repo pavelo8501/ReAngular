@@ -4,24 +4,14 @@
 
     <div class="hierarchy-container scrollable-container">
         @for (containerItem of containerItems(); track $index) {
-            <lib-rendering-item [sourceItem] = "containerItem">
+
+            <lib-rendering-item [renderingItem] = "containerItem">
                 
             </lib-rendering-item>
         }
 
-        <ng-container #rootNode>
+        <!-- <ng-container #rootNode>
             
-        </ng-container>
+        </ng-container> -->
     </div>
-
-
-    @if(withEditor()){
-        <h1>Showing Editor</h1>
-        <lib-editor-tools>
-
-            <h1>Showing Editor</h1>
-
-            <ng-content> </ng-content>
-        </lib-editor-tools>
-    }
 </div>

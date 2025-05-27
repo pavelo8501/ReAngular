@@ -4,22 +4,40 @@ import { RenderModelInterface, RenderComponentInterface } from "../interfaces";
 import { RenderingItemComponent } from "../rendering-container-parts";
 import { RenderingBlock } from "./rendering-block.class";
 
-export class RenderingContainerItem<T extends RenderModelInterface>{
+export class RenderingItem<T extends RenderModelInterface,  R extends RenderModelInterface>{
 
     private dataSource? : T = undefined
-    private renderingBlocks : RenderingBlock<RenderModelInterface>[] = []
-    private hostingComponent? : RenderingItemComponent
 
+    private _hostingComponent? : RenderingItemComponent
+    get hostingComponent():RenderingItemComponent{
+        if(!this._hostingComponent){
+            throw Error("hostingComponent undefinded")
+        }
+        return this._hostingComponent
+    }
+    set hostingComponent(val:RenderingItemComponent){
+        this._hostingComponent = val
+    }
 
-    onBlocksUpdated? : (blocks: RenderingBlock<RenderModelInterface>[]) => void;
-    onNewBlock? : (block: RenderModelInterface) => void;
+    get classes():string[]{
+        const dataSource = this.dataSource
+        if(dataSource){
+            return dataSource.class_list.map(x=>x.value)
+        }
+        return []
+    }
 
     constructor(
         public htmlTag : HtmlTag,
-        public elementId : string
+        public elementId : string,
+
     ){
 
     }
+
+    onBlocksUpdated? : (blocks: RenderingBlock<RenderModelInterface>[]) => void
+    onNewBlock? : (block: RenderModelInterface) => void
+    onUpdated? : (dataSource : T)=>void
 
     getDataSource():T{
         const dataSource = this.dataSource
@@ -34,6 +52,23 @@ export class RenderingContainerItem<T extends RenderModelInterface>{
         this.dataSource = source
         console.log("Data source set")
         return this.dataSource!!
+    }
+
+    updateDataSource(source:T):RenderingItemComponent | undefined{
+       this.dataSource = source
+       if(this.dataSource != undefined){
+            console.log("Data source updated")
+            this.onUpdated?.(this.dataSource)
+            return this.hostingComponent
+       }else{
+            console.warn("Nothing to update")
+            return undefined
+       }
+    }
+
+    emptySource():RenderingItemComponent{
+        this.dataSource = undefined
+        return this.hostingComponent
     }
 
 }

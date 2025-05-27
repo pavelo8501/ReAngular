@@ -1,8 +1,8 @@
 
 
-<div (click)="onClicked($event)"  [class.active]="containerState() != ContainerState.IDLE">
+<div (click)="onClicked($event)"  [class.active]="containerState() != ContainerState.IDLE" class="rendering-block-inner"  >
     <div class="header-content">
-        {{componentKey()}}
+        {{renderingBlock().dataSource.elementId}}
         @if(containerState() == ContainerState.SELECTED){
         <div class="sw-controls">
             <button type="button"class="edit-btn"  name="edit-btn" (click)="editBtnClick($event)">Edit</button>
@@ -15,7 +15,7 @@
         </div>
         }
     </div>
-    <div class = "sw-content" [innerHTML]="content()">
+    <div class = "sw-content" [innerHTML]="renderingBlock().dataSource.content">
        
     </div>
 </div>
