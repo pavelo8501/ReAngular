@@ -33,9 +33,13 @@ export class RenderingBlock<T extends RenderModelInterface>{
     createEventParameter? : <P>(eventType: ContainerEventType, payload: P) => ContainerEvent<RenderModelInterface, P>
     get createEvent(): <P>(eventType: ContainerEventType, payload: P) => ContainerEvent<RenderModelInterface, P>{
         if(this.createEventParameter){
-        return this.createEventParameter
+
+             return this.createEventParameter
+
         }else{
-        throw Error("createEventParameter not yet ready")
+
+            throw Error("createEventParameter not yet ready")
+
         }
     }
 
@@ -50,6 +54,7 @@ export class RenderingBlock<T extends RenderModelInterface>{
     setDataSource(source: T){
         this.dataSource = source
         console.log("Data source set")
+        console.log(source)
     }
 
 }

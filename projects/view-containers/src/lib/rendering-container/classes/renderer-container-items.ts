@@ -8,9 +8,14 @@ const rendererItems = new Array<RenderingItem<RenderModelInterface, RenderModelI
 export function createRendererItems(
   items: RenderingItem<RenderModelInterface, RenderModelInterface>[]
 ): Array<RenderingItem<RenderModelInterface, RenderModelInterface>> {
-  items.forEach(i =>
-    rendererItems.push(i)
-  )
+
+  items.forEach(item =>  rendererItems.push(item))
+
+
+  console.log("Rendering Item")
+      
+
+
   return rendererItems as Array<RenderingItem<RenderModelInterface, RenderModelInterface>>
 }
 

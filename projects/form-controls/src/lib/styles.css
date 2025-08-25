@@ -1,0 +1,10 @@
+
+@import "tailwindcss";
+
+
+@layer components{
+    button{
+
+         background-color: olive
+    }
+};

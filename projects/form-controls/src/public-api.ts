@@ -8,4 +8,5 @@ export * from './lib/floating-checkbox/floating-checkbox.component';
 export * from './lib/common/enums';
 export * from './lib/form-controls.providers';
 export * from "./lib/action-button"
+export * from "./lib/item-editor"
 

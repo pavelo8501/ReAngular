@@ -23,7 +23,6 @@ export class RenderingBlockComponent{
 
   renderingBlock  = model.required<RenderingBlock<RenderModelInterface>>()
  
-
   provider : TypedCallbackProvider<ContainerEvent<RenderModelInterface, string>, boolean>
 
   get parentContainer (): RenderingItemComponent{
@@ -75,11 +74,17 @@ export class RenderingBlockComponent{
 
 
    createEventParameter? : <P>(eventType: ContainerEventType, payload: P) => ContainerEvent<RenderModelInterface, P>
+
     get createEvent(): <P>(eventType: ContainerEventType, payload: P) => ContainerEvent<RenderModelInterface, P>{
-        if(this.createEventParameter){
+        
+      if(this.createEventParameter){
+
         return this.createEventParameter
+        
         }else{
+
         throw Error("createEventParameter not yet ready")
+
         }
     }
 
@@ -87,6 +92,8 @@ export class RenderingBlockComponent{
   setContinerState(state :ContainerState){
       this.containerState.set(state)
   }
+
+
 
   onClicked = guard(
     (event: MouseEvent)=> {
@@ -111,6 +118,7 @@ export class RenderingBlockComponent{
       console.log('Parent acknowledged in rendering block:', result);
     })
  })
+
 
  editBtnClick = guard(
     (event: MouseEvent)=> {
@@ -145,8 +153,11 @@ export class RenderingBlockComponent{
     },
     ()=>{
      console.log("Click event editBtnClick registred")
+
       this.provider.send(this.createEvent(ContainerEventType.SAVE, "")).then(result => {
+
       if(result){
+
         this.parentContainer.setContinerState(ContainerState.IDLE)
       }
   })

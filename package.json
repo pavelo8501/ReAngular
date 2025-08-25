@@ -24,6 +24,7 @@
     "@angular/platform-server": "^19.1.0",
     "@angular/router": "^19.2.0",
     "@auth0/angular-jwt": "^5.2.0",
+    "@tailwindcss/postcss": "^4.1.12",
     "angular-jwt": "github:auth0/angular-jwt",
     "jwt-decode": "^4.0.0",
     "ngx-cookie-service": "^19.1.2",
@@ -39,6 +40,7 @@
     "@types/express": "^4.17.17",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^18.18.0",
+    "autoprefixer": "^10.4.21",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
@@ -48,6 +50,7 @@
     "ng-packagr": "^19.1.0",
     "prettier": "3.5.2",
     "rimraf": "^6.0.1",
+    "tailwindcss": "^4.1.12",
     "typescript": "~5.7.2"
   }
 }

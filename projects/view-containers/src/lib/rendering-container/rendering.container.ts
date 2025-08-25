@@ -2,13 +2,10 @@ import {
   Component,
   effect,
   signal,
-  ViewContainerRef,
   input,
   AfterViewInit,
-  ViewChild,
   output,
   ChangeDetectionStrategy,
-  viewChild,
   viewChildren
 } from '@angular/core';
 import { CommonModule } from "@angular/common"
@@ -123,7 +120,7 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
           }
         break
         case ContainerEventType.SAVE:
-          this.onSave.emit(data.hostingItem.renderingItem().getDataSource())
+          this.onSave.emit(data.caller.dataSource)
           callback(true)
         break
         case ContainerEventType.CANCEL:
@@ -133,5 +130,4 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
       }
     });
   }
-
 }

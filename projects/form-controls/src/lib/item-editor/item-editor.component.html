@@ -1,0 +1,15 @@
+
+<div >
+
+    @for (item of items(); track $index) {
+
+    <lib-editor-item  [source]="item" maxWidth="900px" > 
+
+
+    </lib-editor-item>
+
+    }
+
+    <button type="button" class="bg-amber-950 text-red-600 text-4xl" (click)="addNewClick()"> New </button>  
+
+</div>

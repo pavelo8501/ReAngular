@@ -51,6 +51,7 @@ export class RenderingItem<T extends RenderModelInterface,  R extends RenderMode
     setDataSource(source: T):T{
         this.dataSource = source
         console.log("Data source set")
+         console.log(source)
         return this.dataSource!!
     }
 
