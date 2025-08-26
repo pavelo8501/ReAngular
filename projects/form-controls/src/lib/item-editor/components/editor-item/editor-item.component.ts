@@ -1,9 +1,9 @@
 import { Component, computed, input, output, signal } from '@angular/core';
-import { EditorItem } from '../../classes/editor-item.model';
 import { CommonModule } from '@angular/common';
+import { IEditorItem } from '../../classes/editor-item.interface';
 
 @Component({
-  selector: 'lib-editor-item',
+  selector: 'fc-editor-item',
   imports: [
     CommonModule
   ],
@@ -12,10 +12,10 @@ import { CommonModule } from '@angular/common';
 })
 export class EditorItemComponent { 
 
-  source = input.required<EditorItem>()
+  source = input.required<IEditorItem>()
 
-  updated = output<EditorItem>()
-  removed = output<EditorItem>()
+  updated = output<IEditorItem>()
+  removed = output<IEditorItem>()
 
   editing = computed<boolean>(
     ()=>{
@@ -25,38 +25,23 @@ export class EditorItemComponent {
 
   maxWidth = input<string>("200px")
 
-  toggleEdit() {
-    console.log("toggleEdit call")
-    const source = this.source()
-    source.editing = !source.editing
-  }
-
-
   edit() {
     console.log("edit call")
     const source = this.source()
     source.editing = !source.editing
-
   }
 
-
-  save(){
-    console.log("save call")
-
+  save(newValue: string){
+     console.log("save call")
+     const item = this.source();
+     item.text = newValue;
+     item.editing = false;
+     this.updated.emit(item);
   }
 
-  saveEdit(newValue: string) {
-
-    console.log("saveEdit call")
-
-    const item = this.source();
-    item.text = newValue;
-    item.editing = false;
-    this.toggleEdit()
-    this.updated.emit(item);
-  }
 
   delete() {
+    console.log("delete call")
     this.removed.emit(this.source());
   }
 

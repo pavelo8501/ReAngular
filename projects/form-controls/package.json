@@ -19,10 +19,12 @@
   },
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "build form-controls",
+    "build": "npm run build form-controls",
+    "build:tailwind": "npx @tailwind/cli -i projects/form-controls/src/styles.css -o `dist/form-controls/styles.css --minify",
     "release": "npm version patch && ng build form-controls && cd C:/Projects_IT/ReAngular/dist/form-controls && npm publish --registry=https://npm.pkg.github.com --access public",
     "postinstall": "rimraf dist",
-    "postpublish": "rimraf dist"
+    "postpublish": "rimraf dist",
+    "build:lib":"ng build form-controls && npm run build:tailwind"
   },
   "repository": {
     "type": "git",
