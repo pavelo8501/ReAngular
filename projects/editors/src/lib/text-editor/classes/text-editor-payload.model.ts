@@ -1,5 +1,5 @@
-import { IBindableProperty } from "../../../../../data-helpers/src/lib/property-binding/bindable-property.interface";
-import { bindProperty, PropertyBinding} from "../../../../../data-helpers/src/public-api";
+
+import { bindProperty, PropertyBinding} from "./property-binding";
 
 
 export class TextEditorPayload<T extends object>{

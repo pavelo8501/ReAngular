@@ -1,19 +1,20 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { NgxEditorModule } from 'ngx-editor';
+// import { NgModule } from '@angular/core';
 
-import { TextEditorComponent } from './text-editor.component';
+// import {  CommonModule } from '@angular/common';
+// import { FormsModule } from '@angular/forms';
+// import { NgxEditorModule } from 'ngx-editor';
 
-@NgModule({
-  declarations: [TextEditorComponent],
-  imports: [
-    CommonModule,
-    FormsModule,
-    NgxEditorModule
-  ],
-  exports: [TextEditorComponent]
-})
-export class TextEditorModule {
-    
-}
+// import { TextEditorComponent } from './text-editor.component';
+
+// @NgModule({
+//   declarations: [TextEditorComponent],
+//   imports: [
+//     CommonModule,
+//     FormsModule,
+//     NgxEditorModule
+//   ],
+//   exports: [TextEditorComponent]
+// })
+// export class TextEditorModule {
+
+// }
