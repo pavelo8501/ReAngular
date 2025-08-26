@@ -1,9 +1,8 @@
-:host {
-  display: block;
-}
 
-.rendering-block-inner{
+.rendering-block{
+  position: relative;
   width: 100%;
+  min-height: 60px;
 }
 
 
@@ -16,21 +15,20 @@
   border :green 1px solid;
 }
 
-.header-content{
+
+.controls-area{
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: absolute;
+  width: 100%;
+  background-color: transparent;
 }
 
 .controls{
   width: 100px;
 }
 
-.edit-btn{
-  background: green;
-  padding: 3px;
-  border: white 1px solid;
-  width: 80px;
-  height : 35px;
-}
 
 
 .save-btn{
@@ -49,4 +47,17 @@
   border: white 1px solid;
   width: 80px;
   height : 35px;
+}
+
+.edit-button {
+  position: static;  
+  margin-left: calc(100% - 60px);
+}
+.save-button{
+  position: static;  
+  margin-left: calc(100% - 120px);
+}
+
+.cancel-button{
+   position: static;
 }

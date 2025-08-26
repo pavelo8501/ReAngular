@@ -26,7 +26,8 @@ import { ContainerState } from '../common/enums';
     RenderingItemComponent
   ],
   templateUrl: `./rendering.container.html`,
-  styleUrl: './rendering.container.css',
+  styleUrls: ['./rendering.container.css', "./../styles/buttons.css"],
+
   changeDetection: ChangeDetectionStrategy.Default
 })
 

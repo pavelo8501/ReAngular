@@ -1,20 +1,18 @@
 
 
-<div (click)="onClicked($event)"  [class.active]="containerState() != ContainerState.IDLE" class="rendering-block-inner"  >
-    <div class="header-content">
+<div (click)="onClicked($event)"  [class.active]="containerState() != ContainerState.IDLE" class="rendering-block">
+
+    <div class="controls-area">
         {{renderingBlock().dataSource.elementId}}
         @if(containerState() == ContainerState.SELECTED){
-        <div class="sw-controls">
-            <button type="button"class="edit-btn"  name="edit-btn" (click)="editBtnClick($event)">Edit</button>
-        </div>
+            <button type="button"  class="btn btn-primary btn-sm edit-button"  name="edit-btn" (click)="editBtnClick($event)">Edit</button>
         }
         @if(containerState() == ContainerState.EDIT){
-        <div class="sw-controls">
-            <button type="button"class="save-btn"  name="save-btn"  (click)="saveBtnClick($event)">Save</button>
-            <button type="button"class="cancel-btn" name="save-btn"  (click)="cancelBtnClick($event)">Cancel</button>
-        </div>
+            <button type="button"class="btn btn-success btn-sm save-button"  name="save-btn"  (click)="saveBtnClick($event)">Save</button>
+            <button type="button"class="btn btn-secondary btn-sm cancel-button" name="cancel-btn"  (click)="cancelBtnClick($event)">Cancel</button>
         }
     </div>
+
     <div class = "sw-content" [innerHTML]="renderingBlock().dataSource.content">
        
     </div>

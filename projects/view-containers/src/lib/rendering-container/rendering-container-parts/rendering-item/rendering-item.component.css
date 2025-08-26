@@ -51,3 +51,13 @@
 .class-editor-group div{
   margin-left: 4px;
 }
+
+.section-container{
+  padding-top: 6px;
+  border :gray 1px solid;
+}
+
+.header-area{
+  background-color: rgba(39, 132, 209, 0.716);
+  color: white;
+}

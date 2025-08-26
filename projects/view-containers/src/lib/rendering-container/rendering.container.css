@@ -14,12 +14,13 @@
   overflow: auto; /* Enables scrolling */
   border: 1px solid #ccc; /* Optional: To visualize the container */
   padding: 10px; /* Space inside */
-  background: white; /* Keeps it readable */
+  background:white; /* Keeps it readable */
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
   border: chocolate 1px solid;
   scroll-behavior: smooth;
   scrollbar-width: thin; /* Works in Firefox */
   scrollbar-color: #888 #f0f0f0; /* Works in Firefox */
+  position: relative;
 }
 
 /* Custom scrollbar for Webkit browsers (Chrome, Safari, Edge) */

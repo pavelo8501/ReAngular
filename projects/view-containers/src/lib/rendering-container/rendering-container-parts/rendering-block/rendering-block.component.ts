@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, signal } from '@angular/core';
+import { Component, effect, input, model, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ContainerEventType, ContainerState} from './../../../common/enums';
 import { RenderingBlock} from '../../classes';
 import { ContainerEvent, configureCaller } from "./../../models"
-import { RenderComponentInterface, RenderModelInterface} from '../../interfaces';
+import { RenderModelInterface} from '../../interfaces';
 import { ContainerProviderService, TypedCallbackProvider } from "./../../../common/services"
 import { RenderingItemComponent } from '../rendering-item/rendering-item.component';
 import {guard} from "../../../../../../data-helpers/src/public-api"
@@ -12,10 +12,13 @@ import {guard} from "../../../../../../data-helpers/src/public-api"
 
 @Component({
   selector: 'lib-rendering-block',
-  imports: [CommonModule, FormsModule],
+  imports: 
+  [
+    CommonModule, 
+    FormsModule
+  ],
   templateUrl: "./rendering-block.component.html",
-  styleUrl: './rendering-block.component.css',
-  changeDetection: ChangeDetectionStrategy.Default,
+  styleUrls: ['./rendering-block.component.css', "./../../../styles/buttons.css"]
 })
 export class RenderingBlockComponent{
 
@@ -164,13 +167,19 @@ export class RenderingBlockComponent{
 })
 
 
+
+
   cancelBtnClick(event: MouseEvent){
+
     event.preventDefault()
     event.stopPropagation()
+
     this.provider.send(this.createEvent(ContainerEventType.CANCEL, "")).then(result => {
+
       if(result){
         this.parentContainer.setContinerState(ContainerState.IDLE)
       }
+
     })
   }
 }

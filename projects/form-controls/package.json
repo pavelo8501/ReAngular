@@ -6,9 +6,9 @@
   "module": "dist/libs/form-controls/index.mjs",
   "types": "dist/libs/form-controls/index.d.ts",
   "peerDependencies": {
-    "@angular/forms": "^19.2.0",
-    "@angular/core": "^19.2.0",
-    "@angular/common": "^19.2.0",
+    "@angular/common": "^20.2.1",
+    "@angular/core": "^20.2.1",
+    "@angular/forms": "^20.2.1",
     "rxjs": "^7.8.0",
     "@tailwindcss/postcss": "^4.1.12",
     "tailwindcss": "^4.0.9",

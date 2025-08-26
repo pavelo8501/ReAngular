@@ -1,19 +1,42 @@
+import { IBindableProperty } from "./bindable-property.interface";
 
 
-export class PropertyBinding<T> {
+export class PropertyBinding<T, V> implements IBindableProperty<T, V> {
 
+  private callbacks: Array<(newValue:V, oldValue:V) => void> = []
 
   constructor(
-    private getter: () => T,
-    private setter: (value: T) => void,
+    private receiver : T,
+    private getter: (obj:T)=>V,
+    private setter : (obj:T, value:V) => void
+
   ) {}
 
-  get value(): T {
-    return this.getter();
+  private notifySubscribers(newValue:V, oldValue:V){
+    this.callbacks.forEach(callback => callback(newValue, oldValue))
   }
 
-  set value(v: T) {
-    this.setter(v);
+  get(): V {
+    return this.getter(this.receiver);
+  }
+
+  set(value: V) {
+    const oldValue = this.get()
+    this.setter(this.receiver, value)
+
+   
+    if(oldValue !== value){
+      this.notifySubscribers(value, oldValue)
+    }
+  }
+
+
+  subscribe(callback: (newValue: V, oldValue: V) => void): () => void {
+    this.callbacks.push(callback);
+    return () => {
+        this.callbacks = this.callbacks.filter(cb => cb !== callback);
+    };
   }
   
 }
+

@@ -3,6 +3,7 @@
 <div class="template-viewer" [ngClass]="containerClass()"  [style.height]="(height() | numToStr:'px')">
 
     <div class="hierarchy-container scrollable-container">
+        
         @for (containerItem of containerItems(); track $index) {
 
             <lib-rendering-item [renderingItem] = "containerItem">
