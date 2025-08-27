@@ -1,21 +1,17 @@
 
 
-@if (renderingItem()) {
-    <div name="section-outer-container" class="section-container"  [class.active]="containerState() != ContainerState.IDLE" >
-        <div  class="header-area"  >
-            <p>{{renderingItem().elementId}} </p>
-        </div>
 
-        <div name="section-inner-container" class="render-blocks-area" [ngClass]="renderingItem().classes">
-            @for(renderingBlock of renderingBlocks(); track $index){
-                <lib-rendering-block [ngClass]="renderingBlock.classes" [renderingBlock] = "renderingBlock" >
 
-                </lib-rendering-block>        
-            }
-        </div>
+<div  name="section-outer-container" class="section-container"  [class.active]="containerState() != ContainerState.IDLE" >
+    <div  class="header-area"  >
+        <p>{{caption}}</p>
     </div>
-}@else {
-     <ng-template>
-         <h1>No Content Provided</h1>
-    </ng-template>
-}
+
+    <div name="section-inner-container" class="render-blocks-area" [ngClass]="classes">
+        @for(renderingBlockPayload of renderingBlockPayloads; track $index){
+            <vc-rendering-block [ngClass]="renderingBlockPayload.classes" [payload]="renderingBlockPayload" >
+
+            </vc-rendering-block>        
+        }
+    </div>
+</div>

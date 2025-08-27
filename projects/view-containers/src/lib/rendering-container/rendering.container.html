@@ -4,9 +4,9 @@
 
     <div class="hierarchy-container scrollable-container">
         
-        @for (containerItem of containerItems(); track $index) {
+        @for (payload of renderingItemPayloads(); track $index) {
 
-            <lib-rendering-item [renderingItem] = "containerItem">
+            <lib-rendering-item [payload]="payload">
                 
             </lib-rendering-item>
         }

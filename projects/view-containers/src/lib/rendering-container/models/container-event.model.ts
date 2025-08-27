@@ -3,26 +3,24 @@ import { RenderingItemComponent } from "../rendering-container-parts"
 import { RenderComponentInterface, RenderModelInterface } from "../interfaces"
 import { ContainerEventType } from "../../common/enums"
 
-export class ContainerEvent<T extends RenderModelInterface, P> {
+
+
+export class ContainerEvent<T extends object> {
   constructor(
-    public caller: RenderComponentInterface<T>,
-    public eventType : ContainerEventType,
-    public hostingItem: RenderingItemComponent,
-    public payload: P
+    public caller: T,
+    public eventType : ContainerEventType
   ) {
     
    }
 }
 
 
-export function configureCaller<T extends RenderModelInterface>(
-  caller: RenderComponentInterface<T>,
-  hostingItem: RenderingItemComponent
+export function configureCaller<T extends object>(
+  caller: T
 ) {
-  return function<P>(
+  return function(
     eventType: ContainerEventType,
-    payload: P
-  ): ContainerEvent<T, P> {
-    return new ContainerEvent(caller, eventType, hostingItem, payload);
+  ): ContainerEvent<T> {
+    return new ContainerEvent(caller, eventType);
   };
 }

@@ -3,7 +3,6 @@
 <div (click)="onClicked($event)"  [class.active]="containerState() != ContainerState.IDLE" class="rendering-block">
 
     <div class="controls-area">
-        {{renderingBlock().dataSource.elementId}}
         @if(containerState() == ContainerState.SELECTED){
             <button type="button"  class="btn btn-primary btn-sm edit-button"  name="edit-btn" (click)="editBtnClick($event)">Edit</button>
         }
@@ -13,7 +12,7 @@
         }
     </div>
 
-    <div class = "sw-content" [innerHTML]="renderingBlock().dataSource.content">
+    <div class = "sw-content" [innerHTML]="htmlContent">
        
     </div>
 </div>

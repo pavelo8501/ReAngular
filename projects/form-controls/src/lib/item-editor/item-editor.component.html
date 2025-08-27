@@ -1,6 +1,6 @@
 
 <div>
-
+    @if (!disabled()) {
     <div class="items-holder">
         @for (item of items(); track $index) {
         <fc-editor-item  
@@ -12,7 +12,10 @@
         </fc-editor-item>
         }
     </div>
-
-    <button type="button" class="btn btn-primary btn-sm new-button" (click)="addNew()">New Item</button>  
-
+    <button type="button" class="btn btn-primary btn-sm new-button" (click)="addNew()">New Item</button> 
+    }@else {
+        <div>
+            
+        </div>
+    }
 </div>

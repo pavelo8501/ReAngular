@@ -4,7 +4,9 @@
     <div class="NgxEditor__Wrapper">
         <ngx-editor-menu [editor]="textEditor"  > </ngx-editor-menu>
         <ngx-editor 
-          [editor]="textEditor">
+          [editor]="textEditor"
+          [disabled]="disabled()"
+          [(ngModel)] ="text">
         </ngx-editor>
     </div>
   </div>

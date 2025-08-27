@@ -6,14 +6,15 @@ import {
   AfterViewInit,
   output,
   ChangeDetectionStrategy,
-  viewChildren
+  viewChildren,
+  model
 } from '@angular/core';
 import { CommonModule } from "@angular/common"
 import { NumToStrPipe } from '../common/pipes/num-to-str.pipe';
 import { RenderingItemComponent} from './rendering-container-parts';
 import { ContainerEventType} from '../common/enums/container-event-type.enum';
 import { RendererHandlerInterface, RenderModelInterface, RenderComponentInterface} from "./interfaces"
-import { RenderingItem } from './classes';
+import { RenderingItemPayload } from './classes';
 import { ContainerEvent } from "./models"
 import { ContainerProviderService } from "./../common/services"
 import { ContainerState } from '../common/enums';
@@ -31,13 +32,14 @@ import { ContainerState } from '../common/enums';
   changeDetection: ChangeDetectionStrategy.Default
 })
 
-export class RenderingContainerComponent implements RendererHandlerInterface, AfterViewInit {
+export class RenderingContainerComponent{
+
+
  // @ViewChild('rootNode', { read: ViewContainerRef }) rootNode!: ViewContainerRef
 
-  renderingItemComponents = viewChildren<RenderingItemComponent>(RenderingItemComponent)
+  renderingItemComponents = viewChildren<RenderingItemComponent<any>>(RenderingItemComponent)
 
   getHandler = output<RendererHandlerInterface>()
-  containerItems = input<RenderingItem<RenderModelInterface, RenderModelInterface>[]>([])
 
   onCancel = output<any>()
   onEdit = output<any>()
@@ -49,83 +51,79 @@ export class RenderingContainerComponent implements RendererHandlerInterface, Af
   height = signal<number>(100)
   containerClass = signal<string>("")
 
-  constructor(private service: ContainerProviderService<ContainerEvent<RenderModelInterface, any>, boolean>) {
+  renderingItemPayloads = model<RenderingItemPayload<any>[]>([]) 
+
+  constructor(private service: ContainerProviderService<ContainerEvent<any>, boolean>) {
 
     effect(() => {
       this.height.set(this.opennedHeight())
     })
   }
 
-  private findRenderingItemComponent(elementId: string):RenderingItemComponent | undefined{
-     return this.renderingItemComponents().find(x => x.renderingItem()?.elementId == elementId)
+  private isAnyInEditOrSelected():boolean{
+
+   const  found =  this.renderingItemComponents().find(
+      f=>f.containerState() == ContainerState.EDIT || f.containerState() == ContainerState.SELECTED
+   )
+   if(found != undefined){
+     return true
+   }
+   return false
   }
 
-  injectDataModel(model: RenderModelInterface): RenderingItemComponent {
-
-    const foundItem = this.findRenderingItemComponent(model.elementId)
-    if (!foundItem) {
-      throw Error(`ContainerItem not found for htmlTag ${model.htmlTag} and elementId ${model.elementId}`)
+  private isAnyInSelected():boolean{
+    const  found =  this.renderingItemComponents().find(
+        f=>f.containerState() == ContainerState.SELECTED
+    )
+    if(found != undefined){
+      return true
     }
-    const foundSourceItem = foundItem.renderingItem()
-    if(foundSourceItem){
-      foundSourceItem.setDataSource(model)
+    return false
+  }
+
+   private isAnyInEditMode():boolean{
+    const  found =  this.renderingItemComponents().find(
+        f=>f.containerState() == ContainerState.EDIT
+    )
+    if(found != undefined){
+      return true
     }
-    return foundItem
+    return false
   }
 
-  reloadRenderingItems(models: RenderModelInterface[]):void{
-    console.log("Calling reloadRenderingItems")
-    const components = this.renderingItemComponents()
-    components.forEach(x=>x.renderingItem().emptySource().clearRenderingBlocks() )
-
-    models.forEach(section=>{
-      components.find(f=>f.renderingItem().elementId  == section.elementId)?.renderingItem().setDataSource(section)
-    })
-  }
-
-  updateDataModel(model: RenderModelInterface):RenderingItemComponent | undefined{
-      const foundItem = this.findRenderingItemComponent(model.elementId)
-      if(!foundItem){
-         throw Error(`(updateDataModel) ContainerItem not found for htmlTag ${model.htmlTag} and elementId ${model.elementId}`)
-      }
-     const foundSourceItem = foundItem.renderingItem()
-     return foundSourceItem?.updateDataSource(model)
-  }
-
-  private deselect(components: readonly  RenderingItemComponent[]):boolean{
-    if(components.find(f=>f.containerState() == ContainerState.EDIT)){
-      return false
-    }else{
-       components.forEach(x=>{x.setContinerState(ContainerState.IDLE)})
-       return true
-    }
-  }
 
   ngAfterViewInit(): void {
 
-    this.getHandler.emit(this as RendererHandlerInterface)
     this.service.provider.receive().subscribe(({ data, callback }) => {
-      const components = this.renderingItemComponents()  
+
+      const payloads = this.renderingItemPayloads() 
+
       console.log(data.eventType)
       switch(data.eventType){
         case ContainerEventType.ON_CLICK:
-           callback(this.deselect(components))
-        break
-        case ContainerEventType.ON_EDIT:
-          const found = components.find(x=>x.containerState() == ContainerState.EDIT)
-          if(found == null){
-            this.onEdit.emit(data.caller.dataSource)
-            callback(true)
+
+          if(this.isAnyInEditMode()){
+              callback(false)
           }else{
-            callback(false) 
+
+            this.renderingItemComponents().forEach( x=> x.setContainerStateIdle())
+           
+             callback(true)
           }
         break
+        case ContainerEventType.ON_EDIT:
+
+          this.onEdit.emit(data.caller)
+          console.log("Allowing edit")
+          callback(true)
+
+        break
         case ContainerEventType.SAVE:
-          this.onSave.emit(data.caller.dataSource)
+          this.onSave.emit(data.caller)
           callback(true)
         break
         case ContainerEventType.CANCEL:
-          this.onCancel.emit(data.caller.dataSource)
+          this.onCancel.emit(data.caller)
           callback(true)
         break
       }

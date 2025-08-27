@@ -1,0 +1,14 @@
+
+ @if (orientation() == Orientation.Horizontal) {
+ <div  class="horizontal-placeholder" >   
+    @for(data_item of data(); track $index){
+        <fc-action-button [actionItem] = "data_item" />    
+    }
+</div>
+}@else {
+  <div class="vertical-placeholder">   
+    @for(data_item of data(); track $index){
+        <fc-action-button [actionItem] = "data_item" />    
+    }
+  </div>
+}

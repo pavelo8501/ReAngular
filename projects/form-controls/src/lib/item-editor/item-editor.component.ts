@@ -1,4 +1,4 @@
-import { Component, computed, input, model, OnInit, output, signal } from '@angular/core';
+import { Component, computed, effect, input, model, OnInit, output, signal } from '@angular/core';
 import {EditorItemComponent} from './components/editor-item/editor-item.component'
 import {EditorPayload, IEditorItem } from './classes/private-index';
 
@@ -13,26 +13,45 @@ import {EditorPayload, IEditorItem } from './classes/private-index';
 
 export class ItemEditorComponent<P,  T extends object> implements OnInit {
 
+  payload = model<EditorPayload<P, T> | undefined>(undefined)
 
-  payload  = model<EditorPayload<P, T> | undefined>(undefined)
+
+  items = model<IEditorItem[]>([])
 
 
-  items =computed<IEditorItem[]>(
-    ()=>{
-      return this.payload()?.items as IEditorItem[] ??[]
-    }
-  )
+  // items =computed<IEditorItem[]>(
+  //   ()=>{
+  //     return this.payload()?.items as IEditorItem[] ??[]
+  //   }
+  // )
 
-  onDeleted = output<P>()
-  onSave = output<P>()
-  onNew = output()
+   disabled = signal<boolean>(false)
+
+    onDeleted = output<P>()
+    onSave = output<P>()
+    onNew = output()
+
+  constructor(){
+
+    const thisComponent = this
+
+    effect(
+      ()=>{
+        const payload = this.payload()
+        if(payload != undefined){
+           payload.setEditorComponent(thisComponent)
+           this.items.set(payload.items) 
+        }
+
+       // this.payload()?.setEditorComponent(thisComponent)
+      }
+    )
+  }
 
 
   ngOnInit(){
-
     console.log("ngOnInit")
     console.log(this.payload())
-
   }
 
 
@@ -49,7 +68,6 @@ export class ItemEditorComponent<P,  T extends object> implements OnInit {
     this.onNew.emit()
   }
 
-
   save(item: IEditorItem) {
 
     const editorPayload = this.payload()
@@ -57,5 +75,13 @@ export class ItemEditorComponent<P,  T extends object> implements OnInit {
         this.onSave.emit(editorPayload.source);
     }
   }
+
+
+  clear(){
+    console.log("clear in component")
+    this.disabled.set(true)
+    
+  }
+
 
 }

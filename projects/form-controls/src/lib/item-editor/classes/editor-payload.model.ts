@@ -1,10 +1,14 @@
+import { ItemEditorComponent } from "./../item-editor.component";
 import { IEditorItem } from "./editor-item.interface";
 
 export class EditorPayload<P, T extends object> {
+    
     editing: boolean = false;
     private editingMap = new WeakMap<T, boolean>();
     items: IEditorItem[] = [];
     private arrayKey: keyof P;
+
+    private hostingComponent?:ItemEditorComponent<P, T>
 
     constructor(public source: P, arrayKey: keyof P , private key: keyof T) {
         this.source = source;
@@ -19,6 +23,8 @@ export class EditorPayload<P, T extends object> {
         this.arrayKey = arrayKey;
         this.items = models.map(m => this.createProxy(m));
     }
+
+
 
     private createProxy(model: T): IEditorItem {
         return new Proxy(model as any, {
@@ -36,6 +42,10 @@ export class EditorPayload<P, T extends object> {
         }) as IEditorItem;
     }
 
+    setEditorComponent(component: ItemEditorComponent<P, T>){
+        this.hostingComponent = component
+    }
+
     addItem(item: T) {
 
         console.log("Adding new item")
@@ -43,7 +53,6 @@ export class EditorPayload<P, T extends object> {
         this.items.push(this.createProxy(item));
         (this.source[this.arrayKey] as T[]).push(item)
     }
-
 
     remove(item: IEditorItem) {
         const index = this.items.indexOf(item);
@@ -55,5 +64,13 @@ export class EditorPayload<P, T extends object> {
 
     save(): P {
         return this.source;
+    }
+
+    clear(){
+
+        console.log("clear")
+        this.items = []
+        this.editing = false
+        this.hostingComponent?.clear()
     }
 }

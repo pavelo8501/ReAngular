@@ -2,16 +2,12 @@ import { Component, effect, input, model, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ContainerEventType, ContainerState} from './../../../common/enums';
-import { RenderingBlock} from '../../classes';
-import { ContainerEvent, configureCaller } from "./../../models"
-import { RenderModelInterface} from '../../interfaces';
+import { RenderingBlockPayload} from '../../classes';
+import { ContainerEvent} from "./../../models"
 import { ContainerProviderService, TypedCallbackProvider } from "./../../../common/services"
-import { RenderingItemComponent } from '../rendering-item/rendering-item.component';
-import {guard} from "../../../../../../data-helpers/src/public-api"
-
 
 @Component({
-  selector: 'lib-rendering-block',
+  selector: 'vc-rendering-block',
   imports: 
   [
     CommonModule, 
@@ -20,166 +16,88 @@ import {guard} from "../../../../../../data-helpers/src/public-api"
   templateUrl: "./rendering-block.component.html",
   styleUrls: ['./rendering-block.component.css', "./../../../styles/buttons.css"]
 })
-export class RenderingBlockComponent{
+export class RenderingBlockComponent<T extends object> {
 
   ContainerState = ContainerState
 
-  renderingBlock  = model.required<RenderingBlock<RenderModelInterface>>()
+  payload =  model.required<RenderingBlockPayload<T>>()
+  name:string = ""
+  classes:string[] = []
+  htmlContent:string = ""
+
+  containerState = signal<ContainerState>(ContainerState.IDLE)
  
-  provider : TypedCallbackProvider<ContainerEvent<RenderModelInterface, string>, boolean>
-
-  get parentContainer (): RenderingItemComponent{
-    return this.renderingBlock().parentContainer
-  }
-
-  //createEvent = configureCaller(this, this.sourceItem().hostingItem)
+  provider : TypedCallbackProvider<ContainerEvent<T>, boolean>
 
   constructor(
-    service : ContainerProviderService<ContainerEvent<RenderModelInterface, string>, boolean>
+    service : ContainerProviderService<ContainerEvent<T>, boolean>
   ){
     this.provider = service.provider
     
     effect(()=>{
-        this.createEventParameter = configureCaller(this.renderingBlock(),  this.parentContainer)
+
+      const payload = this.payload()
+      this.name = payload.nameDelegate.get()
+      this.classes = payload.classes
+      this.htmlContent = payload.contentDelegate.get()
     })
      
   }
 
-  // content = computed<string>(()=>{
-  //   const source =  this._dataSource
-  //   if(source != undefined){
-  //     return source.content
-  //   }else{
-  //     return ""
-  //   }
-  // })
-
-  //componentKey = computed<string>(()=>{
-    // const source =  this._dataSource
-    // if(source){
-    //   return `${source.htmlTag}|${source.elementId}`
-    // }
-    // return `HtmlTag|ElementId`
-  //})
-
-  containerState = signal<ContainerState>(ContainerState.IDLE)
-  classListEdit = model<{key:number, value:string}[]>([])
-
-  componentId = input<string>()
-  classList = input<string[]>([])
-
   canSelect:boolean = true
   
 
-  // private createEvent(eventType : ContainerEventType, message:string = ""):ContainerEvent<T,string>{
-  //   return  new ContainerEvent(this, eventType, this.sourceItem().hostingItem, message)
-  // }
-
-
-   createEventParameter? : <P>(eventType: ContainerEventType, payload: P) => ContainerEvent<RenderModelInterface, P>
-
-    get createEvent(): <P>(eventType: ContainerEventType, payload: P) => ContainerEvent<RenderModelInterface, P>{
-        
-      if(this.createEventParameter){
-
-        return this.createEventParameter
-        
-        }else{
-
-        throw Error("createEventParameter not yet ready")
-
-        }
-    }
-
+  private createEvent(eventType : ContainerEventType):ContainerEvent<T>{
+     return  new ContainerEvent(this.payload().receiver , eventType)
+  }
 
   setContinerState(state :ContainerState){
       this.containerState.set(state)
+      this.payload().notifyContainerStateChanged(state)
   }
 
+  onClicked(event: MouseEvent){
 
+     event.preventDefault()
+     event.stopPropagation()
 
-  onClicked = guard(
-    (event: MouseEvent)=> {
-        event.preventDefault()
-        event.stopPropagation()
-        const state = this.containerState()
-      if(state !=  ContainerState.IDLE){
-        return false
-      }else{
-        return true
-      }
-    },
-    ()=>{
-    console.log("Click event registred")
+     const state = this.containerState()
+ 
+      this.provider.send(this.createEvent(ContainerEventType.ON_CLICK)).then(result => {
+          if(result){
+             console.log("onClicked received confirmed")
+             this.setContinerState(ContainerState.SELECTED) 
+          }else{
+             console.log("onClicked received refusal")
+          }
+      })
+  }
 
-    this.provider.send(this.createEvent(ContainerEventType.ON_CLICK, "")).then(result => {
-      if(result == true){
-        this.parentContainer.setContinerState(ContainerState.SELECTED)
-        this.setContinerState(ContainerState.SELECTED)
-        console.log("SELECTING")
-      }
-      console.log('Parent acknowledged in rendering block:', result);
-    })
- })
-
-
- editBtnClick = guard(
-    (event: MouseEvent)=> {
+  editBtnClick(event: MouseEvent){
       event.preventDefault()
       event.stopPropagation()
-      if(this.containerState()  != ContainerState.EDIT){
-        return  true
-      }else{
-        return false
-      }
-    },
-    ()=>{
-     console.log("Click event editBtnClick registred")
-      this.provider.send(this.createEvent(ContainerEventType.ON_EDIT, "")).then(result => {
-      if(result){
-        this.parentContainer.setContinerState(ContainerState.EDIT)
+      this.provider.send(this.createEvent(ContainerEventType.ON_EDIT)).then(result => {
         this.setContinerState(ContainerState.EDIT)
+      })
+  }
 
-      }
-  })
-})
-
- saveBtnClick = guard(
-    (event: MouseEvent)=> {
+  saveBtnClick(event: MouseEvent){
       event.preventDefault()
       event.stopPropagation()
-      if(this.containerState()  != ContainerState.EDIT){
-        return  false
-      }else{
-        return true
-      }
-    },
-    ()=>{
-     console.log("Click event editBtnClick registred")
-
-      this.provider.send(this.createEvent(ContainerEventType.SAVE, "")).then(result => {
-
+      this.provider.send(this.createEvent(ContainerEventType.SAVE)).then(result => {
       if(result){
-
-        this.parentContainer.setContinerState(ContainerState.IDLE)
+         this.setContinerState(ContainerState.IDLE)
       }
   })
-})
-
-
-
+  }
 
   cancelBtnClick(event: MouseEvent){
-
     event.preventDefault()
     event.stopPropagation()
-
-    this.provider.send(this.createEvent(ContainerEventType.CANCEL, "")).then(result => {
-
+    this.provider.send(this.createEvent(ContainerEventType.CANCEL)).then(result => {
       if(result){
-        this.parentContainer.setContinerState(ContainerState.IDLE)
+        this.setContinerState(ContainerState.IDLE)
       }
-
     })
   }
 }
