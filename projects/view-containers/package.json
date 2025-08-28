@@ -6,6 +6,9 @@
     "@angular/common": "^20.2.1",
     "@angular/core": "^20.2.1"
   },
+  "dependencies": {
+    "@pavelo8501/data-helpers": "^0.0.2"
+  },
   "devDependencies": {
     "tslib": "^2.8.1"
   },

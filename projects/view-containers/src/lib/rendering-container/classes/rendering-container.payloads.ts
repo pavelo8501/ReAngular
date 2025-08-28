@@ -1,10 +1,11 @@
 import { PropertyBinding, bindProperty } from "../../../../../data-helpers/src/public-api";
-import { ContainerState } from "../../common/enums";
+import { ContainerState, HtmlTag } from "../../common/enums";
+import { IContainerPayload } from "./container-payload.interface";
 
 
-export class RenderingItemPayload<T extends object>{
+export class RenderingItemPayload<T extends object> implements IContainerPayload<T> {
 
-
+    htmlTag:HtmlTag = HtmlTag.SECTION
     htmlTagDelegate:PropertyBinding<T, string>
     nameDelegate:PropertyBinding<T, string>
     captionDelegate: PropertyBinding<T,  string>
@@ -16,7 +17,6 @@ export class RenderingItemPayload<T extends object>{
 
      renderingBlockPayloads:  RenderingBlockPayload<any>[] = []
      private stateUpdateCallbacks:Array<(state:ContainerState)=>void>  = []
-
 
     constructor(
         public receiver:T,
@@ -57,7 +57,7 @@ export class RenderingItemPayload<T extends object>{
 }
 
 
-export class RenderingBlockPayload<T extends object>{
+export class RenderingBlockPayload<T extends object> implements IContainerPayload<T>{
 
      nameDelegate:PropertyBinding<T, string>
      contentDelegate: PropertyBinding<T, string>
@@ -70,6 +70,7 @@ export class RenderingBlockPayload<T extends object>{
       private stateUpdateCallbacks:Array<(state:ContainerState)=>void>  = []
 
      constructor(
+        public htmlTag:HtmlTag,
         public receiver:T,
         private nameProperty: keyof T,
         private contentProperty: keyof T,

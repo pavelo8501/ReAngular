@@ -10,4 +10,7 @@ export * from './lib/form-controls.providers';
 export * from "./lib/action-button"
 export * from "./lib/item-editor"
 export * from "./lib/text-editor"
+export * from "./lib/image-viewer"
+
+
 

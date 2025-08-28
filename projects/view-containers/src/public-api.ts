@@ -12,3 +12,5 @@ export * from "./lib/common-container"
 export * from "./lib/view-container"
 export * from './lib/rendering-container'
 
+export * from "./lib/animated-container"
+

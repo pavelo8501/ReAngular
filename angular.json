@@ -77,7 +77,7 @@
       "projectType": "library",
       "root": "projects/view-containers",
       "sourceRoot": "projects/view-containers/src",
-      "prefix": "lib",
+      "prefix": "vc",
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",
@@ -110,7 +110,7 @@
       "projectType": "library",
       "root": "projects/data-helpers",
       "sourceRoot": "projects/data-helpers/src",
-      "prefix": "lib",
+      "prefix": "dh",
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",
@@ -283,6 +283,36 @@
           "builder": "@angular/build:karma",
           "options": {
             "tsConfig": "projects/editors/tsconfig.spec.json",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ]
+          }
+        }
+      }
+    },
+    "common-lib": {
+      "projectType": "library",
+      "root": "projects/common-lib",
+      "sourceRoot": "projects/common-lib/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/common-lib/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/common-lib/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "tsConfig": "projects/common-lib/tsconfig.spec.json",
             "polyfills": [
               "zone.js",
               "zone.js/testing"

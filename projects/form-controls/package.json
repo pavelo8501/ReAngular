@@ -6,6 +6,9 @@
   "module": "dist/libs/form-controls/index.mjs",
   "types": "dist/libs/form-controls/index.d.ts",
 
+   "dependencies": {
+    "@pavelo8501/data-helpers": "^0.0.2"
+  },
 
   "peerDependencies": {
     "@angular/common": "^20.2.1",

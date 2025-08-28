@@ -6,6 +6,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgxEditorModule } from 'ngx-editor';
 
+import {Animatable, IAnimationHandler}  from "@pavelo8501/data-helpers"
+import { TextEditorControlsComponent } from './components/text-editor-controls/text-editor-controls.component';
+import e from 'express';
+
 @Component({
   selector: 'fc-text-editor',
   templateUrl: './text-editor.component.html',
@@ -16,7 +20,7 @@ import { NgxEditorModule } from 'ngx-editor';
     FormsModule
   ]
 })
-export class TextEditorComponent<T extends object> implements OnInit {
+export class TextEditorComponent<T extends object> extends Animatable implements OnInit  {
 
   textEditor: Editor = new Editor()
   disabled = signal<boolean>(false)
@@ -27,13 +31,20 @@ export class TextEditorComponent<T extends object> implements OnInit {
   onSaving = output<string>()
   onPayloadSaving = output<{receiver: T; value: string }>()
 
+
+  animationHandler = model<IAnimationHandler>()
+
+
   constructor(){
+
+    super()
+
     effect(
       ()=>{
           const payload = this.payload()
           if(payload != undefined){
             this.disabled.set(false)
-            this.text.set(payload.textProperty.get())
+            this.text.set(payload.textDelegate.get())
             payload.assignEditor(this)
           }
       }
@@ -43,6 +54,30 @@ export class TextEditorComponent<T extends object> implements OnInit {
   ngOnInit(): void {
 
   }
+
+
+  saveBtnClick(event:MouseEvent){
+      this.save()
+
+      const handler = this.animationHandler()
+      if(handler != undefined){
+        handler.fadeOut()
+      }else{
+        console.warn("Handler is not there")
+      }
+  }
+
+  cancelBtnClick(event:MouseEvent){
+
+
+  }
+
+  onAnimationContainerReady(handler: IAnimationHandler): void {
+    console.log("Received animation handler in textEditor")
+    console.log(handler)
+    this.animationHandler.set(handler)
+  }
+
 
   clear(){
     this.payload.set(undefined)
@@ -55,8 +90,9 @@ export class TextEditorComponent<T extends object> implements OnInit {
     this.onSaving.emit(textToSave)
     const payload = this.payload()
     if(payload != undefined){
-        payload.textProperty.set(textToSave)
-        this.onPayloadSaving.emit( { receiver:  payload.receiver, value: payload.textProperty.get() })
+
+        payload.textDelegate.set(textToSave)
+        this.onPayloadSaving.emit( { receiver:  payload.receiver, value: payload.textDelegate.get() })
     }
   }
   

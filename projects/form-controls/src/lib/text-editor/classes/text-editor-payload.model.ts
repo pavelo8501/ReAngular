@@ -6,13 +6,13 @@ export class TextEditorPayload<T extends object> {
 
     private parentComponent?: TextEditorComponent<any>
 
-    textProperty: PropertyBinding<T, string>
+    textDelegate: PropertyBinding<T, string>
 
     constructor(
         public receiver: T,
-        private property: keyof T
+        textProperty: keyof T
     ) {
-        this.textProperty = bindProperty(receiver, property)
+        this.textDelegate = bindProperty(receiver, textProperty)
     }
 
 
@@ -25,6 +25,10 @@ export class TextEditorPayload<T extends object> {
     }
 
     save() {
-        this.parentComponent?.save()
+        const component = this.parentComponent
+        if(component != null){
+             this.textDelegate.set(component.text())
+            component.save() 
+        }
     }
 }

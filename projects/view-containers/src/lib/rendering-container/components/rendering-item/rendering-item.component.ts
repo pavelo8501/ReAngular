@@ -4,8 +4,11 @@ import { RenderingBlockPayload, RenderingItemPayload } from './../../classes';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
-import { ContainerState } from '../../../common/enums';
+import { ContainerEventType, ContainerState } from '../../../common/enums';
 import { RenderingBlockComponent } from './../rendering-block/rendering-block.component';
+
+import { ContainerEvent} from "./../../models"
+import { ContainerProviderService} from "./../../../common/services"
 
 @Component({
   selector: 'lib-rendering-item',
@@ -15,7 +18,7 @@ import { RenderingBlockComponent } from './../rendering-block/rendering-block.co
     RenderingBlockComponent
 ],
   templateUrl: "./rendering-item.component.html",
-  styleUrl: './rendering-item.component.css',
+  styleUrls: ['./rendering-item.component.css', "./../../../styles/buttons.css"],
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class RenderingItemComponent<T extends object> implements AfterViewInit {
@@ -32,7 +35,11 @@ export class RenderingItemComponent<T extends object> implements AfterViewInit {
 
   containerState = signal<ContainerState>(ContainerState.IDLE)
 
-  constructor(){
+
+  constructor(
+    private  service : ContainerProviderService<ContainerEvent<T>, boolean>
+  ){
+    
     effect(() =>{
         const payload = this.payload()
         this.name = payload.nameDelegate.get()
@@ -50,12 +57,27 @@ export class RenderingItemComponent<T extends object> implements AfterViewInit {
         this.renderingBlockPayloads.forEach(renderBlockPayload=>{
           renderBlockPayload.subscribeStateUpdates(
             state=>{
-               console.log(`Updating state by callback from render block to state ${state}`)
                this.containerState.set(state)
             }
           )
         })
     })
+  }
+
+  private createEvent(
+    eventType : ContainerEventType,
+    childPayload?: RenderingBlockPayload<any>  
+  ):ContainerEvent<T>{
+
+    if(childPayload != undefined){
+       return  new ContainerEvent(childPayload, eventType)
+    }else{
+      return  new ContainerEvent(this.payload(), eventType)
+    }
+  }
+
+  private findSelectedRenderingComponent():RenderingBlockComponent<any>| undefined{
+     return this.renderBlockComponents().find(x=>x.containerState() != ContainerState.IDLE)
   }
 
   setContinerState(state: ContainerState){
@@ -74,11 +96,33 @@ export class RenderingItemComponent<T extends object> implements AfterViewInit {
       })
   }
 
-
   clearRenderingBlocks(){
     this.renderingBlockPayloads = []
   }
 
+  editCssBtnClick(event:MouseEvent){
+
+  }
+  editTextBtnClick(event:MouseEvent){
+    event.preventDefault()
+    event.stopPropagation()
+
+    const renderBlock = this.findSelectedRenderingComponent()
+    if(renderBlock != undefined){
+        const emitEvent = this.createEvent(ContainerEventType.ON_CONTENT_EDIT, renderBlock.payload())
+        console.log("emitEvent created for renderBlock")
+        this.service.provider.send(emitEvent).then(result => {
+          this.setContinerState(ContainerState.EDIT)
+        })
+    }else{
+        const emitEvent = this.createEvent(ContainerEventType.ON_CONTENT_EDIT)
+        console.log("emitEvent created")
+        this.service.provider.send(emitEvent).then(result => {
+          this.setContinerState(ContainerState.EDIT)
+        })
+    }
+  }
+  
   ngAfterViewInit(): void {
 
   }

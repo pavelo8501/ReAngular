@@ -1,4 +1,4 @@
-import { RenderingItemComponent } from "../rendering-container-parts";
+import { RenderingItemComponent } from "../components";
 import { RenderModelInterface } from "./render-model.interface";
 
 export interface RendererHandlerInterface{

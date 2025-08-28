@@ -7,31 +7,39 @@ import { ActionData } from './classes/action-data.model';
 
   ],
   templateUrl: "./action-button.component.html",
-  styleUrl: './action-button.component.css',
+  styleUrls: ['./action-button.component.css', "./../../../styles/buttons.css"],
 })
 export class ActionButtonComponent<T> {
 
 
   id = input<number>(0)
-  caption = model<string>("Action Button")
+
   qualifiedId: string = `${this.id()}_action_button`
+
   actionItem = model<ActionData<T>>()
+  
+
+  caption:string = ""
+
 
   constructor() {
+
     effect(() => {
       const actionItem = this.actionItem()
       if (actionItem) {
-        this.caption.set(actionItem.caption)
+        this.caption = actionItem.caption
       }
     })
   }
 
   onClick() {
+
     const actionData = this.actionItem()
+
     if (actionData) {
-      actionData.callback?.(actionData.data)
+        actionData.callback?.(actionData.data)
     } else {
-      console.warn(`Action button ${this.qualifiedId} action net set`)
+      console.warn(`Action button ${this.qualifiedId} action not set`)
     }
   }
 

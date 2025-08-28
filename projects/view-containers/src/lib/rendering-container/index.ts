@@ -4,5 +4,5 @@ export * from "./models"
 export * from "./interfaces"
 export * from "./models"
 
-export * from "./rendering-container-parts"
+export * from "./components"
 export * from "./rendering.container"

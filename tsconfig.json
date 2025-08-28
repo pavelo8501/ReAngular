@@ -9,6 +9,9 @@
     "strict": true,
     "alwaysStrict": true,
     "paths": {
+      "@pavelo8501/data-helpers": [
+        "./dist/data-helpers"
+      ],
       "data-helpers": [
         "./dist/data-helpers"
       ],
@@ -46,7 +49,7 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  }
+  },
   // "references": [
   //   {
   //     "path": "./projects/editors/tsconfig.lib.json"

@@ -1,0 +1,28 @@
+
+
+
+
+<div  class="section-container"  [class.selected-section]="containerState() != ContainerState.IDLE" >
+
+    <div  class="header-area" [class.header-area-selected]="containerState() != ContainerState.IDLE"   >
+        <p>{{caption}}</p>
+    </div>
+
+
+    @if (containerState() != ContainerState.IDLE) {
+        <div class="section-controls">
+            @if(containerState() != ContainerState.IDLE){
+                <button type="button"  class="btn btn-primary btn-sm edit-button"  name="edit-css-btn" (click)="editCssBtnClick($event)">css</button>
+                <button type="button"  class="btn btn-primary btn-sm edit-button"  name="edit-text-btn" (click)="editTextBtnClick($event)">text</button>
+            }
+        </div>
+    }
+
+    <div name="section-inner-container" class="render-blocks-area" [ngClass]="classes">
+        @for(renderingBlockPayload of renderingBlockPayloads; track $index){
+            <vc-rendering-block [ngClass]="renderingBlockPayload.classes" [payload]="renderingBlockPayload" >
+
+            </vc-rendering-block>        
+        }
+    </div>
+</div>

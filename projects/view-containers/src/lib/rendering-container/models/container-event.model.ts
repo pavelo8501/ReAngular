@@ -1,13 +1,12 @@
 
-import { RenderingItemComponent } from "../rendering-container-parts"
-import { RenderComponentInterface, RenderModelInterface } from "../interfaces"
-import { ContainerEventType } from "../../common/enums"
 
+import { ContainerEventType } from "../../common/enums"
+import { IContainerPayload } from "../classes";
 
 
 export class ContainerEvent<T extends object> {
   constructor(
-    public caller: T,
+    public caller: IContainerPayload<T>,
     public eventType : ContainerEventType
   ) {
     
@@ -16,7 +15,7 @@ export class ContainerEvent<T extends object> {
 
 
 export function configureCaller<T extends object>(
-  caller: T
+  caller: IContainerPayload<T>
 ) {
   return function(
     eventType: ContainerEventType,

@@ -1,0 +1,22 @@
+
+
+<div (click)="onClicked($event)"  [class.selected]="containerState() != ContainerState.IDLE" class="rendering-block">
+
+    <div class="controls-area">
+       
+    </div>
+
+
+    @if (htmlTag != HtmlTag.IMAGE) {
+     <div class = "sw-content" [(innerHTML)]="content">
+       
+     </div>
+    }@else {
+
+        @if (imageData) {
+          <fc-image-viewer  [imageData]="imageData" />  
+        }
+    }
+   
+</div>
+

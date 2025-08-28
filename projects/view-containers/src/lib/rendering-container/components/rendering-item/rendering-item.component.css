@@ -13,8 +13,10 @@
 }
 
 
-.active{
-  border :blue 2px solid;
+
+
+.selected-section{
+  border :black 4px solid;
 }
 
 
@@ -60,4 +62,8 @@
 .header-area{
   background-color: rgba(39, 132, 209, 0.716);
   color: white;
+}
+
+.header-area-selected{
+    background-color: rgba(79, 23, 131, 0.716) !important;
 }

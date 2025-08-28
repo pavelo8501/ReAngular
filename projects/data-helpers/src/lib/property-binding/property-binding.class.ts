@@ -23,11 +23,7 @@ export class PropertyBinding<T, V> implements IBindableProperty<T, V> {
   set(value: V) {
     const oldValue = this.get()
     this.setter(this.receiver, value)
-
-   
-    if(oldValue !== value){
-      this.notifySubscribers(value, oldValue)
-    }
+    this.notifySubscribers(value, oldValue)
   }
 
 

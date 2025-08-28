@@ -15,6 +15,10 @@
   border :green 1px solid;
 }
 
+.selected{
+  border :blue 4px solid;
+}
+
 
 .controls-area{
   display: flex;

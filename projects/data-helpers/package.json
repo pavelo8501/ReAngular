@@ -1,12 +1,8 @@
 {
   "name": "@pavelo8501/data-helpers",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "General use TS data helpers",
-  "main": "dist/libs/form-controls/index.d.ts",
-  "peerDependencies": {
-    "@angular/common": "^19.2.0",
-    "@angular/core": "^19.2.0"
-  },
+  "main": "dist/libs/data-helpers/index.d.ts",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "ng build data-helpers",

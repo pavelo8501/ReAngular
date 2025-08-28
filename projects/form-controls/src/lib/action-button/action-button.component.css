@@ -2,9 +2,7 @@
   display: block;
 }
 
-.default-button{
-  min-height: 30px;
-  background-color:beige;
-  border: 1px, solid, black;
-  padding: 10px 5px 10px 5px;
+
+.action-button{
+  margin-left: 4px;
 }

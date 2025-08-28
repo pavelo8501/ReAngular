@@ -1,0 +1,16 @@
+
+ <!-- <ng-content #positionedContent select="positioned-content">
+
+</ng-content> -->
+
+
+
+<ng-container class="container" >
+    @if (isShown()) {
+    <div class="enter-container" animate.enter="enter-animation">
+        <ng-content/>
+    </div>
+    }
+</ng-container>
+
+
