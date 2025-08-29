@@ -1,20 +1,26 @@
 :host {
   display: block;
-  /* position: fixed; */
+  display: flex;
+  flex-direction: column;
 }
 
 
-.container{
-  /* top: 100px;
-  z-index: 100;
-  position: absolute; */
+
+.button{
+  color: black;
 }
 
-
-.enter-container {
-  border: 1px solid #dddddd;
+.animated-container{
+  color: aliceblue;
+  margin-left: 10px;
+  margin-left: 10px;
   margin-top: 1em;
-  padding: 20px 20px 0px 20px;
+}
+
+.insert-container {
+  background-color: rgb(96, 88, 148);
+  border-radius: 10px;
+  border: 1px solid #dddddd;
   font-weight: bold;
   font-size: 20px;
 }
@@ -35,20 +41,7 @@
 }
 
 
-
 .leave-container {
-  border: 1px solid #dddddd;
-  margin-top: 1em;
-  padding: 20px 20px 0px 20px;
-  font-weight: bold;
-  font-size: 20px;
-  opacity: 1;
-  transition: opacity 200ms ease-in;
-  @starting-style {
-    opacity: 0;
-  }
-}
-.leaving {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 500ms ease-out, transform 500ms ease-out;

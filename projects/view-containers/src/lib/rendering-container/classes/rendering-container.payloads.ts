@@ -1,4 +1,4 @@
-import { PropertyBinding, bindProperty } from "../../../../../data-helpers/src/public-api";
+import { PropertyBinding, bindProperty } from "@pavelo8501/data-helpers";
 import { ContainerState, HtmlTag } from "../../common/enums";
 import { IContainerPayload } from "./container-payload.interface";
 

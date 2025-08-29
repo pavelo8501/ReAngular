@@ -6,9 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgxEditorModule } from 'ngx-editor';
 
-import {Animatable, IAnimationHandler}  from "@pavelo8501/data-helpers"
-import { TextEditorControlsComponent } from './components/text-editor-controls/text-editor-controls.component';
-import e from 'express';
+import {AnimatableBase, IAnimationHandler}  from "@pavelo8501/data-helpers"
 
 @Component({
   selector: 'fc-text-editor',
@@ -20,7 +18,7 @@ import e from 'express';
     FormsModule
   ]
 })
-export class TextEditorComponent<T extends object> extends Animatable implements OnInit  {
+export class TextEditorComponent<T extends object> extends AnimatableBase implements OnInit  {
 
   textEditor: Editor = new Editor()
   disabled = signal<boolean>(false)
@@ -61,7 +59,7 @@ export class TextEditorComponent<T extends object> extends Animatable implements
 
       const handler = this.animationHandler()
       if(handler != undefined){
-        handler.fadeOut()
+        handler.hide(this)
       }else{
         console.warn("Handler is not there")
       }

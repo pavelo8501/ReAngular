@@ -8,28 +8,27 @@
     "forceConsistentCasingInFileNames":true,
     "strict": true,
     "alwaysStrict": true,
+
     "paths": {
-      "@pavelo8501/data-helpers": [
-        "./dist/data-helpers"
-      ],
-      "data-helpers": [
-        "./dist/data-helpers"
-      ],
-      "editors": [
-        "./dist/editors"
-      ],
-      "form-controls": [
-        "./dist/form-controls"
-      ],
+      "@pavelo8501/view-containers": ["C:/Projects_IT/ReAngular/projects/view-containers/src/public-api.ts"],
+      "@pavelo8501/net-client": ["C:/Projects_IT/ReAngular/projects/net-client/src/public-api.ts"],
+      "@pavelo8501/data-helpers": ["C:/Projects_IT/ReAngular/projects/data-helpers/src/public-api.ts"],
+      "@pavelo8501/form-controls": ["C:/Projects_IT/ReAngular/projects/form-controls/src/public-api.ts"],
+      // "@pavelo8501/data-helpers": [
+      //   "./dist/data-helpers"
+      // ],
+      // "@pavelo8501/form-controls": [
+      //   "./dist/form-controls"
+      // ],
       "net-client": [
         "./dist/net-client"
       ],
       "reflective-data": [
         "./dist/reflective-data"
       ],
-      "view-containers": [
-        "./dist/view-containers"
-      ]
+      // "@pavelo8501/view-containers": [
+      //   "./dist/view-containers"
+      // ]
     },
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -49,13 +48,5 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  },
-  // "references": [
-  //   {
-  //     "path": "./projects/editors/tsconfig.lib.json"
-  //   },
-  //   {
-  //     "path": "./projects/editors/tsconfig.spec.json"
-  //   }
-  // ]
+  }
 }

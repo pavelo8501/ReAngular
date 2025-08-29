@@ -1,5 +1,6 @@
+import { AnimatableBase, IAnimationHandler } from "@pavelo8501/data-helpers";
 import { AnimatedContainerComponent } from "../animated-container.component";
-import { IAnimationHandler } from "@pavelo8501/data-helpers";
+
 
 export class ContainerHandler implements IAnimationHandler {
 
@@ -14,12 +15,28 @@ export class ContainerHandler implements IAnimationHandler {
         this.hostingContainer = container
     }
 
-    fadeOut(){
-        this.hostingContainer.fadeOut()
+    hide(receiver:AnimatableBase){
+        this.hostingContainer.notifiedHide(receiver)
     }
 
-    popup(){
+    show(receiver:AnimatableBase){
+        this.hostingContainer.notifiedShow(receiver)
+    }
+
+    fadeOutContainer(){
+       this.hostingContainer.fadeOut()
+    }
+
+    popupContainer(){
         this.hostingContainer.popup()
     }
+
+    popupShowingbyIndex(placeholderIndex: number){
+       this.hostingContainer.popupShowingbyIndex(placeholderIndex)
+   }
+
+   popupShowing(caller:AnimatableBase){
+         this.hostingContainer.popupShowing(caller)
+   }
 
 }

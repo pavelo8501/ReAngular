@@ -7,8 +7,7 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "build:form-controls": "ng build form-controls && cd ./form-controls && npm run build:tailwind"
+    "test": "ng test"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -50,9 +49,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "ng-packagr": "^20.2.0",
-    "postcss": "^8.5.6",
     "prettier": "3.5.2",
-    "tailwindcss": "^4.1.12",
-    "typescript": "~5.9.2"
+    "typescript": "5.8.2"
   }
 }

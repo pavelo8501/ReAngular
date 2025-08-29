@@ -5,16 +5,15 @@ import { ContainerEventType, ContainerState, HtmlTag} from './../../../common/en
 import { RenderingBlockPayload} from '../../classes';
 import { ContainerEvent} from "./../../models"
 import { ContainerProviderService, TypedCallbackProvider } from "./../../../common/services"
-import { ImageViewerComponent, ImageData } from '../../../../../../form-controls/src/public-api';
+import { ImageViewerComponent, ImageData } from "@pavelo8501/form-controls";
 
 @Component({
   selector: 'vc-rendering-block',
-  imports: 
-  [
-    CommonModule, 
+  imports: [
+    CommonModule,
     FormsModule,
     ImageViewerComponent
-  ],
+],
   templateUrl: "./rendering-block.component.html",
   styleUrls: ['./rendering-block.component.css', "./../../../styles/buttons.css"]
 })

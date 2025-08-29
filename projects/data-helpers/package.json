@@ -4,11 +4,8 @@
   "description": "General use TS data helpers",
   "main": "dist/libs/data-helpers/index.d.ts",
   "scripts": {
-    "prebuild": "rimraf dist",
     "build": "ng build data-helpers",
-    "release": "npm version patch && ng build data-helpers && cd C:/Projects_IT/ReAngular/dist/data-helpers && npm publish --registry=https://npm.pkg.github.com --access public",
-    "postinstall": "rimraf dist",
-    "postpublish": "rimraf dist"
+    "release": "npm version patch && ng build data-helpers && cd C:/Projects_IT/ReAngular/dist/data-helpers && npm publish --registry=https://npm.pkg.github.com --access public"
   },
   "repository": {
     "type": "git",

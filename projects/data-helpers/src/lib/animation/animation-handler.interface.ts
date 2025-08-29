@@ -1,9 +1,10 @@
+import { AnimatableBase } from "./animatable.base"
+
 
 
 export interface IAnimationHandler{
 
-    popup():void
-    fadeOut():void
-    
+    hide(receiver: AnimatableBase):void
+    show(receiver: AnimatableBase):void
     
 }

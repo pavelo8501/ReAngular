@@ -1,6 +1,6 @@
 
 import { TextEditorComponent } from "../text-editor.component";
-import { bindProperty, PropertyBinding } from "../../../../../data-helpers/src/public-api";
+import { bindProperty, PropertyBinding } from "@pavelo8501/data-helpers";
 
 export class TextEditorPayload<T extends object> {
 

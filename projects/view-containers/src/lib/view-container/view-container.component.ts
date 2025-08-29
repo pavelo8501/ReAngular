@@ -1,6 +1,6 @@
-import { Component, input, AfterViewInit, OnInit, computed, signal, ChangeDetectionStrategy } from "@angular/core";
+import { Component, input, AfterViewInit, computed, signal, ChangeDetectionStrategy } from "@angular/core";
 import { CommonModule } from '@angular/common';
-import { ContainerSelector, SelectorInterface } from './../common/models/container-selector.model';
+import { ContainerSelector } from './../common/models/container-selector.model';
 import { HtmlTag } from './../common/enums'
 import { DataInterface, DataServiceInterface } from "../common/interfaces/data-service.interface";
 

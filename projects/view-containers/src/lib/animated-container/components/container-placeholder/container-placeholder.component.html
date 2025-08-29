@@ -1,3 +1,11 @@
 
 
-<ng-content/>
+@if (isShown()) {
+    <div class="animation-placeholder" animate.enter="enter-animation" animate.leave="leaving">
+        <ng-content> </ng-content>
+    </div>
+}
+
+
+
+

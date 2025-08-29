@@ -11,3 +11,14 @@ export function whenDefined<T>(receiver:T | undefined, block : (receiver:T)=>voi
          block(receiver)
     }
 }
+
+
+declare global {
+  interface Object {
+    let<T, R>(this: T | null | undefined, block: (value: T) => R): R | undefined
+  }
+}
+
+Object.prototype.let = function (block: Function) {
+  return this == null ? undefined : block(this)
+}

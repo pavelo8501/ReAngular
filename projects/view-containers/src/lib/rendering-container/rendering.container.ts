@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from "@angular/common"
 import { ContainerEventType} from '../common/enums/container-event-type.enum';
-import { RendererHandlerInterface, RenderModelInterface, RenderComponentInterface} from "./interfaces"
+import { RendererHandlerInterface} from "./interfaces"
 import { IContainerPayload, RenderingItemPayload } from './classes';
 import { ContainerEvent } from "./models"
 import { ContainerProviderService } from "./../common/services"

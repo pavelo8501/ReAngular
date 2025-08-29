@@ -4,11 +4,10 @@ import { RenderingBlockPayload, RenderingItemPayload } from './../../classes';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
-import { ContainerEventType, ContainerState } from '../../../common/enums';
 import { RenderingBlockComponent } from './../rendering-block/rendering-block.component';
-
+import { ContainerEventType, ContainerState,  ContainerProviderService} from './../../../common';
 import { ContainerEvent} from "./../../models"
-import { ContainerProviderService} from "./../../../common/services"
+
 
 @Component({
   selector: 'lib-rendering-item',

@@ -1,6 +1,7 @@
-import { AfterViewInit, Component, ContentChildren, QueryList } from '@angular/core';
+import { AfterContentInit, AfterViewInit, Component, contentChildren, effect, signal, Type} from '@angular/core';
 import { AnimatedContainerComponent } from '../../animated-container.component';
-import { Animatable } from '@pavelo8501/data-helpers';
+import { ANIMATABLE_ITEM, AnimatableBase } from '@pavelo8501/data-helpers';
+
 
 @Component({
   selector: 'vc-container-placeholder',
@@ -10,50 +11,57 @@ import { Animatable } from '@pavelo8501/data-helpers';
   templateUrl: "./container-placeholder.component.html",
   styleUrl: './container-placeholder.component.css'
 })
-export class ContainerPlaceholderComponent implements AfterViewInit {
+export class ContainerPlaceholderComponent implements AfterContentInit, AfterViewInit {
 
   private hostingContainer?:AnimatedContainerComponent
+  animatable = contentChildren<AnimatableBase>(ANIMATABLE_ITEM)
 
-   @ContentChildren(Animatable) animatables!: QueryList<Animatable>;
 
+  isShown = signal(true);
 
-  private tryInitializeAnimatables(container: AnimatedContainerComponent):boolean{
-     let initialized:boolean = false
-      this.animatables.forEach(
-        animatable=>{
-            initialized = true
-            console.log("Passing handler to")
-            console.log(animatable)
-            animatable.onAnimationContainerReady(container.containerHandler) 
+  constructor(){
+
+    effect(
+      ()=>{
+        const animatables = this.animatable()
+        if(animatables != undefined){
+          animatables.forEach(x=>{
+             console.log(x)
+          })
         }
-      )
-      return initialized
-  } 
+      }
+    )
+  }
 
+
+  show() {
+    this.isShown.set(true)
+  }
+
+  hide(){
+    this.isShown.set(false)
+  }
+
+  toggle() {
+    this.isShown.update((isShown) => !isShown);
+  }
 
 
   resolveHostingContainer(container: AnimatedContainerComponent){
+    console.log("resolveHostingContainer")
     this.hostingContainer = container
+  }
 
-   const result = this.tryInitializeAnimatables(container)
+  ngAfterContentInit() {
+    
 
-   if(!result){
-     this.animatables.changes.subscribe(children => {
-      const asAnimatables = children as Animatable[]
-      console.log("Animatables resolved by subscription")
-      asAnimatables.forEach(animatable => {
-        console.log("Passing handler to")
-        console.log(animatable)
-        animatable.onAnimationContainerReady(container.containerHandler) 
-      })
-    })
-   }
   }
 
 
   ngAfterViewInit(): void {
-
    
-   }
+
+  }
+
 
  }

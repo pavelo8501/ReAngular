@@ -1,7 +1,7 @@
 import { Component, effect, model, output, signal } from '@angular/core';
 import {EditorItemComponent} from './components/editor-item/editor-item.component'
 import {EditorPayload, IEditorItem } from './classes/private-index';
-import { Animatable, IAnimationHandler } from '@pavelo8501/data-helpers';
+import { AnimatableBase, IAnimationHandler } from '@pavelo8501/data-helpers';
 
 @Component({
   selector: 'fc-item-editor',
@@ -12,7 +12,7 @@ import { Animatable, IAnimationHandler } from '@pavelo8501/data-helpers';
   styleUrl: './item-editor.component.css'
 })
 
-export class ItemEditorComponent<P,  T extends object> extends Animatable{
+export class ItemEditorComponent<P,  T extends object> extends AnimatableBase{
 
     payload = model<EditorPayload<P, T> | undefined>(undefined)
 
