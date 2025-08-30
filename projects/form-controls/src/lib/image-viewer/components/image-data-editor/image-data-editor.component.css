@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  padding: 10px 10px 10px 10px;
+
+}
+
+.content-block{
+  margin-left: 10px;
+  margin-top: 4px;
+}
+
+.from-hdd{
+  display:block;
+}

@@ -1,6 +1,6 @@
 
 
 export * from "./adapter.function"
-export * from "./editor-payload.model"
+export * from "./list-editor.handler"
 
 

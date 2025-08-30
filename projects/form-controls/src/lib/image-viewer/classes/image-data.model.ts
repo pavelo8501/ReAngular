@@ -5,7 +5,7 @@ export interface IImageData{
     filename:string
 }
 
-export class ImageData implements IImageData{
+export class ImageMetaData implements IImageData{
 
     constructor(
         public href:string,
@@ -14,12 +14,7 @@ export class ImageData implements IImageData{
 
     }
 
-
-    static fromJson(jsonSting:string):ImageData | undefined {
-        // JSON.parse(jsonSting, (key, value)=>{
-            
-        // })
-
+    static fromJson(jsonSting:string):ImageMetaData | undefined {
       return  JSON.parse(jsonSting)
     }
 }

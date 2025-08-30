@@ -1,9 +1,11 @@
-import { AnimatableBase, IAnimationHandler } from "@pavelo8501/data-helpers";
+import { AnimatableBase, CallbackRegistry, IAnimationHandler } from "@pavelo8501/data-helpers";
 import { AnimatedContainerComponent } from "../animated-container.component";
 
 
 export class ContainerHandler implements IAnimationHandler {
 
+    saveRequest: CallbackRegistry = new CallbackRegistry("SaveRequests")
+    cancelRequest: CallbackRegistry = new CallbackRegistry("CancelRequests")
    
     constructor(
        private hostingContainer:AnimatedContainerComponent
@@ -20,6 +22,7 @@ export class ContainerHandler implements IAnimationHandler {
     }
 
     show(receiver:AnimatableBase){
+        console.log("Show request from")
         this.hostingContainer.notifiedShow(receiver)
     }
 
@@ -33,10 +36,18 @@ export class ContainerHandler implements IAnimationHandler {
 
     popupShowingbyIndex(placeholderIndex: number){
        this.hostingContainer.popupShowingbyIndex(placeholderIndex)
-   }
+    }
 
-   popupShowing(caller:AnimatableBase){
-         this.hostingContainer.popupShowing(caller)
-   }
+    popupShowing(caller:AnimatableBase){
+            this.hostingContainer.popupShowing(caller)
+    }
+
+    subscribeSaveRequest(subscriber:any, callback:()=>void){
+       this.saveRequest.subscribe(subscriber, callback) 
+    }
+
+    subscribeCancelRequest(subscriber:any, callback:()=>void){
+      this.cancelRequest.subscribe(subscriber, callback)
+    }
 
 }

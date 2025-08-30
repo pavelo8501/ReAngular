@@ -10,10 +10,10 @@ import {
 import { CommonModule } from "@angular/common"
 import { ContainerEventType} from '../common/enums/container-event-type.enum';
 import { RendererHandlerInterface} from "./interfaces"
-import { IContainerPayload, RenderingItemPayload } from './classes';
+import {  RenderingItemPayload } from './classes';
 import { ContainerEvent } from "./models"
 import { ContainerProviderService } from "./../common/services"
-import { ContainerState } from '../common/enums';
+import { ContainerState, IContainerPayload } from "@pavelo8501/data-helpers";
 import { RenderingItemComponent } from './components';
 
 @Component({
@@ -45,7 +45,10 @@ export class RenderingContainerComponent{
   height = signal<number>(100)
   containerClass = signal<string>("")
 
-  renderingItemPayloads = model<RenderingItemPayload<any>[]>([]) 
+  renderingItemPayloads = model<RenderingItemPayload<any>[]>([])
+  
+  
+  
 
   constructor(
     private service: ContainerProviderService<ContainerEvent<any>, boolean>

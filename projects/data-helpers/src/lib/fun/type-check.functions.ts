@@ -10,15 +10,11 @@ export function castOrUndefined<T extends object>(constructor: new (...args: any
     }
 }
 
-declare global {
-  interface Object {
-    castOrUndefined<T extends object>(this: T | null | undefined, constructor: new (...args: any[]) => T): T | undefined 
-  }
-}
-
-Object.prototype.castOrUndefined = function <T extends object>(constructor: new (...args: any[]) => T) {
-    if (this != null && this instanceof constructor) {
-        return this as T
+export function withCasting<T extends object>(
+  constructor: new (...args: any[]) => T, 
+  obj: any, block: (casted:T)=>void ){
+   
+    if(obj instanceof constructor ){
+        block(obj as T)
     }
-    return undefined
 }

@@ -5,8 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 import { RenderingBlockComponent } from './../rendering-block/rendering-block.component';
-import { ContainerEventType, ContainerState,  ContainerProviderService} from './../../../common';
+import { ContainerEventType, ContainerProviderService} from './../../../common';
 import { ContainerEvent} from "./../../models"
+import { ContainerState } from '@pavelo8501/data-helpers';
+
 
 
 @Component({

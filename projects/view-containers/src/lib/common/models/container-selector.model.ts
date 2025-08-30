@@ -1,4 +1,4 @@
-import { HtmlTag } from "./../enums/html-tag.enum";
+import { HtmlTag } from '@pavelo8501/data-helpers'
 
 
 export type ContainerSelector  = {

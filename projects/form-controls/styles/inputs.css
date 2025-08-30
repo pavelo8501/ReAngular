@@ -1,0 +1,57 @@
+input[type="text"],
+input[type="file"],
+input[type="password"],
+input[type="email"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background-color: #fff;
+  color: #333;
+
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}.input{
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    background-color: #fff;
+    color: #333;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover */
+.input:hover,
+.input.select:hover,
+textarea:hover {
+  border-color: #999;
+}
+
+/* Focus */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #3b82f6;   /* blue-500 */
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Disabled */
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background-color: #f5f5f5;
+  color: #888;
+  cursor: not-allowed;
+}
+
+/* File input tweak */
+input[type="file"] {
+  padding: 0.35rem; /* keeps it compact */
+}

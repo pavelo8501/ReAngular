@@ -1,11 +1,12 @@
 import { Component, effect, input, model, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ContainerEventType, ContainerState, HtmlTag} from './../../../common/enums';
+import { ContainerEventType} from './../../../common/enums';
 import { RenderingBlockPayload} from '../../classes';
 import { ContainerEvent} from "./../../models"
 import { ContainerProviderService, TypedCallbackProvider } from "./../../../common/services"
-import { ImageViewerComponent, ImageData } from "@pavelo8501/form-controls";
+import { ContainerState, HtmlTag } from "@pavelo8501/data-helpers"
+import { ImageViewerComponent, ImageMetaData } from "@pavelo8501/form-controls";
 
 @Component({
   selector: 'vc-rendering-block',
@@ -31,7 +32,7 @@ export class RenderingBlockComponent<T extends object> {
   content = model<string>("")
   containerState = signal<ContainerState>(ContainerState.IDLE)
 
-  imageData?:ImageData
+  imageData?:ImageMetaData
  
   provider : TypedCallbackProvider<ContainerEvent<T>, boolean>
 
@@ -49,7 +50,7 @@ export class RenderingBlockComponent<T extends object> {
       this.classes = payload.classes
 
       if(this.htmlTag == HtmlTag.IMAGE){
-        this.imageData = ImageData.fromJson(payload.contentDelegate.get())
+        this.imageData = ImageMetaData.fromJson(payload.contentDelegate.get())
       }
 
        payload.contentDelegate.subscribe(

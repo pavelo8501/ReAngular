@@ -1,7 +1,7 @@
 import { Component, input, AfterViewInit, computed, signal, ChangeDetectionStrategy } from "@angular/core";
 import { CommonModule } from '@angular/common';
 import { ContainerSelector } from './../common/models/container-selector.model';
-import { HtmlTag } from './../common/enums'
+import { HtmlTag } from '@pavelo8501/data-helpers'
 import { DataInterface, DataServiceInterface } from "../common/interfaces/data-service.interface";
 
 

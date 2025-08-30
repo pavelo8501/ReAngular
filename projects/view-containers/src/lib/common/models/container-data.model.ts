@@ -1,4 +1,4 @@
-import { HtmlTag } from "../enums";
+import { HtmlTag } from '@pavelo8501/data-helpers'
 import { ContainerSelector, SelectorInterface, createContainerSelector } from "./container-selector.model";
 
 export interface SectionItemDataInterface{

@@ -13,4 +13,6 @@ export * from "./lib/text-editor"
 export * from "./lib/image-viewer"
 
 
+export * from "./lib/simple-input/simple-input.component"
+
 

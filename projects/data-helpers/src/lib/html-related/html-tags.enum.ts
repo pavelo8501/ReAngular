@@ -1,4 +1,3 @@
-
 export enum HtmlTag{
     BODY = "BODY",
     SECTION = "SECTION",

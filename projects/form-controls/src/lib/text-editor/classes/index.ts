@@ -1,2 +1,2 @@
-export * from "./text-editor-payload.model"
-export * from "../../../../../data-helpers/src/lib/property-binding"
+
+export * from "./text-editor.handler"

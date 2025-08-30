@@ -1,6 +1,6 @@
-import { AfterContentInit, AfterViewInit, Component, contentChildren, effect, signal, Type} from '@angular/core';
+import { AfterContentInit, Component, contentChildren, effect, inject, signal} from '@angular/core';
 import { AnimatedContainerComponent } from '../../animated-container.component';
-import { ANIMATABLE_ITEM, AnimatableBase } from '@pavelo8501/data-helpers';
+import { ANIMATABLE_ITEM, AnimatableBase, whenDefined } from '@pavelo8501/data-helpers';
 
 
 @Component({
@@ -11,30 +11,22 @@ import { ANIMATABLE_ITEM, AnimatableBase } from '@pavelo8501/data-helpers';
   templateUrl: "./container-placeholder.component.html",
   styleUrl: './container-placeholder.component.css'
 })
-export class ContainerPlaceholderComponent implements AfterContentInit, AfterViewInit {
+export class ContainerPlaceholderComponent implements AfterContentInit {
 
-  private hostingContainer?:AnimatedContainerComponent
-  animatable = contentChildren<AnimatableBase>(ANIMATABLE_ITEM)
-
+  container = inject(AnimatedContainerComponent);
+  animatables = contentChildren<AnimatableBase>(ANIMATABLE_ITEM)
 
   isShown = signal(true);
 
   constructor(){
-
-    effect(
-      ()=>{
-        const animatables = this.animatable()
-        if(animatables != undefined){
-          animatables.forEach(x=>{
-             console.log(x)
-          })
-        }
-      }
-    )
+    effect(()=>{
+      whenDefined(this.animatables(), animatables=>{
+        animatables.forEach(animatable=> animatable.provideAnimationHandler(this.container.containerHandler))
+      })
+    })
   }
 
-
-  show() {
+  show(){
     this.isShown.set(true)
   }
 
@@ -46,22 +38,7 @@ export class ContainerPlaceholderComponent implements AfterContentInit, AfterVie
     this.isShown.update((isShown) => !isShown);
   }
 
-
-  resolveHostingContainer(container: AnimatedContainerComponent){
-    console.log("resolveHostingContainer")
-    this.hostingContainer = container
-  }
-
   ngAfterContentInit() {
-    
-
+    this.container.registerPlaceholder(this)
   }
-
-
-  ngAfterViewInit(): void {
-   
-
-  }
-
-
  }

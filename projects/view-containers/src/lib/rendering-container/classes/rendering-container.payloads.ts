@@ -1,6 +1,10 @@
-import { PropertyBinding, bindProperty } from "@pavelo8501/data-helpers";
-import { ContainerState, HtmlTag } from "../../common/enums";
-import { IContainerPayload } from "./container-payload.interface";
+import { 
+    PropertyBinding, 
+    bindProperty, 
+    ContainerState, 
+    HtmlTag, 
+    IContainerPayload 
+} from "@pavelo8501/data-helpers";
 
 
 export class RenderingItemPayload<T extends object> implements IContainerPayload<T> {

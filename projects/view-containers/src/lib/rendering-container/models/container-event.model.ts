@@ -1,7 +1,7 @@
 
 
 import { ContainerEventType } from "../../common/enums"
-import { IContainerPayload } from "../classes";
+import { IContainerPayload } from "@pavelo8501/data-helpers";
 
 
 export class ContainerEvent<T extends object> {

@@ -1,5 +1,5 @@
 
 
 export * from "./classes"
-export * from "./item-editor.component"
+export * from "./list-editor.component"
 

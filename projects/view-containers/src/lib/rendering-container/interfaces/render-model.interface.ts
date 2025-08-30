@@ -1,4 +1,4 @@
-import { HtmlTag } from "./../../common/enums"
+import { HtmlTag } from '@pavelo8501/data-helpers'
 
 
 export interface RenderModelInterface{

@@ -1,5 +1,5 @@
 import { IEditorItem } from "./editor-item.interface";
-import { EditorPayload } from "./editor-payload.model";
+import { ListEditorHandler } from "./list-editor.handler";
 
 
 

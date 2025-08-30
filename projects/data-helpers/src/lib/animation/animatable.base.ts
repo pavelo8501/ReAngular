@@ -2,6 +2,7 @@
 import { Directive, forwardRef, InjectionToken, model } from "@angular/core";
 import { IAnimatable } from "./animatable.interface";
 import { IAnimationHandler } from "./animation-handler.interface";
+import { IComponentIdentity, OutputMode } from "../loging";
 
 
 export const ANIMATABLE_ITEM = new InjectionToken<AnimatableBase>('animatable-item');
@@ -9,11 +10,13 @@ export const ANIMATABLE_ITEM = new InjectionToken<AnimatableBase>('animatable-it
 @Directive({
   providers: [{provide: ANIMATABLE_ITEM, useExisting: forwardRef(() => AnimatableBase) }]
 })
-export abstract class AnimatableBase implements IAnimatable {
+export abstract class AnimatableBase implements IComponentIdentity{
 
-  animationContainerHandler = model<IAnimationHandler>()
+  abstract componentName: string
 
+  outputMode:OutputMode = OutputMode.Silent
+  animationHandler?:IAnimationHandler
 
- // abstract onAnimationContainerReady(handler: IAnimationHandler): void;
+  abstract provideAnimationHandler(handler: IAnimationHandler):void
 
 }

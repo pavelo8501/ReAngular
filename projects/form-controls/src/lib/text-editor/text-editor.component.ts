@@ -1,12 +1,13 @@
-import { Component, effect, input, model, OnInit, output, signal } from '@angular/core';
+import { Component, effect, forwardRef, input, model, OnInit, output, signal } from '@angular/core';
 
 import { Editor } from 'ngx-editor';
-import { TextEditorPayload } from './classes/text-editor-payload.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgxEditorModule } from 'ngx-editor';
 
-import {AnimatableBase, IAnimationHandler}  from "@pavelo8501/data-helpers"
+import { TextEditorHandler } from './classes/text-editor.handler';
+
+import { ANIMATABLE_ITEM, AnimatableBase, IAnimationHandler, identity, whenDefined} from "@pavelo8501/data-helpers"
 
 @Component({
   selector: 'fc-text-editor',
@@ -16,82 +17,71 @@ import {AnimatableBase, IAnimationHandler}  from "@pavelo8501/data-helpers"
     NgxEditorModule,
     CommonModule,
     FormsModule
-  ]
+  ],
+  providers: [{ provide: ANIMATABLE_ITEM, useExisting: forwardRef(() => TextEditorComponent) }]
 })
-export class TextEditorComponent<T extends object> extends AnimatableBase implements OnInit  {
+export class TextEditorComponent<T extends object> extends AnimatableBase{
+
+  componentName: string = "TextEditorComponent"
 
   textEditor: Editor = new Editor()
   disabled = signal<boolean>(false)
   text = model<string>("")
 
-  payload = model<TextEditorPayload<T> | undefined>(undefined)
+  textEditorHandler = model<TextEditorHandler<T>>()
 
   onSaving = output<string>()
-  onPayloadSaving = output<{receiver: T; value: string }>()
+  onPayloadSaving = output<{ receiver: T; value: string }>()
 
 
-  animationHandler = model<IAnimationHandler>()
-
-
-  constructor(){
-
+  constructor() {
     super()
-
-    effect(
-      ()=>{
-          const payload = this.payload()
-          if(payload != undefined){
-            this.disabled.set(false)
-            this.text.set(payload.textDelegate.get())
-            payload.assignEditor(this)
-          }
+    effect(() =>{
+        whenDefined(this.textEditorHandler(), handler=>{
+          handler.provideComponent(this)
+          this.handleAnimation()
+           const inputText = handler.textDelegate.get()
+           this.text.set(inputText)
+        })
       }
     )
   }
 
-  ngOnInit(): void {
-
+  private handleAnimation(){
+    whenDefined(this.animationHandler, animationHandler=>{
+       animationHandler.subscribeSaveRequest(this, this.onSaveRequest)
+       animationHandler.subscribeCancelRequest(this, this.onCancelRequest)
+       animationHandler.show(this)
+    }, identity(this))
   }
 
-
-  saveBtnClick(event:MouseEvent){
-      this.save()
-
-      const handler = this.animationHandler()
-      if(handler != undefined){
-        handler.hide(this)
-      }else{
-        console.warn("Handler is not there")
-      }
+  private onSaveRequest = () => {
+    this.save()
   }
 
-  cancelBtnClick(event:MouseEvent){
-
-
+  private onCancelRequest = () => {
+    whenDefined(this.animationHandler, animationHandler => {
+      animationHandler.hide(this)
+    });
+    this.clear()
   }
 
-  onAnimationContainerReady(handler: IAnimationHandler): void {
-    console.log("Received animation handler in textEditor")
-    console.log(handler)
-    this.animationHandler.set(handler)
+  override provideAnimationHandler(handler: IAnimationHandler): void {
+    this.animationHandler = handler
   }
 
-
-  clear(){
-    this.payload.set(undefined)
+  clear() {
     this.text.set("")
     this.disabled.set(true)
   }
 
-  save(){
-    const textToSave = this.text()
-    this.onSaving.emit(textToSave)
-    const payload = this.payload()
-    if(payload != undefined){
-
-        payload.textDelegate.set(textToSave)
-        this.onPayloadSaving.emit( { receiver:  payload.receiver, value: payload.textDelegate.get() })
-    }
+  save() {
+     whenDefined(this.textEditorHandler(), handler => {
+      const textToSave = this.text();
+      handler.provideValueToSave(textToSave);
+      this.onSaving.emit(textToSave)
+    });
+    this.clear()
   }
-  
+
 }
