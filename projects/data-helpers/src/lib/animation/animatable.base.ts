@@ -1,6 +1,5 @@
 
-import { Directive, forwardRef, InjectionToken, model } from "@angular/core";
-import { IAnimatable } from "./animatable.interface";
+import { Directive, forwardRef, InjectionToken} from "@angular/core";
 import { IAnimationHandler } from "./animation-handler.interface";
 import { IComponentIdentity, OutputMode } from "../loging";
 
@@ -16,6 +15,8 @@ export abstract class AnimatableBase implements IComponentIdentity{
 
   outputMode:OutputMode = OutputMode.Silent
   animationHandler?:IAnimationHandler
+
+  abstract applyChanges():void
 
   abstract provideAnimationHandler(handler: IAnimationHandler):void
 

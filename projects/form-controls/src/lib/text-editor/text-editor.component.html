@@ -1,8 +1,14 @@
  
 
+
+<div class = "component-controls">
+    <button type="button"class="btn btn-success btn-sm save-button"  name="save-btn"  (click)="saveBtnClick($event)">Save</button>
+    <button type="button"class="btn btn-secondary btn-sm cancel-button" name="cancel-btn"  (click)="cancelBtnClick($event)">Cancel</button>
+</div>
+
  <div class="text-editor">
     <div class="NgxEditor__Wrapper">
-        <ngx-editor-menu [editor]="textEditor"  > </ngx-editor-menu>
+        <ngx-editor-menu [editor]="textEditor"> </ngx-editor-menu>
         <ngx-editor 
           [editor]="textEditor"
           [disabled]="disabled()"

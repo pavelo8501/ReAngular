@@ -10,10 +10,10 @@ import {
 import { CommonModule } from "@angular/common"
 import { ContainerEventType} from '../common/enums/container-event-type.enum';
 import { RendererHandlerInterface} from "./interfaces"
-import {  RenderingItemPayload } from './classes';
+import {  RenderingBlockPayload, RenderingItemPayload } from './classes';
 import { ContainerEvent } from "./models"
 import { ContainerProviderService } from "./../common/services"
-import { ContainerState, IContainerPayload } from "@pavelo8501/data-helpers";
+import { castOrUndefined, Colour, ContainerState, IContainerPayload, info, log, whenDefined } from "@pavelo8501/data-helpers";
 import { RenderingItemComponent } from './components';
 
 @Component({
@@ -36,7 +36,8 @@ export class RenderingContainerComponent{
   onEdit = output<any>()
   onSave = output<IContainerPayload<any>>()
   onContentEdit = output<IContainerPayload<any>>()
-
+  onCssEdit =  output<IContainerPayload<any>>()
+  onBlockEdit = output<{blockPayload:RenderingBlockPayload<any>; editType:ContainerEventType}>()
 
   opennedHeight = input<number|undefined>(undefined)
 
@@ -48,8 +49,6 @@ export class RenderingContainerComponent{
   renderingItemPayloads = model<RenderingItemPayload<any>[]>([])
   
   
-  
-
   constructor(
     private service: ContainerProviderService<ContainerEvent<any>, boolean>
   ){
@@ -79,6 +78,7 @@ export class RenderingContainerComponent{
     this.service.provider.receive().subscribe(({ data, callback }) => {
 
       const payloads = this.renderingItemPayloads() 
+      const blockPayload = castOrUndefined<RenderingBlockPayload<any>>(RenderingBlockPayload, data.caller)
 
       switch(data.eventType){
         case ContainerEventType.ON_CLICK:
@@ -93,11 +93,21 @@ export class RenderingContainerComponent{
           }
         break
         case ContainerEventType.ON_CONTENT_EDIT:
-          console.log("ON_CONTENT_EDIT. Triggering onContentEdit")
-          this.onContentEdit.emit(data.caller)
+          whenDefined(blockPayload, payload=>{
+               log("Emmiting", blockPayload)
+               this.onBlockEdit.emit({blockPayload: payload, editType:ContainerEventType.ON_CLASS_EDIT})
+          })
           callback(true)
-
         break
+
+        case ContainerEventType.ON_CLASS_EDIT:
+          whenDefined(blockPayload, payload=>{
+               log("Emmiting", blockPayload)
+               this.onBlockEdit.emit({blockPayload: payload, editType:ContainerEventType.ON_CLASS_EDIT})
+          })
+          callback(true)
+        break
+
         case ContainerEventType.SAVE:
           this.onSave.emit(data.caller)
           callback(true)

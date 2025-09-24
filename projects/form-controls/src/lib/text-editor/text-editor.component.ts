@@ -1,9 +1,8 @@
 import { Component, effect, forwardRef, input, model, OnInit, output, signal } from '@angular/core';
 
-import { Editor } from 'ngx-editor';
+import { Editor, NgxEditorModule } from 'ngx-editor';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NgxEditorModule } from 'ngx-editor';
 
 import { TextEditorHandler } from './classes/text-editor.handler';
 
@@ -12,7 +11,7 @@ import { ANIMATABLE_ITEM, AnimatableBase, IAnimationHandler, identity, whenDefin
 @Component({
   selector: 'fc-text-editor',
   templateUrl: './text-editor.component.html',
-  styleUrl: './text-editor.component.css',
+  styleUrls: ['./text-editor.component.css', "./../styles/buttons.css"],
   imports: [
     NgxEditorModule,
     CommonModule,
@@ -31,12 +30,16 @@ export class TextEditorComponent<T extends object> extends AnimatableBase{
   textEditorHandler = model<TextEditorHandler<T>>()
 
   onSaving = output<string>()
+
   onPayloadSaving = output<{ receiver: T; value: string }>()
 
+  onSave = output<{ receiver: T; value: string }>()
+  onCancel = output<{ receiver: T; value: string }>()
 
   constructor() {
     super()
     effect(() =>{
+        this.disabled.set(false)
         whenDefined(this.textEditorHandler(), handler=>{
           handler.provideComponent(this)
           this.handleAnimation()
@@ -70,7 +73,13 @@ export class TextEditorComponent<T extends object> extends AnimatableBase{
     this.animationHandler = handler
   }
 
+  override applyChanges(): void {
+      
+  }
+
   clear() {
+    console.log("claer")
+
     this.text.set("")
     this.disabled.set(true)
   }
@@ -81,7 +90,23 @@ export class TextEditorComponent<T extends object> extends AnimatableBase{
       handler.provideValueToSave(textToSave);
       this.onSaving.emit(textToSave)
     });
-    this.clear()
+   // this.clear()
+  }
+
+
+  saveBtnClick(event:MouseEvent){
+
+    whenDefined(this.textEditorHandler(), handler => {
+      const textToSave = this.text();
+      this.onSave.emit({ receiver: handler.receiver, value:textToSave})
+    });
+  }
+
+  cancelBtnClick(event:MouseEvent){
+    const textToSave = this.text();
+    whenDefined(this.textEditorHandler(), handler => {
+       this.onCancel.emit({receiver: handler.receiver, value:textToSave})
+    })
   }
 
 }

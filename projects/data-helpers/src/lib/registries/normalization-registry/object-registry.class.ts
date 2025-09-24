@@ -1,5 +1,3 @@
-import { RegisteryContainer } from "./registry-hub.class"
-
 
 export abstract class ObjectRegistryBase<T> {
 

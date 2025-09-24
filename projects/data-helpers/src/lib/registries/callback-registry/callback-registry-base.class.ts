@@ -1,4 +1,4 @@
-import { deleteFromList, whenDefined } from "@pavelo8501/data-helpers"
+import {  deleteFromList, whenDefined } from "./../../fun"
 import { CallbackSubscription } from "./subscription.model"
 
 

@@ -6,7 +6,7 @@ export class PropertyBinding<T, V> implements IBindableProperty<T, V> {
   private callbacks: Array<(newValue:V, oldValue:V) => void> = []
 
   constructor(
-    private receiver : T,
+    public receiver : T,
     private getter: (obj:T)=>V,
     private setter : (obj:T, value:V) => void
 

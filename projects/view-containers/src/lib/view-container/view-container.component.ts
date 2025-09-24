@@ -29,7 +29,6 @@ export class ViewContainerComponent implements AfterViewInit {
 
   showAttachedContent = input<boolean>(false)
 
-
   updateData(model: DataInterface) {
     console.log(`ContentRendererComponent: updateData() receivd new model for update : ${model.selector}`)
     this.dataModel.set(model)

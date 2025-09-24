@@ -1,7 +1,8 @@
 import { Component, forwardRef, input, model } from '@angular/core';
-import { ImageMetaData, SimpleInputComponent } from '@pavelo8501/form-controls';
+import { ImageMetaData } from './../../classes';
+import { SimpleInputComponent }  from "./../../../simple-input/simple-input.component"
 import { ImageEditorSettings } from '../../classes/image-editor-settings.model';
-import { ANIMATABLE_ITEM, IHandledComponent, AnimatableBase, IAnimationHandler } from '@pavelo8501/data-helpers';
+import { ANIMATABLE_ITEM,  AnimatableBase, IAnimationHandler } from '@pavelo8501/data-helpers';
 
 @Component({
   selector: 'fc-image-data-editor',
@@ -23,6 +24,10 @@ export class ImageDataEditorComponent extends AnimatableBase{
 
   override provideAnimationHandler(handler: IAnimationHandler): void {
     this.animationHandler = handler
+  }
+
+  override applyChanges(): void {
+    
   }
 
   onFileSelected(event: Event) {

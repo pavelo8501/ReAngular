@@ -1,16 +1,16 @@
 
-import { AnimatableBase } from "@pavelo8501/data-helpers"
-import { IHandledComponent } from "./handled-component.interface"
+import { AnimatableBase } from "./../../animation/animatable.base"
 
 
-export abstract class ComponentHandlerBase<T extends object, R> {
 
-    private owningComponent?: AnimatableBase
+export abstract class ComponentHandlerBase<T extends object> {
+
+    owningComponent?: AnimatableBase
 
      private onSaveRequestedCallbacks: Array<() => void> = []
      private onCancelRequestedCallbacks: Array<() => void> = []
 
-     private onValueSaveCallbacks:Array<(value:R)=>void > = []
+     private onValueSaveCallbacks:Array<(value: any)=>void > = []
 
     private componentResolvedCallbacks:Array<(component:AnimatableBase)=>void> = []
  
@@ -46,11 +46,13 @@ export abstract class ComponentHandlerBase<T extends object, R> {
         this.onCancelRequestedCallbacks = []
     }
 
-    provideValueToSave(value:R){
+    provideValueToSave(value: any){
+
         console.log("provideValueToSave")
         console.log(value)
 
         this.onValueSaveCallbacks.forEach(x=>x(value))
+
         this.onValueSaveCallbacks = []
     }
 
@@ -66,7 +68,7 @@ export abstract class ComponentHandlerBase<T extends object, R> {
         this.onSaveRequestedCallbacks.push(callback)
     }
 
-    subscribeOnValueSave(callback: (value: R) => void) {
+    subscribeOnValueSave(callback: (value: any) => void) {
        this.onValueSaveCallbacks.push(callback)
     }
 

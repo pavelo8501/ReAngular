@@ -1,4 +1,4 @@
-import { Component, computed, contentChildren, effect,  model,  output,  signal} from '@angular/core';
+import { Component, effect,  model, signal} from '@angular/core';
 import { ContainerHandler } from './classes/handler.class';
 import { ContainerPlaceholderComponent } from './components/container-placeholder/container-placeholder.component';
 import { AnimatableBase, IComponentIdentity, identity, OutputMode, whenDefined} from '@pavelo8501/data-helpers';
@@ -14,44 +14,34 @@ import { AnimatableBase, IComponentIdentity, identity, OutputMode, whenDefined} 
 export class AnimatedContainerComponent  implements IComponentIdentity {
   
    private registred:ContainerPlaceholderComponent[] = []
+   private activePlaceholder?:ContainerPlaceholderComponent
   
    componentName: string = "AnimatedContainerComponent"
    outputMode:OutputMode = OutputMode.Output
 
-   readonly  containerHandler: ContainerHandler = new ContainerHandler(this)
+   readonly containerHandler: ContainerHandler = new ContainerHandler(this)
 
    private manualShown = signal<boolean | null>(null)
 
-   isVisible = model<boolean>()
+   isVisible = model<boolean>(false)
+
+   currentVisibility:boolean = false
+
    
-   isShown = computed(() => {
-      const manual = this.manualShown();
-      return manual !== null ? manual : this.isVisible();
-   });
-
-   controlsVisible = computed(()=>{
-      const manual = this.manualShown();
-      if(manual != null){
-         console.log(`setting visibility to ${manual}`)  
-         return manual
-      }else{
-         const fromIsVisible = this.isVisible()
-         console.log(`setting visibility to ${fromIsVisible} by isVisible`)  
-         return fromIsVisible
-      }
-   })
-
-   private activePlaceholder?:ContainerPlaceholderComponent
+   // isShown = computed(() => {
+   //    const manual = this.manualShown();
+   //    return manual !== null ? manual : this.isVisible();
+   // });
 
    constructor(){
       effect(()=>{
-         const visibility = this.isVisible
-         if(visibility != undefined){
-            console.log("Visibility subscribing")
-            visibility.subscribe(value=>{
-               console.log(`Visibility to ${value}`)
-            })
-         }
+         const isVisible = this.isVisible()
+          if(isVisible){
+            console.log(`Effect triggered visibility ${isVisible}`)
+          }else{
+            console.log(`Effect triggered visibility ${isVisible}`)
+             this.hideContainer()
+          }
       })
    }
 
@@ -76,9 +66,11 @@ export class AnimatedContainerComponent  implements IComponentIdentity {
    }
 
    saveBtnClick(event:MouseEvent){
+
       whenDefined(this.activePlaceholder, placeholder=>{
          this.containerHandler.saveRequest.triggerFor(placeholder.animatables(), true, true)
        }, { source: this } )   
+
    }
 
    cancelBtnClick(event:MouseEvent){
@@ -100,12 +92,17 @@ export class AnimatedContainerComponent  implements IComponentIdentity {
    notifiedHide(caller:AnimatableBase){
       whenDefined(this.getPlaceholderOfAnimatable(caller), placeholder=>{
          placeholder.hide()
-       })
+      })
    }
 
    fadeOut(){
       this.registred.forEach(x=>x.hide())
       this.setShown(false)
+   }
+
+   hideContainer(){
+      console.log("Hide all trigerred")
+      this.hideAll()
    }
 
    popup(){
@@ -122,13 +119,14 @@ export class AnimatedContainerComponent  implements IComponentIdentity {
       this.notifiedShow(caller)
    }
 
-   toggle() {
-    const  isShown = this.isShown()
-    if(isShown){
-      this.fadeOut()
-    }else{
-      this.popup()
-    }
-  }
+//    toggle() {
+
+//     const  isShown = this.isShown()
+//     if(isShown){
+//       this.fadeOut()
+//     }else{
+//       this.popup()
+//     }
+//   }
 
 }

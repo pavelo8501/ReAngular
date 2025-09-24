@@ -1,5 +1,5 @@
 import { ObjectRegistryBase } from "./object-registry.class"
-import { RegistryFieldBase, RegistryFieldType} from "./registry-key.model"
+import { RegistryFieldBase} from "./registry-key.model"
 
 function isPrimitiveKey(val: any): val is RegistryFieldBase<any> {
     return val instanceof RegistryFieldBase;

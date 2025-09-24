@@ -1,8 +1,6 @@
 
 
-import { IBindableProperty } from "./bindable-property.interface";
 import { PropertyBinding } from "./property-binding.class";
-
 
 
 export function bindProperty<T, V>(

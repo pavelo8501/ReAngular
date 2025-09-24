@@ -11,16 +11,15 @@ import { ActionData } from './classes/action-data.model';
 })
 export class ActionButtonComponent<T> {
 
-
   id = input<number>(0)
 
   qualifiedId: string = `${this.id()}_action_button`
 
   actionItem = model<ActionData<T>>()
+
+  testInput = input<string>()
   
-
   caption:string = ""
-
 
   constructor() {
 
@@ -33,9 +32,7 @@ export class ActionButtonComponent<T> {
   }
 
   onClick() {
-
     const actionData = this.actionItem()
-
     if (actionData) {
         actionData.callback?.(actionData.data)
     } else {

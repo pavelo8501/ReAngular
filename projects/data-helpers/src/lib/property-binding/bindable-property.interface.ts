@@ -1,4 +1,9 @@
+
+
 export interface IBindableProperty<T, V>{
+
+
+    receiver: T
 
     get():V
     set(value:V):void

@@ -8,14 +8,14 @@
             #inputEl 
             type="text"
             class="editor-input"
-            [value]="listItem().text"
+            [value]="content()"
             autofocus
             />
          <button type="button" class="btn btn-success  btn-sm" (click)="save(inputEl.value)">Save</button>
     </ng-container>
   }@else {
     <div class="item-text" (click)="edit()">
-      {{ listItem().text }}
+      {{ content() }}
     </div>
     <button type="button" class="btn btn-danger btn-sm delete-button" (click)="delete()">X</button>
   }

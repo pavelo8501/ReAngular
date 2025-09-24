@@ -1,4 +1,4 @@
-import { Component, computed, forwardRef, inject, input, output, signal } from '@angular/core';
+import { Component, inject, input, model, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IEditorItem } from '../../classes/editor-item.interface';
 import { ListItem } from '../../classes/list.item-model';
@@ -16,14 +16,15 @@ import { ContainerState } from '@pavelo8501/data-helpers';
 export class ListItemComponent<T extends object>{ 
 
   editor = inject(ListEditorComponent);
-
   listItem = input.required<ListItem<T>>()
+
+  content = model.required<string>()
 
   updated = output<IEditorItem>()
   editing = signal<boolean>(false)
 
   onEdit = output<IEditorItem>()
-
+  onSave = output<ListItemComponent<T>>()
 
   maxWidth = input<string>("200px")
 
@@ -39,11 +40,25 @@ export class ListItemComponent<T extends object>{
 
   save(newValue: string){
      console.log(`Save call. value: ${newValue}`)
-     const listItem = this.listItem();
-     listItem.save(newValue)
+     this.content.set(newValue)
+     this.listItem()?.setText(newValue)
      this.editing.set(false)
-     this.editor.saved(listItem)
+     this.onSave.emit(this)
   }
+
+  updateModel(){
+
+    this.listItem()?.saveText()
+
+  }
+
+  // save(newValue: string){
+  //    console.log(`Save call. value: ${newValue}`)
+  //    const listItem = this.listItem();
+  //    listItem.save(newValue)
+  //    this.editing.set(false)
+  //    this.editor.saved(listItem)
+  // }
 
   delete() {
     console.log("delete call")

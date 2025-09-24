@@ -1,6 +1,6 @@
 import { Component, input, model } from '@angular/core';
-import { ActionButtonComponent } from '../../action-button.component';
-import { ActionData, Orientation } from '../../classes';
+import { ActionButtonComponent } from './../action-button.component';
+import { ActionData, Orientation } from './../classes';
 
 @Component({
   selector: 'fc-button-placeholder',
@@ -13,10 +13,11 @@ import { ActionData, Orientation } from '../../classes';
 
 export class ButtonPlaceholderComponent<T> {
 
-
   Orientation = Orientation
 
   data = model<ActionData<T>[]>([])
+
+  testModel = model<string>()
 
   orientation = input<Orientation>(Orientation.Vertical)
 

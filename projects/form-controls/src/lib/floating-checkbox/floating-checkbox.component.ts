@@ -1,7 +1,6 @@
 import { Component, input, model, signal, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { FormControl } from '@angular/forms';
+import { FormsModule, FormControl } from '@angular/forms';
 import { ActivationState } from '../common/enums/activation-state';
 
 @Component({

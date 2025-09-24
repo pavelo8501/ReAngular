@@ -4,31 +4,17 @@
   "compileOnSave": false,
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
-    "preserveSymlinks": true,
     "forceConsistentCasingInFileNames":true,
-    "strict": true,
-    "alwaysStrict": true,
-
+    "strict": false,
+    "preserveSymlinks": true,
+    "baseUrl": "./",
     "paths": {
-      "@pavelo8501/view-containers": ["C:/Projects_IT/ReAngular/projects/view-containers/src/public-api.ts"],
-      "@pavelo8501/net-client": ["C:/Projects_IT/ReAngular/projects/net-client/src/public-api.ts"],
-      "@pavelo8501/data-helpers": ["C:/Projects_IT/ReAngular/projects/data-helpers/src/public-api.ts"],
-      "@pavelo8501/form-controls": ["C:/Projects_IT/ReAngular/projects/form-controls/src/public-api.ts"],
-      // "@pavelo8501/data-helpers": [
-      //   "./dist/data-helpers"
-      // ],
-      // "@pavelo8501/form-controls": [
-      //   "./dist/form-controls"
-      // ],
-      "net-client": [
-        "./dist/net-client"
+      "@pavelo8501/data-helpers": [
+        "./dist/data-helpers"
       ],
-      "reflective-data": [
-        "./dist/reflective-data"
-      ],
-      // "@pavelo8501/view-containers": [
-      //   "./dist/view-containers"
-      // ]
+      "@pavelo8501/form-controls":[
+        "./projects/form-controls/src/public-api.ts"
+      ]
     },
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -38,15 +24,22 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "importHelpers": true,
     "target": "ES2022",
     "module": "ES2022"
   },
   "angularCompilerOptions": {
+    "compilationMode": "full",
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  }
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./projects/data-helpers/tsconfig.lib.json"
+    }
+  ]
 }

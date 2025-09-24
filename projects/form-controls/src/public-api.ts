@@ -8,9 +8,12 @@ export * from './lib/floating-checkbox/floating-checkbox.component';
 export * from './lib/common/enums';
 export * from './lib/form-controls.providers';
 export * from "./lib/action-button"
-export * from "./lib/item-editor"
+export * from "./lib/list-editor"
 export * from "./lib/text-editor"
 export * from "./lib/image-viewer"
+
+
+export * from "./lib/test-component/test"
 
 
 export * from "./lib/simple-input/simple-input.component"

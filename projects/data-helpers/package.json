@@ -16,8 +16,11 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
-  "dependencies": {
-    "tslib": "^2.3.0"
+  "peer-dependancies":{
+     "@angular/core": "20.3.1"
+  },
+  "devDependencies": {
+    "tslib": "2.8.1"
   },
   "sideEffects": false
 }

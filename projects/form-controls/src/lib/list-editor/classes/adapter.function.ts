@@ -1,12 +1,8 @@
 import { IEditorItem } from "./editor-item.interface";
-import { ListEditorHandler } from "./list-editor.handler";
-
-
 
 export function asEditorItem<T extends object>(model: T, key: keyof T): IEditorItem {
 
   return new Proxy(model as any, {
-
 
     get(target, prop) {
       if (prop === "text") return target[key];

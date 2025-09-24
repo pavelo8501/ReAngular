@@ -1,12 +1,23 @@
 import { Component, effect, forwardRef, input, model, output, signal } from '@angular/core';
 import { ListItemComponent } from './components/editor-item/list-item.component'
 import { ListEditorHandler, IEditorItem } from './classes/private-index';
-import { ANIMATABLE_ITEM, AnimatableBase, ContainerState, deleteFromList, IAnimationHandler, identity, IHandledComponent, OutputMode, whenDefined } from '@pavelo8501/data-helpers';
+import { 
+  ANIMATABLE_ITEM, 
+  AnimatableBase, 
+  ContainerState, 
+  deleteFromList, 
+  IAnimationHandler, 
+  identity, 
+  OutputMode, 
+  whenDefined, 
+  notify, 
+  log } from '@pavelo8501/data-helpers';
+
 import { ListItem } from './classes/list.item-model';
-import { notify } from '@pavelo8501/data-helpers';
+
 
 @Component({
-  selector: 'fc-item-editor',
+  selector: 'fc-list-editor',
   imports: [
     ListItemComponent
   ],
@@ -20,6 +31,7 @@ export class ListEditorComponent<T extends object, I extends object> extends Ani
   override componentName: string = "ListEditorComponent"
 
   listEditorHandler = model<ListEditorHandler<T, I>>()
+  updateSource = model<boolean>(false)
 
   editorState:ContainerState = ContainerState.IDLE
 
@@ -30,8 +42,8 @@ export class ListEditorComponent<T extends object, I extends object> extends Ani
 
   newButtonCaption = input<string>("New Item")
 
-  onDeleted = output<T>()
-  onSave = output<T>()
+  onSave = output<{ receiver: T; value: I[] }>()
+  onCancel = output<{ receiver: T; value: I[] }>()
 
   private _contentProperty? : keyof I
   get contentProperty ():keyof I{
@@ -45,6 +57,7 @@ export class ListEditorComponent<T extends object, I extends object> extends Ani
     super()
     this.outputMode = OutputMode.Output
     effect(() => {
+        this.disabled.set(false)
         whenDefined(this.listEditorHandler(), handler=>{
           handler.provideComponent(this)
           this.handleAnimation()
@@ -77,6 +90,7 @@ export class ListEditorComponent<T extends object, I extends object> extends Ani
     console.log(items)
     items.push(listItem)
     this.items.set(items)
+    this.disabled.set(false)
   }
 
   private handleAnimation(){
@@ -88,7 +102,6 @@ export class ListEditorComponent<T extends object, I extends object> extends Ani
    private onSaveRequest = () => {
       notify("Processing save request", this)
       this.save()
-      this.clear()
    }
 
   private onCancelRequest = () => {
@@ -99,6 +112,16 @@ export class ListEditorComponent<T extends object, I extends object> extends Ani
     this.animationHandler = handler
     handler.subscribeSaveRequest(this, this.onSaveRequest)
     handler.subscribeCancelRequest(this,  this.onCancelRequest)
+  }
+
+  onItemSaving(item: ListItemComponent<I>){
+     const updateSource = this.updateSource()
+     if(updateSource){
+       log("updating model", item)
+       item.updateModel()
+     }else{
+        log("does not updating model", item.listItem())
+     }
   }
 
   save(){
@@ -141,7 +164,31 @@ export class ListEditorComponent<T extends object, I extends object> extends Ani
     }
   }
 
-  clear() {
+  override applyChanges(){
+    this.items()?.forEach(x=>{
+      x.saveText()
+    })
+  }
+
+  saveBtnClick(event:MouseEvent){
+    const itemsToSave:I[] = []
+    this.items().forEach(x=>{
+        x.saveText()
+        itemsToSave.push(x.source)
+    })
+    whenDefined(this.listEditorHandler(), handler => {
+      this.onSave.emit({ receiver: handler.receiver, value:itemsToSave})
+    });
+  }
+
+  cancelBtnClick(event:MouseEvent){
+    whenDefined(this.listEditorHandler(), handler => {
+       const itemsList = handler.listDelegate.get()
+       this.onCancel.emit({receiver: handler.receiver, value:itemsList})
+    })
+  }
+
+  clear(){
      console.log("clear in component")
   }
 }

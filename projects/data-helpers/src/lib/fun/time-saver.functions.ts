@@ -1,5 +1,5 @@
-import { Identity } from "../loging"
 
+import { Identity } from "./../loging/idententity.interface"
 
 function makeWarning(methodName:string, warnOptions: string | Identity){
   let context = "";

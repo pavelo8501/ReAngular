@@ -2,15 +2,18 @@
   "name": "@pavelo8501/net-client",
   "version": "0.2.25",
   "description": "Connectivity services library for ReAngular",
-  "devDependencies": {
-    "@angular/common": "^20.2.1",
-    "@angular/core": "^20.2.1",
-    "@angular/forms": "^20.2.1",
+
+  "dependencies": {
     "rxjs": "^7.8.0",
     "ngx-cookie-service": "^20.1.0"
   },
   "peerDependencies": {
-    "tslib": "^2.8.1"
+    "@angular/common": "20.3.1",
+    "@angular/core": "20.3.1",
+    "@angular/forms": "20.3.1"
+  },
+  "devDependencies": {
+    "tslib": "2.8.1"
   },
   "main": "dist/libs/net-client/index.d.ts",
   "scripts": {
