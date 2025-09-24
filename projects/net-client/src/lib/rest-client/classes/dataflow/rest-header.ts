@@ -1,7 +1,5 @@
 import { RestMethod } from "../rest-assets";
 
-
-
 export class RestHeader{
 
     constructor(
@@ -11,6 +9,5 @@ export class RestHeader{
 
         setValue(value:string|undefined){
             this.value = value
-            console.log(`RestHeader value updated to ${value}`)
         }
 }

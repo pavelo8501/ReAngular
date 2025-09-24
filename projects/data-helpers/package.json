@@ -1,0 +1,26 @@
+{
+  "name": "@pavelo8501/data-helpers",
+  "version": "0.0.2",
+  "description": "General use TS data helpers",
+  "main": "dist/libs/data-helpers/index.d.ts",
+  "scripts": {
+    "build": "ng build data-helpers",
+    "release": "npm version patch && ng build data-helpers && cd C:/Projects_IT/ReAngular/dist/data-helpers && npm publish --registry=https://npm.pkg.github.com --access public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pavelo8501/ReAngular"
+  },
+  "author": "Pavel",
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "peer-dependancies":{
+     "@angular/core": "20.3.1"
+  },
+  "devDependencies": {
+    "tslib": "2.8.1"
+  },
+  "sideEffects": false
+}

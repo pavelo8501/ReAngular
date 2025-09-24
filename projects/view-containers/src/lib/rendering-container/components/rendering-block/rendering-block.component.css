@@ -1,0 +1,67 @@
+
+.rendering-block{
+  position: relative;
+  width: 100%;
+  min-height: 60px;
+}
+
+
+.sw-header{
+  font-size: small;
+}
+
+
+.active{
+  border :green 1px solid;
+}
+
+.selected{
+  border :blue 4px solid;
+}
+
+
+.controls-area{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: absolute;
+  width: 100%;
+  background-color: transparent;
+}
+
+.controls{
+  width: 100px;
+}
+
+
+
+.save-btn{
+  background: blue;
+  color: azure;
+  padding: 3px;
+  border: white 1px solid;
+  width: 80px;
+  height : 35px;
+}
+
+.cancel-btn{
+  background: rgb(122, 61, 61);
+  color: azure;
+  padding: 3px;
+  border: white 1px solid;
+  width: 80px;
+  height : 35px;
+}
+
+.edit-button {
+  position: static;  
+  margin-left: calc(100% - 60px);
+}
+.save-button{
+  position: static;  
+  margin-left: calc(100% - 120px);
+}
+
+.cancel-button{
+   position: static;
+}

@@ -1,8 +1,9 @@
-import { HttpHeaders } from "@angular/common/http";
+import { HttpHeaders, HttpParams } from "@angular/common/http";
 import { RestHeader } from "./rest-header";
 import { RestMethod } from "../../classes/rest-assets";
 import { HeaderKey } from "../../enums/header-key.enum";
 import { RestCommonAsset } from "./../rest-assets/rest-common.asset";
+import { toHttpParams } from "../../extensions/call-helpers";
 
 export interface RestCallOptionsInterface {
     headers?: HttpHeaders
@@ -11,8 +12,7 @@ export interface RestCallOptionsInterface {
 
 export class RestCallOptions {
 
-    toOptions(): object {
-        console.log(this.appliedHeaders)
+    toOptions(queryParams?: Record<string, string | number>): object {
         let headers = new HttpHeaders()
         let withCredentials: boolean = false
         this.appliedHeaders.forEach(header => {
@@ -32,7 +32,14 @@ export class RestCallOptions {
                 }
             }
         })
-        const options = { headers: headers, withCredentials: withCredentials }
+
+        let options 
+        if(queryParams){
+            const params = toHttpParams(queryParams)
+            options = { headers: headers, withCredentials: withCredentials, httpParams: params}
+        }else{
+            options = { headers: headers, withCredentials: withCredentials}
+        }
         return options
     }
 
@@ -78,20 +85,15 @@ export class RestCallOptions {
                 found.value = x.value
             }
         })
-        console.log("this.appliedHeaders")
-        console.log(this.appliedHeaders)
     }
 
     setAuthHeader(token: string | undefined) {
-        console.log(`setAuthHeader token : ${token} method : ${this.asset.method}`)
-
         if (this.asset.secured == true) {
             const authHeader = this.getAuthHeader()
             if (authHeader) {
                 authHeader.setValue(token)
             } else {
                 this.appliedHeaders.push(this.createRestHeader(HeaderKey.AUTHORIZATION, token))
-                console.log(`applying new  header with token   ${token} to method ${this.asset.method}`)
             }
         } else {
             console.warn(`Trying to set token ${token} on non secured asset`)
@@ -101,7 +103,6 @@ export class RestCallOptions {
     setDefaultHeadders(headers: RestHeader[]) {
 
         headers.filter(h => h.methodType == this.asset.method).forEach(x => {
-
             if (!this.appliedHeaders.find(f => f.key === x.key)) {
                 this.appliedHeaders.push(x)
             }

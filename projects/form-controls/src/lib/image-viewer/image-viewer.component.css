@@ -1,0 +1,11 @@
+:host {
+  display: block;
+}
+
+
+.preview {
+  max-width: 400px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-top: 10px;
+}

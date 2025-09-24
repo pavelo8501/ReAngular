@@ -4,9 +4,10 @@ import {RestClient} from "./../../rest-client.service"
 import { HttpClient } from '@angular/common/http';
 import { REST_CLIENT, RestConnectionConfig, RestClientOptionsInterface} from "./rest-client-config";
 import {CookieService} from 'ngx-cookie-service';
+import { AssetParams } from "../rest-assets";
 
 export function provideRestClient(
-    options?:RestClientOptionsInterface,
+    options: RestClientOptionsInterface,
   ... connections: RestConnectionConfig<ResponseBase<any>>[]
 ): EnvironmentProviders {
    
@@ -17,7 +18,8 @@ export function provideRestClient(
         const restClientService = new RestClient(http, cookie);
         restClientService.production = options?.production??false
         connections.forEach(conn => {
-            restClientService.createConnection(conn)
+          AssetParams
+            restClientService.createConnection(conn, options.assetParams)
         })
         restClientService.configComplete()
         return restClientService;

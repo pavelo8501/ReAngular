@@ -1,19 +1,36 @@
 {
   "name": "@pavelo8501/form-controls",
-  "version": "0.0.5",
+  "version": "0.0.8",
   "description": "Form controls library for ReAngular",
-  "main": "dist/libs/form-controls/index.js",
-  "module": "dist/libs/form-controls/index.mjs",
-  "types": "dist/libs/form-controls/index.d.ts",
+  "main": "./index.js",
+  "module": "./index.mjs",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.mjs",
+      "require": "./index.js"
+    }
+  },
+  "peerDependencies": {
+    "@pavelo8501/data-helpers": "^0.0.2",
+    "@angular/common": "20.3.1",
+    "@angular/core": "20.3.1",
+    "@angular/forms": "20.3.1",
+    "rxjs": "^7.8.0",
+    "ngx-editor": "^18.0.0"
+  },
   "devDependencies": {
-    "@angular/core": "^19.1.7",
-    "@angular/common": "^19.1.7",
-    "@angular/forms": "^19.1.7",
-    "rxjs": "^7.8.0"
+    "tslib": "2.8.1",
+    "rxjs": "7.8.2"
   },
   "scripts": {
-    "build": "nx build form-controls",
-    "publish": "npm publish --access public"
+    "prebuild": "rimraf dist",
+    "build": "ng build form-controls",
+    "release": "npm version patch && ng build form-controls && cd C:/Projects_IT/ReAngular/dist/form-controls && npm publish --registry=https://npm.pkg.github.com --access public",
+    "postinstall": "rimraf dist",
+    "postpublish": "rimraf dist",
+    "build:lib":"ng build form-controls && npm run build:tailwind"
   },
   "repository": {
     "type": "git",

@@ -4,10 +4,10 @@ import { RestClient } from "../../rest-client.service"
 import { REST_CLIENT, provideRestClient, RestConnectionConfig } from "./../config"
 import { RestConnection, RestMethod, TokenSubjectException } from "../.."
 
-import { BackendResponse } from './../../../../../../playground/src/app/models/api-response';
-import { ConnectionID } from './../../../../../../playground/src/app/enums/connection-id';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { MockedResponse } from '../../test-setup/mocked-response.model';
+import { ConnectionID } from '../../test-setup/mocked-connection.enum';
 
 
 describe('RestClient', () => {
@@ -23,26 +23,26 @@ describe('RestClient', () => {
         provideRestClient(
           { production: false },
           new RestConnectionConfig(
-            ConnectionID.BACKEND_API,
+            ConnectionID.MOCKED,
             "",
-            new BackendResponse<any>(),
+            new MockedResponse<any>(),
             { getTokenEndpoint: "auth/login", refreshTokenEndpoint: "auth/refresh", method: RestMethod.POST }))
       ]
     });
     service = TestBed.inject(REST_CLIENT);
-    connection = service.getConnection(ConnectionID.BACKEND_API)
+    connection = service.getConnection(ConnectionID.MOCKED)
     httpMock = TestBed.inject(HttpTestingController);
   });
 
   afterEach(() => {
     httpMock.verify();
-    service.getConnection(ConnectionID.BACKEND_API).closeConnections(true)
+    service.getConnection(ConnectionID.MOCKED).closeConnections(true)
   });
 
 
   it('should initialize ServiceAssets properly', () => {
     const service = TestBed.inject(REST_CLIENT);
-    const connection = service.getConnection(ConnectionID.BACKEND_API)
+    const connection = service.getConnection(ConnectionID.MOCKED)
     expect(connection.serviceAssets.length).toBe(2)
     expect(connection.tokenAuthenticator()?.endpoint ?? "").toBe("auth/login")
     expect(connection.tokenRefresher()?.endpoint ?? "").toBe("auth/refresh")
@@ -50,7 +50,7 @@ describe('RestClient', () => {
 
   it('should fetch token from API', fakeAsync(() => {
     const service = TestBed.inject(REST_CLIENT);
-    const connection = service.getConnection(ConnectionID.BACKEND_API)
+    const connection = service.getConnection(ConnectionID.MOCKED)
     const mockResponse = { data: 'test-token' };
 
     connection.subscribeToTokenUpdates("TestBed").subscribe(token => {

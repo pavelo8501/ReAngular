@@ -1,5 +1,5 @@
-import { Observable, Subject, Subscription} from "rxjs"
-import { HttpClient, HttpErrorResponse } from "@angular/common/http"
+import { lastValueFrom, Observable, Subject, Subscription} from "rxjs"
+import { HttpClient, HttpErrorResponse, HttpParams } from "@angular/common/http"
 import { ContentNegotiationsInterface } from "../plugins/content/content-negotiations.plugin"
 import { RestConnection } from "../connection/rest-client-connection"
 import { ResponseBase } from "../dataflow/rest-response"
@@ -7,9 +7,12 @@ import { RestCallOptions } from "../dataflow/rest-call-options"
 import { AssetType, RestMethod } from "./rest-asset.enums"
 import { CallParamInterface, RestCommand } from "../dataflow"
 import { TokenSubjectException } from "../security"
-import { EventEmitterService, RequestError } from "../events"
+import { EventEmitterService, IncidentCode, RequestError } from "../events"
 import { RequestEvent } from "../events/models/request-event.class"
 import { AssetParams } from "./rest-assets.model"
+import { partsToUrl } from "../../extensions/call-helpers"
+import { toQueryString } from "../../extensions/call-helpers"
+
 
 
 export interface RestAssetInterface {
@@ -27,6 +30,24 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
     static truncateTrailingChar(str: string, char: string): string {
         return str.replace(new RegExp(`${char}+$`), ''); // Removes all trailing occurrences of char
     }
+
+
+
+    notify( message : {url: string, params: string, secured:boolean}, callback?: (caller: RestCommonAsset<DATA>) => void){
+
+        const assetName = `Asset ${this.method} to endpint ${this.endpoint}`
+        if(this.params.notifyRequestParams){
+            console.log(`${assetName} makeing  ${message.secured? "secured":"unsecured"} api call to ${message.url} with data params ${message.params}`)
+            console.log(`request heraders`, this.callOptions.getHeaders().map(m=> `[ ${m.key} : ${m.value}], `))
+        }
+  
+        console.log(`Asset ${this.method} notify  a warning`)
+
+        if(callback){
+          callback(this);
+        }
+    } 
+
 
     protected http: HttpClient
     protected httpHandler: Subscription | undefined
@@ -69,7 +90,7 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
 
     protected baseUrl: string
     get apiUrl(): string {
-        return `${this.baseUrl}/${this.endpoint}`
+        return partsToUrl([this.baseUrl, this.endpoint])
     }
 
     private contentNegotiations: ContentNegotiationsInterface<ResponseBase<DATA>>
@@ -87,7 +108,8 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
     protected constructor(
         config: RestAssetInterface,
         protected params: AssetParams,
-        connection: RestConnection<ResponseBase<DATA>>
+        connection: RestConnection<ResponseBase<DATA>>,
+        altBaseUrl?: string
     ) {
         this._connection = connection
         this.connection = connection
@@ -95,10 +117,14 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
         this.endpoint = config.endpoint
         this.method = config.method
         this.secured = config.secured
-        this.baseUrl = connection.baseUrl
         this.http = connection.http
         this.eventEmitter = connection.eventEmitter
         this.contentNegotiations = connection.contentNegotiations
+        if(altBaseUrl!= undefined){
+            this.baseUrl = altBaseUrl
+        }else{
+            this.baseUrl = connection.baseUrl
+        }
     }
 
     private toString(){
@@ -114,6 +140,8 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
     }
 
     private preCallRoutine() {
+        
+        
         if (this.secured) {
             if (this.callOptions.hasJwtToken) {
 
@@ -122,15 +150,23 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
                 this.callOptions.setAuthHeader(token)
             }
         }
+        if(this.params.notifyRequestParams){
+            console.log(toString())
+        }
     }
 
     private processResponse(response: ResponseBase<DATA>|undefined) {
         try {
             if(response){
                 const deserializeResult = this.contentNegotiations.deserialize<DATA>(response)
-                this.responseSubject.next(deserializeResult)
+                if(deserializeResult){
+                    this.responseSubject.next(deserializeResult)
+                }else{
+                    console.warn(`Deserialization error`)
+                }
             }else{
-                this.eventEmitter.emitRequestEvent(`Undefined response at ${this.toString()}`,RequestError.DATA_RESPONSE_UNDEFINED)
+                console.warn(`Undefined response`)
+                this.eventEmitter.emitError(`Undefined response`, IncidentCode.RESPONSE_UNDEFINED)
             }
         } catch (err: any) {
             console.error(err.message)
@@ -145,50 +181,54 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
 
     private handleError(err: HttpErrorResponse, requestFn: () => void) {
 
-        if (err.status == 401) {
-            this.eventEmitter.emitRequestEvent(
-                `Unauthorized request on ${this.toString()}`, 
-                RequestError.SERVER_UNAUTHORIZED
-            )
-            if (this.fallbackEnabled) {
-                const token = this.connection.getJWTToken(this)
-                if (token) {
-                    requestFn()
+        console.warn(err.message)
+        if(this.params.httpErrorVerbouse){
+
+            console.warn(`Status text: ${err.statusText}`)
+            console.warn(`Status error: ${err.error}`)
+        }
+
+
+        switch(err.status){
+            case 401:
+                this.eventEmitter.emitRequestError(err)
+                if (this.fallbackEnabled) {
+                    const token = this.connection.getJWTToken(this)
+                    if (token) {
+                        requestFn()
+                    }
+                } else {
+                    console.warn(`Unmanaged ${err.status} | ${err.message} when  ${this.method} to ${this.endpoint}`)
                 }
-            } else {
-                console.warn(`Unmanaged ${err.status} | ${err.message} when  ${this.method} to ${this.endpoint}`)
-            }
-        }else{
-            this.eventEmitter.emitRequestEvent(
-                `Request error code ${err.status} with message ${err.message} on ${this.toString()}`,
-                RequestError.OTHER
-            )
+            break;
+            default:
+                this.eventEmitter.emitRequestError(err)
         }
     }
 
 
-    protected callPost(requestData: DATA): void;
-    protected callPost<REQUEST>(requestData: REQUEST): void;
-
-    
-    protected callPost<REQUEST>(requestData: REQUEST) {
+    protected callPost(requestData: DATA, queryParams?: Record<string, string | number>): void;
+    protected callPost<REQUEST>(requestData: REQUEST, queryParams?: Record<string, string | number>): void;
+    protected callPost<REQUEST>(requestData: REQUEST, queryParams?: Record<string, string | number>) {
 
         this.preCallRoutine()
-        const requestDataJson = JSON.stringify(requestData)
+        const callOptions =  this.callOptions.toOptions()
+        const requestUrl = toQueryString(this.apiUrl, queryParams)
         if(this.params.notifyDataSent){
-            console.log(`Making Post request with request data ${requestDataJson}`)
+            console.log(`Request string ${requestUrl}`)
+            if(queryParams){
+                 console.log(`And query parameters: ${queryParams}`)
+            }
         }
-
         this.httpHandler = this.http.post<ResponseBase<DATA>>(
-            this.apiUrl,
-            requestDataJson,
-            this.callOptions.toOptions()
+            requestUrl,
+            requestData,
+            callOptions
         ).subscribe({
             next: (response) => {
                 this.processResponse(response)
             },
             error: (err: HttpErrorResponse) => {
-                console.error(`callPost ${err.message}`)
                 this.handleError(err, () => {
                     this.callOptions.setAuthHeader(this.connection.getJWTToken(this));
                     this.callPost(requestData);
@@ -206,11 +246,9 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
             params.forEach(x => paramStr += `${x.key}=${x.value}&`)
             paramStr = RestCommonAsset.truncateTrailingChar(paramStr, '&')
         }
-
-        if(this.params.notifyDataSent){
-            console.log(`Making Post request with request data ${paramStr}`)
-        }
-
+        
+       
+        this.notify({url: this.apiUrl, secured : this.secured, params: paramStr})
         const requestUrl = this.apiUrl + paramStr
         this.preCallRoutine()
         this.http.get<ResponseBase<DATA>>(
@@ -221,7 +259,6 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
                 this.processResponse(response)
             },
             error: (err: HttpErrorResponse) => {
-                console.error(`callGet ${err.message}`)
                 this.handleError(err, () => {
                     this.callOptions.setAuthHeader(this.connection.getJWTToken(this));
                     this.callGet(params)
@@ -231,15 +268,16 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
         })
     }
 
+
     protected callPut(requestData: DATA) {
 
         const requestBodyStr = JSON.stringify(requestData)
         console.log(`Put request Url ${this.apiUrl} with body : ${requestBodyStr}`)
         this.preCallRoutine()
+    
 
-        if(this.params.notifyDataSent){
-            console.log(`Making Post request with request data ${requestBodyStr}`)
-        }
+        this.notify({url: this.apiUrl, secured : this.secured, params: requestBodyStr})
+
         this.http.put<ResponseBase<DATA>>(
             this.apiUrl,
             requestBodyStr,
@@ -248,7 +286,6 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
                     this.processResponse(response)
                 },
                 error: (err: HttpErrorResponse) => {
-                    console.error(`callPut ${err.message}`)
                     this.handleError(err, () => {
                         this.callOptions.setAuthHeader(this.connection.getJWTToken(this));
                         this.callPut(requestData)
@@ -258,7 +295,37 @@ export abstract class RestCommonAsset<DATA> implements RestAssetInterface {
             })
     }
 
-    subscribeForRequestEvents():Observable<RequestEvent>{
+    protected async asyncCallPut(requestData: DATA): Promise<DATA | undefined> {
+        try {
+            const requestBodyStr = JSON.stringify(requestData);
+            console.log(`Put request Url ${this.apiUrl} with body : ${requestBodyStr}`);
+    
+            this.preCallRoutine();
+            this.notify({ url: this.apiUrl, secured: this.secured, params: requestBodyStr });
+    
+            const response = await lastValueFrom(
+                this.http.put<ResponseBase<DATA>>(
+                    this.apiUrl,
+                    requestBodyStr,
+                    this.callOptions.toOptions()
+                )
+            );
+            return this.contentNegotiations.deserialize<DATA>(response);
+        } catch (err) {
+            if (err instanceof HttpErrorResponse) {
+                this.handleError(err, () => {
+                    this.callOptions.setAuthHeader(this.connection.getJWTToken(this));
+                    return this.asyncCallPut(requestData);
+                });
+            } else {
+                console.error('Unexpected error:', err);
+            }
+            return undefined;
+        }
+    }
+
+
+    requestErrors():Observable<RequestEvent>{
        return this.eventEmitter.requestEvents$
     }
 }

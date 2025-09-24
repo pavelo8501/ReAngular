@@ -1,0 +1,42 @@
+:host {
+  display: block;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.animated-container{
+  margin-left: 10px;
+  margin-left: 10px;
+  margin-top: 1em;
+}
+
+.insert-container {
+  background-color: rgb(96, 88, 148);
+  border-radius: 10px;
+  border: 1px solid #dddddd;
+  font-weight: bold;
+  font-size: 20px;
+}
+.enter-animation {
+  animation: slide-fade 1s;
+}
+
+
+@keyframes slide-fade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.leave-container {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 500ms ease-out, transform 500ms ease-out;
+}

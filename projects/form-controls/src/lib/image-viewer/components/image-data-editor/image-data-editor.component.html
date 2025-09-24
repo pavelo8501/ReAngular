@@ -1,0 +1,37 @@
+
+<div class="image-editor">
+
+    <p>Image : {{imageData()?.filename}}</p>
+    <div style="display:flex">
+        <p>Image Url: </p>  
+        <a  [href]="imageData()?.href"> {{imageData()?.href}} </a>
+    </div>
+
+
+    <div class="content-block download-by-link">
+        <label for="image-url-input">Download by link</label>
+        <fc-simple-input inputName = "image-url-input" style="width: 200px;" />
+    </div>
+
+    <div class="from-hdd">
+        <div class="content-block">
+        <label for="image-browser-input">Upload from PC</label>
+
+        <input 
+            #fileInput
+            id="image-browser-input" 
+            name="image-browser-input" 
+            type="file"
+            hidden
+            accept="image/*" 
+            (change)="onFileSelected($event)"/>
+        </div>  
+
+        <div class="content-block">
+            <button type="button" class="btn btn-success" (click)="fileInput.click()">Choose Image</button>
+        </div>
+
+    </div>
+
+
+</div>

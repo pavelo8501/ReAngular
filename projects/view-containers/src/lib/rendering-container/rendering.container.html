@@ -1,0 +1,11 @@
+
+
+
+
+<div class="template-viewer" [ngClass]="containerClass()" [style.height]="heightStr">
+    <div class="hierarchy-container scrollable-container">
+        @for (payload of renderingItemPayloads(); track $index) {
+            <lib-rendering-item [payload]="payload"/>
+        }
+    </div>
+</div>

@@ -1,0 +1,69 @@
+:host {
+  display: block;
+}
+
+
+.idle-class{
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.sw-header{
+  font-size: small;
+}
+
+
+
+
+.selected-section{
+  border :black 4px solid;
+}
+
+
+.edit-btn{
+  background: green;
+  padding: 3px;
+  border: white 1px solid;
+  width: 80px;
+  height : 35px;
+}
+
+.save-btn{
+  background: blue;
+  color: azure;
+  padding: 3px;
+  border: white 1px solid;
+  width: 80px;
+  height : 35px;
+}
+
+.cancel-btn{
+  background: rgb(122, 61, 61);
+  color: azure;
+  padding: 3px;
+  border: white 1px solid;
+  width: 80px;
+  height : 35px;
+}
+
+.class-editor-group{
+  display: flex;
+}
+
+.class-editor-group div{
+  margin-left: 4px;
+}
+
+.section-container{
+  padding-top: 6px;
+  border :gray 1px solid;
+}
+
+.header-area{
+  background-color: rgba(39, 132, 209, 0.716);
+  color: white;
+}
+
+.header-area-selected{
+    background-color: rgba(79, 23, 131, 0.716) !important;
+}

@@ -1,0 +1,12 @@
+
+
+.component-controls{
+  margin-bottom: 10px;
+}
+
+
+.items-holder{
+  display: flex;
+  flex-wrap: wrap; 
+  gap: 12px;    
+}

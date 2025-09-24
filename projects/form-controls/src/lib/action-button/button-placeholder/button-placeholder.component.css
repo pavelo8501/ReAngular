@@ -1,0 +1,9 @@
+
+.horizontal-placeholder{
+  display: flex;
+}
+
+
+.vertical-placeholder{
+  display:block;
+}

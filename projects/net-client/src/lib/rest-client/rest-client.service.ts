@@ -5,7 +5,7 @@ import { ErrorCode } from './classes/exceptions/error-code';
 import { RestConnection } from './classes/connection/rest-client-connection';
 import { RestConnectionConfig } from './classes/config';
 import {EventEmitterService} from "./classes/events"
-import {ResponseBase, RestExceptionCode, TokenSubjectException } from '../../public-api';
+import {AssetParams, ResponseBase, RestExceptionCode, TokenSubjectException } from '../../public-api';
 import { AssetType } from './classes/rest-assets/rest-asset.enums';
 import { CookieService } from 'ngx-cookie-service';
 
@@ -25,8 +25,8 @@ export class RestClient {
 
     private connections: RestConnection<any>[] = []
 
-    private onInitialized?: () => void
-    initialized = (callback: () => void) => {
+    private onInitialized?: (connections : RestConnection<any>[]) => void
+    initialized = (callback: (connections : RestConnection<any>[]) => void) => {
         console.log("RestClient initialized callback set.");
         this.onInitialized = callback
     }
@@ -40,7 +40,10 @@ export class RestClient {
         if (!this.production) { console.log("Starting config") }
     }
 
-    createConnection<T extends ResponseBase<any>>(config: RestConnectionConfig<T>) {
+    createConnection<T extends ResponseBase<any>>(
+        config: RestConnectionConfig<T>,
+        restCallParams: AssetParams
+    ) {
         const newConnection = new RestConnection<T>(config, this.http, this)
 
         const token = this.cookieService.get(this.tokenKey(newConnection)) || undefined;
@@ -49,6 +52,12 @@ export class RestClient {
         newConnection.initialize(this.eventEmitter, token)
 
         if (config.withJwtAuth) {
+            let apiUrl : string
+            if(config.withJwtAuth.authUrl){
+                apiUrl = config.withJwtAuth.authUrl
+            }else{
+                apiUrl = config.baseUrl
+            }
             const authEndpoint = config.withJwtAuth.getTokenEndpoint
             const refreshEndpoint = config.withJwtAuth.refreshTokenEndpoint
             const method = config.withJwtAuth.method
@@ -56,12 +65,16 @@ export class RestClient {
             newConnection.createServiceAsset<string | undefined>(
                 authEndpoint,
                 method,
-                AssetType.ATHENTICATE
+                AssetType.ATHENTICATE,
+                apiUrl,
+                restCallParams
             )
             newConnection.createServiceAsset<string | undefined>(
                 refreshEndpoint,
                 method,
-                AssetType.REFRESH
+                AssetType.REFRESH,
+                apiUrl,
+                restCallParams
             )
         }
         this.connections.push(newConnection)
@@ -88,7 +101,7 @@ export class RestClient {
 
     configComplete() {
         if (this.onInitialized) {
-            this.onInitialized();
+            this.onInitialized(this.connections);
         }
 
         if (!this.production) {

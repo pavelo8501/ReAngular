@@ -23,27 +23,23 @@ export class LoginRequest {
 export class RestServiceAsset<DATA> extends RestCommonAsset<DATA> {
 
     constructor(
+        baseUrl: string,
         endpoint: string,
         method: RestMethod,
         connection: RestConnection<ResponseBase<DATA>>,
         public type: AssetType,
         private tokenSubject: BehaviorSubject<string | undefined>
+
     ) {
-        super({ endpoint: endpoint, method: method, secured: false }, new AssetParams(), connection)
+        super({ endpoint: endpoint, method: method, secured: false}, new AssetParams(), connection, baseUrl)
     }
 
 
     getToken(login: string, password: string) {
-
         const request = {login: login, password: password }
-        console.log(`Token requested body : ${request} `)
-
         this.callPost<{login: string, password: string}>(request)
-
         this.responseSubject.subscribe({
             next: (token) => {
-                console.warn(`token received in TokenAuthenticator`)
-                console.log(token)
                 if (token != undefined) {
                     this.tokenSubject.next(token as string)
                 } else {

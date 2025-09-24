@@ -1,5 +1,36 @@
 
 
-<div>
-    <h1> Containeros </h1>
-</div>
+
+
+@if(showAttachedContent() == true){
+    <section [id]="selector().id" [ngClass]="dataModel()?.classes" >
+        <ng-content>
+            
+        </ng-content>
+    </section>
+}@else {
+    @switch (selector().tag) {
+        @case (HtmlTag.SECTION) {
+            <section [id]="selector().id" [ngClass]="dataModel()?.classes" [innerHTML]="content()"> </section>
+        }
+        @case (HtmlTag.HEADER_2) {
+            <h2  [id]="selector().id" [ngClass]="dataModel()?.classes" [innerHTML]="content()"></h2>
+        }
+        @case (HtmlTag.HEADER_3) {
+            <h3 [id]="selector().id" [ngClass]="dataModel()?.classes" [innerHTML]="content()"> </h3>
+        }
+        @case (HtmlTag.HEADER_4) {
+            <h4 [id]="selector().id" [ngClass]="dataModel()?.classes" [innerHTML]="content()"> </h4>
+        }
+        @case (HtmlTag.PARAGRAPH) {
+            <p [id]="selector().id"  [ngClass]="dataModel()?.classes" [innerHTML]="content()"> </p>
+        }
+        @default{
+            <label>DEFAULT</label>
+        }
+    }
+}
+
+
+
+  

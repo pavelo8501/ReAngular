@@ -1,14 +1,14 @@
 import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
-import { ControlState } from './classes/enums/control-state';
-import { ActivationState } from './classes/enums/activation-state';
-import { InputType } from './classes/enums/input-type';
+import { ControlState } from './common/enums/control-state';
+import { ActivationState } from './common/enums/activation-state';
+import { InputType } from './common/enums/input-type';
 
 export const ENUMS = {
-    ControlState,
-    ActivationState,
-    InputType
-  }
+  ControlState,
+  ActivationState,
+  InputType
+}
 
 export function provideEnums(): EnvironmentProviders {
-    return makeEnvironmentProviders([{ provide: ENUMS, useValue: ENUMS }]);
-  }
+  return makeEnvironmentProviders([{ provide: ENUMS, useValue: ENUMS }]);
+}

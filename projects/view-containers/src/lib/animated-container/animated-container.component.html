@@ -1,0 +1,14 @@
+
+@if(isVisible()){
+  <h1>Is Visible</h1>
+}
+
+@if (isVisible()) {
+  <div class="animated-container insert-container" animate.enter="enter-animation" animate.leave=".leave-container">
+    <div class="animated-container">
+        <ng-content/>
+    </div>
+  </div>
+}
+
+

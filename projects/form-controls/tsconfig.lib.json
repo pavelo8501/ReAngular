@@ -13,5 +13,8 @@
   },
   "exclude": [
     "**/*.spec.ts"
+  ], 
+  "allowedNonPeerDependencies": [
+     "@pavelo8501/data-helpers"
   ]
 }

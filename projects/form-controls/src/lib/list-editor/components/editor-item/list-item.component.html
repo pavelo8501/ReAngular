@@ -1,0 +1,23 @@
+
+
+<div class="editor-item" [style.width] = "maxWidth()"  >
+
+  @if (editing()) {
+    <ng-container>
+        <input
+            #inputEl 
+            type="text"
+            class="editor-input"
+            [value]="content()"
+            autofocus
+            />
+         <button type="button" class="btn btn-success  btn-sm" (click)="save(inputEl.value)">Save</button>
+    </ng-container>
+  }@else {
+    <div class="item-text" (click)="edit()">
+      {{ content() }}
+    </div>
+    <button type="button" class="btn btn-danger btn-sm delete-button" (click)="delete()">X</button>
+  }
+
+</div>

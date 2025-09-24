@@ -1,0 +1,38 @@
+.template-viewer {
+  width: 100%; /* Adjust based on your needs */
+  height: 100%; /* Adjust based on your needs */
+  overflow: hidden; /* Prevents outer container overflow */
+  font-size: 20px !important;
+}
+
+.scrollable-container {
+  width: auto;
+  height: 100%;
+  margin-left: 20px;
+  margin-right: 20px;
+  max-height: 80vh; /* Ensure it doesn’t take the full viewport */
+  overflow: auto; /* Enables scrolling */
+  border: 1px solid #ccc; /* Optional: To visualize the container */
+  padding: 10px; /* Space inside */
+  background:white; /* Keeps it readable */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+  border: chocolate 1px solid;
+  scroll-behavior: smooth;
+  scrollbar-width: thin; /* Works in Firefox */
+  scrollbar-color: #888 #f0f0f0; /* Works in Firefox */
+  position: relative;
+}
+
+/* Custom scrollbar for Webkit browsers (Chrome, Safari, Edge) */
+.scrollable-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 4px;
+}
+
+.scrollable-container::-webkit-scrollbar-track {
+  background-color: #f0f0f0;
+}
